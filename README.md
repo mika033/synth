@@ -9,6 +9,8 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
 - **Filter Envelope**: Envelope modulation for that signature squelchy sound
 - **Decay Control**: Adjustable envelope decay time
 - **Accent**: Velocity-sensitive accent for dynamic expression
+- **Tempo-Synced LFO**: Assignable LFO with tempo sync for modulation effects
+- **Tempo-Synced Delay**: Classic delay effect synchronized to your DAW's tempo
 - **8-voice polyphony**: Play chords and sequences
 
 ## Controls
@@ -33,6 +35,31 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
   - At 1.0: Heavy saturation, very aggressive
 - **Volume**: Master output level (0.0 - 1.0)
 - **Waveform**: Switch between Sawtooth (bright, classic) and Square wave (hollow, dark)
+
+### LFO Section
+- **LFO Rate**: Tempo-synced rate (1/16, 1/8, 1/4, 1/2, 1/1 notes)
+  - Automatically syncs to your DAW's tempo
+  - 1/4 note = one LFO cycle every quarter note
+- **LFO Dest**: Modulation destination (Off, Cutoff, Resonance, Volume)
+  - Off: LFO is disabled
+  - Cutoff: Modulates filter cutoff frequency
+  - Resonance: Modulates filter resonance amount
+  - Volume: Modulates output volume (tremolo effect)
+- **LFO Depth**: Amount of modulation (0.0 - 1.0)
+  - Controls how much the LFO affects the selected destination
+
+### Delay Section
+- **Delay Time**: Tempo-synced delay time (1/16, 1/8, 1/4, 1/2, 1/1 notes)
+  - Automatically syncs to your DAW's tempo
+  - 1/4 note = echo repeats every quarter note
+- **Delay FB**: Feedback amount (0.0 - 0.95) - controls how many repeats
+  - At 0.0: Single echo only
+  - At 0.5: Several repeats
+  - At 0.95: Very long decay, almost infinite
+- **Delay Mix**: Wet/dry mix (0.0 - 1.0)
+  - At 0.0: No delay (dry signal only)
+  - At 0.5: Equal mix of dry and delayed signal
+  - At 1.0: Only delayed signal
 
 ## Build Instructions
 
@@ -190,7 +217,17 @@ namespace Defaults {
     static constexpr float kResonance = 0.7f;      // 0-1
     static constexpr float kEnvMod = 0.5f;         // 0-1
     static constexpr float kDecay = 0.3f;          // seconds
-    // ... and more
+    static constexpr float kAccent = 0.5f;         // 0-1
+    static constexpr int   kWaveform = 0;          // 0=saw, 1=square
+    static constexpr float kSubOsc = 0.5f;         // 0-1
+    static constexpr float kDrive = 0.0f;          // 0-1
+    static constexpr float kVolume = 0.7f;         // 0-1
+    static constexpr int   kLFORate = 2;           // 1/4 note
+    static constexpr int   kLFODest = 0;           // Off
+    static constexpr float kLFODepth = 0.5f;       // 0-1
+    static constexpr int   kDelayTime = 2;         // 1/4 note
+    static constexpr float kDelayFeedback = 0.3f;  // 0-0.95
+    static constexpr float kDelayMix = 0.0f;       // 0-1 (off by default)
 }
 ```
 
