@@ -22,33 +22,43 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
 
 ## Build Instructions
 
-### Prerequisites
+### Windows (Easiest Method)
 
-- CMake 3.15 or higher
-- C++17 compatible compiler (GCC, Clang, MSVC)
-- Git
+**Prerequisites:**
+1. Install **CMake**: https://cmake.org/download/ (check "Add to PATH" during install)
+2. Install **Visual Studio Community 2022**: https://visualstudio.microsoft.com/downloads/
+   - During installation, select "Desktop development with C++"
 
-### Building
+**Quick Build:**
+1. Double-click `build.bat` in the synth folder
+2. Wait for compilation (5-10 minutes first time)
+3. Done! The VST3 will be installed automatically
 
-1. Clone the repository:
+**Alternative - Visual Studio IDE:**
+1. Double-click `generate-vs-project.bat`
+2. Open `build\AcidSynth.sln` in Visual Studio
+3. Build → Build Solution (or press Ctrl+Shift+B)
+
+**Using MinGW instead of Visual Studio:**
+1. Install MinGW-w64 or via Chocolatey: `choco install mingw`
+2. Double-click `build-mingw.bat`
+
+### macOS/Linux
+
+1. Install dependencies:
 ```bash
-git clone <repository-url>
-cd synth
+# macOS
+brew install cmake
+
+# Ubuntu/Debian
+sudo apt install cmake build-essential libasound2-dev libjack-dev \
+  libcurl4-openssl-dev libfreetype6-dev libx11-dev libxrandr-dev
 ```
 
-2. Create build directory:
+2. Build:
 ```bash
-mkdir build
-cd build
-```
-
-3. Configure with CMake:
-```bash
+mkdir build && cd build
 cmake ..
-```
-
-4. Build:
-```bash
 cmake --build . --config Release
 ```
 
