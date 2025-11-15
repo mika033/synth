@@ -70,6 +70,24 @@ private:
     // Parameter update
     void updateVoiceParameters();
 
+    // Preset management
+    void loadPreset(int presetIndex);
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)
+};
+
+// Preset structure
+struct Preset
+{
+    juce::String name;
+    float cutoff;
+    float resonance;
+    float envMod;
+    float decay;
+    float accent;
+    int waveform;  // 0 = saw, 1 = square
+    float subOsc;
+    float drive;
+    float volume;
 };

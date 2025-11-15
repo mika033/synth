@@ -97,6 +97,23 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     addAndMakeVisible(waveformLabel);
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "waveform", waveformSelector);
+
+    // Configure preset selector
+    presetSelector.addItem("Classic 303 Bass", 1);
+    presetSelector.addItem("Squelchy Lead", 2);
+    presetSelector.addItem("Deep Rumble", 3);
+    presetSelector.addItem("Aggressive Lead", 4);
+    presetSelector.addItem("Init", 5);
+    presetSelector.onChange = [this]
+    {
+        int selectedIndex = presetSelector.getSelectedItemIndex();
+        if (selectedIndex >= 0)
+            audioProcessor.setCurrentProgram(selectedIndex);
+    };
+    addAndMakeVisible(presetSelector);
+    presetLabel.setText("Preset", juce::dontSendNotification);
+    presetLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(presetLabel);
 }
 
 AcidSynthAudioProcessorEditor::~AcidSynthAudioProcessorEditor()
@@ -125,6 +142,10 @@ void AcidSynthAudioProcessorEditor::resized()
     const int knobSpacing = 85;
     const int startX = 30;
     const int startY = 80;
+
+    // Preset selector at the top right
+    presetLabel.setBounds(getWidth() - 220, 15, 60, 20);
+    presetSelector.setBounds(getWidth() - 150, 15, 120, 25);
 
     // First row - Filter controls
     cutoffLabel.setBounds(startX, startY - 20, knobSize, 20);

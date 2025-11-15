@@ -31,6 +31,7 @@ private:
     juce::Slider driveSlider;
     juce::Slider volumeSlider;
     juce::ComboBox waveformSelector;
+    juce::ComboBox presetSelector;
 
     // Labels
     juce::Label cutoffLabel;
@@ -42,6 +43,7 @@ private:
     juce::Label driveLabel;
     juce::Label volumeLabel;
     juce::Label waveformLabel;
+    juce::Label presetLabel;
 
     // Attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;

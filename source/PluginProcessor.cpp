@@ -2,6 +2,27 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+// Factory Presets
+static const Preset kPresets[] = {
+    // Classic 303 Bass (Fat & Punchy)
+    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f },
+
+    // Squelchy Lead (Maximum Expression)
+    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f },
+
+    // Deep Rumble (Sub-Heavy)
+    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f },
+
+    // Aggressive Distorted Lead
+    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f },
+
+    // Init (default clean sound)
+    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f }
+};
+
+static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
+
+//==============================================================================
 AcidSynthAudioProcessor::AcidSynthAudioProcessor()
     : AudioProcessor(BusesProperties()
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
@@ -93,25 +114,30 @@ double AcidSynthAudioProcessor::getTailLengthSeconds() const
 
 int AcidSynthAudioProcessor::getNumPrograms()
 {
-    return 1;
+    return kNumPresets;
 }
 
 int AcidSynthAudioProcessor::getCurrentProgram()
 {
-    return 0;
+    return 0; // Could track current preset if needed
 }
 
 void AcidSynthAudioProcessor::setCurrentProgram(int index)
 {
+    if (index >= 0 && index < kNumPresets)
+        loadPreset(index);
 }
 
 const juce::String AcidSynthAudioProcessor::getProgramName(int index)
 {
+    if (index >= 0 && index < kNumPresets)
+        return kPresets[index].name;
     return {};
 }
 
 void AcidSynthAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
+    // Factory presets cannot be renamed
 }
 
 //==============================================================================
@@ -176,6 +202,42 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setVolume(volume);
         }
     }
+}
+
+void AcidSynthAudioProcessor::loadPreset(int presetIndex)
+{
+    if (presetIndex < 0 || presetIndex >= kNumPresets)
+        return;
+
+    const Preset& preset = kPresets[presetIndex];
+
+    // Set all parameters to preset values
+    parameters.getParameter(CUTOFF_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(CUTOFF_ID).convertTo0to1(preset.cutoff));
+
+    parameters.getParameter(RESONANCE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(RESONANCE_ID).convertTo0to1(preset.resonance));
+
+    parameters.getParameter(ENV_MOD_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(ENV_MOD_ID).convertTo0to1(preset.envMod));
+
+    parameters.getParameter(DECAY_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(DECAY_ID).convertTo0to1(preset.decay));
+
+    parameters.getParameter(ACCENT_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(ACCENT_ID).convertTo0to1(preset.accent));
+
+    parameters.getParameter(WAVEFORM_ID)->setValueNotifyingHost(
+        static_cast<float>(preset.waveform));
+
+    parameters.getParameter(SUB_OSC_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(SUB_OSC_ID).convertTo0to1(preset.subOsc));
+
+    parameters.getParameter(DRIVE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(DRIVE_ID).convertTo0to1(preset.drive));
+
+    parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(VOLUME_ID).convertTo0to1(preset.volume));
 }
 
 //==============================================================================
