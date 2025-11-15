@@ -28,7 +28,7 @@ namespace Defaults
     static constexpr int   kLFORate = 2;    // 1/4 note
     static constexpr int   kLFODest = 0;    // Off
     static constexpr float kLFODepth = 0.5f;
-    static constexpr int   kDelayTime = 2;  // 1/4 note
+    static constexpr int   kDelayTime = 6;  // 1/4 note
     static constexpr float kDelayFeedback = 0.3f;
     static constexpr float kDelayMix = 0.0f; // Off by default
 }
@@ -39,19 +39,19 @@ static const Preset kPresets[] = {
     // Name, Cutoff, Resonance, EnvMod, Decay, Accent, Waveform, SubOsc, Drive, Volume, LFORate, LFODest, LFODepth, DelayTime, DelayFeedback, DelayMix
 
     // Classic 303 Bass (Fat & Punchy)
-    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f, 2, 0, 0.5f, 2, 0.3f, 0.0f },
+    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f, 2, 0, 0.5f, 6, 0.3f, 0.0f },
 
     // Squelchy Lead (Maximum Expression)
-    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f, 2, 1, 0.7f, 2, 0.4f, 0.2f },
+    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f, 2, 1, 0.7f, 4, 0.4f, 0.2f },
 
     // Deep Rumble (Sub-Heavy)
-    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f, 3, 0, 0.3f, 3, 0.2f, 0.0f },
+    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f, 3, 0, 0.3f, 9, 0.2f, 0.0f },
 
     // Aggressive Distorted Lead
-    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f, 1, 2, 0.6f, 2, 0.5f, 0.3f },
+    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f, 1, 2, 0.6f, 7, 0.5f, 0.3f },
 
     // Init (default clean sound)
-    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f, 2, 0, 0.5f, 2, 0.3f, 0.0f }
+    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f, 2, 0, 0.5f, 6, 0.3f, 0.0f }
 };
 
 static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
@@ -124,7 +124,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
                     std::make_unique<juce::AudioParameterChoice>(
                         DELAY_TIME_ID, "Delay Time",
-                        juce::StringArray{"1/16", "1/8", "1/4", "1/2", "1/1"},
+                        juce::StringArray{"1/16", "1/16.", "1/16T", "1/8", "1/8.", "1/8T", "1/4", "1/4.", "1/4T", "1/2", "1/2.", "1/1"},
                         Defaults::kDelayTime),
 
                     std::make_unique<juce::AudioParameterFloat>(
@@ -271,7 +271,21 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         float delayFeedback = parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load();
 
         // Calculate delay time in samples based on tempo
-        const double divisions[] = { 4.0, 2.0, 1.0, 0.5, 0.25 }; // 1/16, 1/8, 1/4, 1/2, 1/1
+        // Index: 0=1/16, 1=1/16., 2=1/16T, 3=1/8, 4=1/8., 5=1/8T, 6=1/4, 7=1/4., 8=1/4T, 9=1/2, 10=1/2., 11=1/1
+        const double divisions[] = {
+            4.0,        // 1/16
+            4.0/1.5,    // 1/16. (dotted)
+            6.0,        // 1/16T (triplet)
+            2.0,        // 1/8
+            2.0/1.5,    // 1/8. (dotted)
+            3.0,        // 1/8T (triplet)
+            1.0,        // 1/4
+            1.0/1.5,    // 1/4. (dotted)
+            1.5,        // 1/4T (triplet)
+            0.5,        // 1/2
+            0.5/1.5,    // 1/2. (dotted)
+            0.25        // 1/1 (whole note)
+        };
         double beatsPerSecond = currentBPM / 60.0;
         double notesPerBeat = divisions[delayTime];
         double delayTimeSeconds = 1.0 / (beatsPerSecond * notesPerBeat);

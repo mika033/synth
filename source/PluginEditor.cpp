@@ -152,10 +152,17 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
 
     // Configure Delay Time selector
     delayTimeSelector.addItem("1/16", 1);
-    delayTimeSelector.addItem("1/8", 2);
-    delayTimeSelector.addItem("1/4", 3);
-    delayTimeSelector.addItem("1/2", 4);
-    delayTimeSelector.addItem("1/1", 5);
+    delayTimeSelector.addItem("1/16.", 2);
+    delayTimeSelector.addItem("1/16T", 3);
+    delayTimeSelector.addItem("1/8", 4);
+    delayTimeSelector.addItem("1/8.", 5);
+    delayTimeSelector.addItem("1/8T", 6);
+    delayTimeSelector.addItem("1/4", 7);
+    delayTimeSelector.addItem("1/4.", 8);
+    delayTimeSelector.addItem("1/4T", 9);
+    delayTimeSelector.addItem("1/2", 10);
+    delayTimeSelector.addItem("1/2.", 11);
+    delayTimeSelector.addItem("1/1", 12);
     addAndMakeVisible(delayTimeSelector);
     delayTimeLabel.setText("Delay Time", juce::dontSendNotification);
     delayTimeLabel.setJustificationType(juce::Justification::centred);

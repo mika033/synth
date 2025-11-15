@@ -49,9 +49,12 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
   - Controls how much the LFO affects the selected destination
 
 ### Delay Section
-- **Delay Time**: Tempo-synced delay time (1/16, 1/8, 1/4, 1/2, 1/1 notes)
+- **Delay Time**: Tempo-synced delay time with dotted and triplet options
+  - Straight: 1/16, 1/8, 1/4, 1/2, 1/1 notes
+  - Dotted: 1/16., 1/8., 1/4., 1/2. (1.5x length)
+  - Triplet: 1/16T, 1/8T, 1/4T (2/3 length)
   - Automatically syncs to your DAW's tempo
-  - 1/4 note = echo repeats every quarter note
+  - Example: 1/4. = dotted quarter note delay (classic dub delay)
 - **Delay FB**: Feedback amount (0.0 - 0.95) - controls how many repeats
   - At 0.0: Single echo only
   - At 0.5: Several repeats
