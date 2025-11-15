@@ -2,6 +2,32 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+// CONFIGURATION - Edit these constants to customize the plugin
+//==============================================================================
+
+// Plugin Identity
+static constexpr const char* kPluginName = "Acid Synth";
+static constexpr const char* kPluginVersion = "1.0.0";
+static constexpr const char* kManufacturerName = "AcidLab";
+
+// Audio Configuration
+static constexpr int kNumVoices = 8;  // Number of simultaneous notes (polyphony)
+
+// Default Parameter Values
+namespace Defaults
+{
+    static constexpr float kCutoff = 1000.0f;
+    static constexpr float kResonance = 0.7f;
+    static constexpr float kEnvMod = 0.5f;
+    static constexpr float kDecay = 0.3f;
+    static constexpr float kAccent = 0.5f;
+    static constexpr int   kWaveform = 0;  // 0 = saw, 1 = square
+    static constexpr float kSubOsc = 0.5f;
+    static constexpr float kDrive = 0.0f;
+    static constexpr float kVolume = 0.7f;
+}
+
+//==============================================================================
 // Factory Presets
 static const Preset kPresets[] = {
     // Classic 303 Bass (Fat & Punchy)
@@ -31,51 +57,51 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         CUTOFF_ID, "Cutoff",
                         juce::NormalisableRange<float>(20.0f, 5000.0f, 1.0f, 0.3f),
-                        1000.0f),
+                        Defaults::kCutoff),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         RESONANCE_ID, "Resonance",
                         juce::NormalisableRange<float>(0.0f, 0.95f, 0.01f),
-                        0.7f),
+                        Defaults::kResonance),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         ENV_MOD_ID, "Env Mod",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.5f),
+                        Defaults::kEnvMod),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         DECAY_ID, "Decay",
                         juce::NormalisableRange<float>(0.01f, 2.0f, 0.01f, 0.5f),
-                        0.3f),
+                        Defaults::kDecay),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         ACCENT_ID, "Accent",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.5f),
+                        Defaults::kAccent),
 
                     std::make_unique<juce::AudioParameterChoice>(
                         WAVEFORM_ID, "Waveform",
                         juce::StringArray{"Saw", "Square"},
-                        0),
+                        Defaults::kWaveform),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         SUB_OSC_ID, "Sub Osc",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.5f),
+                        Defaults::kSubOsc),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         DRIVE_ID, "Drive",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.0f),
+                        Defaults::kDrive),
 
                     std::make_unique<juce::AudioParameterFloat>(
                         VOLUME_ID, "Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.7f)
+                        Defaults::kVolume)
                 })
 {
-    // Add 8 voices to the synthesizer
-    for (int i = 0; i < 8; ++i)
+    // Add voices to the synthesizer
+    for (int i = 0; i < kNumVoices; ++i)
         synth.addVoice(new AcidVoice());
 
     // Add sound

@@ -150,11 +150,57 @@ Most DAWs will automatically detect the plugin after rescanning. Look for "Acid 
 - **Pro tip**: Use varying MIDI velocities (60-127) with Accent at 0.7+ for dynamic acid lines
 - Higher velocity notes will have brighter attack and more filter sweep
 
+## Customization
+
+Want to customize the plugin name, company, or settings? All configuration is centralized at the top of these files:
+
+### CMakeLists.txt (Build Configuration)
+
+Edit lines 7-18 to customize:
+
+```cmake
+set(PLUGIN_NAME "AcidSynth")              # Internal name (no spaces)
+set(PLUGIN_VERSION "1.0.0")                # Version number
+set(PLUGIN_DISPLAY_NAME "Acid Synth")     # Name shown in DAW
+set(COMPANY_NAME "AcidLab")                # Your company name
+set(PLUGIN_MANUFACTURER_CODE "Acdl")       # 4-char manufacturer ID
+set(PLUGIN_CODE "Acd1")                    # 4-char plugin ID
+set(PLUGIN_FORMATS "VST3" "Standalone")    # Build formats
+set(INSTALL_TO_SYSTEM TRUE)                # Auto-install to VST folder
+```
+
+**Important:** PLUGIN_MANUFACTURER_CODE and PLUGIN_CODE must be unique 4-character codes if you distribute your plugin!
+
+### source/PluginProcessor.cpp (Audio Configuration)
+
+Edit lines 9-28 to customize audio behavior:
+
+```cpp
+// Plugin Identity
+static constexpr const char* kPluginName = "Acid Synth";
+static constexpr const char* kPluginVersion = "1.0.0";
+static constexpr const char* kManufacturerName = "AcidLab";
+
+// Audio Configuration
+static constexpr int kNumVoices = 8;  // Polyphony (1-32 typical)
+
+// Default Parameter Values
+namespace Defaults {
+    static constexpr float kCutoff = 1000.0f;      // Hz
+    static constexpr float kResonance = 0.7f;      // 0-1
+    static constexpr float kEnvMod = 0.5f;         // 0-1
+    static constexpr float kDecay = 0.3f;          // seconds
+    // ... and more
+}
+```
+
+After changing these, rebuild the plugin for changes to take effect.
+
 ## Technical Details
 
 - Sample rate: Adapts to host DAW
-- Polyphony: 8 voices
-- Format: VST3
+- Polyphony: 8 voices (configurable via kNumVoices)
+- Format: VST3, Standalone (configurable via PLUGIN_FORMATS)
 - DSP: State-variable resonant filter
 - Envelope: Classic AD envelope with no sustain
 

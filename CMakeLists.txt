@@ -1,6 +1,24 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(AcidSynth VERSION 1.0.0)
+#===============================================================================
+# PLUGIN CONFIGURATION - Edit these to customize your plugin
+#===============================================================================
+
+set(PLUGIN_NAME "AcidSynth")              # Internal project name (no spaces)
+set(PLUGIN_VERSION "1.0.0")                # Plugin version
+set(PLUGIN_DISPLAY_NAME "Acid Synth")     # Name shown in DAW
+set(COMPANY_NAME "AcidLab")                # Your company/developer name
+set(PLUGIN_MANUFACTURER_CODE "Acdl")       # 4-char manufacturer ID (must be unique!)
+set(PLUGIN_CODE "Acd1")                    # 4-char plugin ID (must be unique!)
+
+# Build formats (change as needed)
+set(PLUGIN_FORMATS "VST3" "Standalone")    # Available: VST3, AU, AAX, Standalone
+
+# Installation (COPY_PLUGIN_AFTER_BUILD will install to system VST folder)
+set(INSTALL_TO_SYSTEM TRUE)                # TRUE = auto-install, FALSE = manual
+
+#===============================================================================
+project(${PLUGIN_NAME} VERSION ${PLUGIN_VERSION})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,40 +33,40 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(JUCE)
 
 # Plugin configuration
-juce_add_plugin(AcidSynth
-    COMPANY_NAME "AcidLab"
+juce_add_plugin(${PLUGIN_NAME}
+    COMPANY_NAME ${COMPANY_NAME}
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD TRUE
-    PLUGIN_MANUFACTURER_CODE Acdl
-    PLUGIN_CODE Acd1
-    FORMATS VST3 Standalone
-    PRODUCT_NAME "Acid Synth"
+    COPY_PLUGIN_AFTER_BUILD ${INSTALL_TO_SYSTEM}
+    PLUGIN_MANUFACTURER_CODE ${PLUGIN_MANUFACTURER_CODE}
+    PLUGIN_CODE ${PLUGIN_CODE}
+    FORMATS ${PLUGIN_FORMATS}
+    PRODUCT_NAME ${PLUGIN_DISPLAY_NAME}
 )
 
 # Source files
-target_sources(AcidSynth PRIVATE
+target_sources(${PLUGIN_NAME} PRIVATE
     source/PluginProcessor.cpp
     source/PluginEditor.cpp
     source/AcidVoice.cpp
 )
 
 # Header files
-target_include_directories(AcidSynth PRIVATE
+target_include_directories(${PLUGIN_NAME} PRIVATE
     include
 )
 
 # JUCE modules
-target_compile_definitions(AcidSynth PUBLIC
+target_compile_definitions(${PLUGIN_NAME} PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-target_link_libraries(AcidSynth PRIVATE
+target_link_libraries(${PLUGIN_NAME} PRIVATE
     juce::juce_audio_utils
     juce::juce_audio_processors
     juce::juce_dsp
