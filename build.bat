@@ -32,21 +32,71 @@ echo Creating build directory...
 mkdir build
 cd build
 
-REM Configure with CMake (auto-detect Visual Studio)
+REM Detect Visual Studio version
+echo Detecting Visual Studio installation...
+echo.
+
+REM Try Visual Studio 2022 (17)
+where vswhere >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    for /f "usebackq tokens=*" %%i in (`vswhere -latest -property installationVersion`) do set VS_VERSION=%%i
+)
+
+REM Try different Visual Studio versions
+set GENERATOR=
+if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
+    set GENERATOR=Visual Studio 17 2022
+    echo Found Visual Studio 2022
+) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022" (
+    set GENERATOR=Visual Studio 17 2022
+    echo Found Visual Studio 2022
+) else if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
+    set GENERATOR=Visual Studio 16 2019
+    echo Found Visual Studio 2019
+) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019" (
+    set GENERATOR=Visual Studio 16 2019
+    echo Found Visual Studio 2019
+) else (
+    echo WARNING: Could not detect Visual Studio installation
+    echo Trying auto-detection...
+    set GENERATOR=
+)
+
+REM Configure with CMake
 echo.
 echo Configuring project with CMake...
 echo This will download JUCE framework (may take a few minutes)...
 echo.
-cmake .. -A x64
+
+if defined GENERATOR (
+    echo Using generator: %GENERATOR%
+    cmake .. -G "%GENERATOR%" -A x64
+) else (
+    echo Using auto-detected generator
+    cmake ..
+)
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
+    echo ========================================
     echo ERROR: CMake configuration failed!
+    echo ========================================
     echo.
-    echo Make sure you have Visual Studio installed with:
-    echo - Desktop development with C++
+    echo This usually means Visual Studio is not installed or not set up correctly.
     echo.
-    echo Or use: cmake .. -G "MinGW Makefiles" if using MinGW
+    echo Solutions:
+    echo 1. Install Visual Studio Community 2022 from:
+    echo    https://visualstudio.microsoft.com/downloads/
+    echo    - During install, select "Desktop development with C++"
+    echo.
+    echo 2. Or use MinGW instead:
+    echo    - Install MinGW-w64
+    echo    - Run build-mingw.bat instead
+    echo.
+    echo 3. Or run from "Developer Command Prompt for VS 2022"
+    echo    - Search for it in Start Menu
+    echo    - Then run this script again
+    echo.
     cd ..
     pause
     exit /b 1

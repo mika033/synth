@@ -35,6 +35,17 @@
 - Or via Chocolatey: `choco install mingw`
 - Run `build-mingw.bat` instead
 
+### "Generator NMake Makefiles does not support platform specification"
+
+**Problem:** CMake is detecting NMake instead of Visual Studio
+
+**Solutions:**
+1. **Easiest:** Run from "Developer Command Prompt for VS 2022"
+   - Search in Start Menu for "Developer Command Prompt"
+   - Run `build.bat` from there
+2. The updated build.bat should auto-detect Visual Studio now
+3. Or manually specify: `cmake .. -G "Visual Studio 17 2022" -A x64`
+
 ### CMake works in CMD but not PowerShell
 
 **Problem:** PowerShell using cached PATH
