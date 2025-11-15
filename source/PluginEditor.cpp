@@ -5,8 +5,8 @@
 AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
-    // Set editor size
-    setSize(500, 350);
+    // Set editor size (bigger to fit all controls)
+    setSize(750, 400);
 
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
@@ -58,6 +58,36 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     accentAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "accent", accentSlider);
 
+    // Configure sub-oscillator slider
+    subOscSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    subOscSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(subOscSlider);
+    subOscLabel.setText("Sub Osc", juce::dontSendNotification);
+    subOscLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(subOscLabel);
+    subOscAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "subosc", subOscSlider);
+
+    // Configure drive slider
+    driveSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    driveSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(driveSlider);
+    driveLabel.setText("Drive", juce::dontSendNotification);
+    driveLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(driveLabel);
+    driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "drive", driveSlider);
+
+    // Configure volume slider
+    volumeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(volumeSlider);
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    volumeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(volumeLabel);
+    volumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "volume", volumeSlider);
+
     // Configure waveform selector
     waveformSelector.addItem("Saw", 1);
     waveformSelector.addItem("Square", 2);
@@ -91,12 +121,12 @@ void AcidSynthAudioProcessorEditor::paint(juce::Graphics& g)
 
 void AcidSynthAudioProcessorEditor::resized()
 {
-    const int knobSize = 80;
-    const int knobSpacing = 90;
-    const int startX = 40;
-    const int startY = 100;
+    const int knobSize = 70;
+    const int knobSpacing = 85;
+    const int startX = 30;
+    const int startY = 80;
 
-    // First row - main controls
+    // First row - Filter controls
     cutoffLabel.setBounds(startX, startY - 20, knobSize, 20);
     cutoffSlider.setBounds(startX, startY, knobSize, knobSize);
 
@@ -112,7 +142,19 @@ void AcidSynthAudioProcessorEditor::resized()
     accentLabel.setBounds(startX + knobSpacing * 4, startY - 20, knobSize, 20);
     accentSlider.setBounds(startX + knobSpacing * 4, startY, knobSize, knobSize);
 
-    // Second row - waveform selector
-    waveformLabel.setBounds(startX, startY + 120, 100, 20);
-    waveformSelector.setBounds(startX, startY + 145, 120, 25);
+    // Second row - Tone shaping controls
+    const int row2Y = startY + 120;
+
+    subOscLabel.setBounds(startX, row2Y - 20, knobSize, 20);
+    subOscSlider.setBounds(startX, row2Y, knobSize, knobSize);
+
+    driveLabel.setBounds(startX + knobSpacing, row2Y - 20, knobSize, 20);
+    driveSlider.setBounds(startX + knobSpacing, row2Y, knobSize, knobSize);
+
+    volumeLabel.setBounds(startX + knobSpacing * 2, row2Y - 20, knobSize, 20);
+    volumeSlider.setBounds(startX + knobSpacing * 2, row2Y, knobSize, knobSize);
+
+    // Waveform selector
+    waveformLabel.setBounds(startX + knobSpacing * 3, row2Y - 20, knobSize, 20);
+    waveformSelector.setBounds(startX + knobSpacing * 3, row2Y + 20, knobSize + 30, 30);
 }

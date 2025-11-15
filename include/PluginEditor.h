@@ -27,6 +27,9 @@ private:
     juce::Slider envModSlider;
     juce::Slider decaySlider;
     juce::Slider accentSlider;
+    juce::Slider subOscSlider;
+    juce::Slider driveSlider;
+    juce::Slider volumeSlider;
     juce::ComboBox waveformSelector;
 
     // Labels
@@ -35,6 +38,9 @@ private:
     juce::Label envModLabel;
     juce::Label decayLabel;
     juce::Label accentLabel;
+    juce::Label subOscLabel;
+    juce::Label driveLabel;
+    juce::Label volumeLabel;
     juce::Label waveformLabel;
 
     // Attachments
@@ -43,6 +49,9 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> envModAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOscAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessorEditor)

@@ -66,8 +66,12 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
 
     while (--numSamples >= 0)
     {
-        // Generate oscillator sample
+        // Generate main oscillator sample
         double sample = generateOscillator();
+
+        // Add sub-oscillator (one octave down)
+        double subSample = generateSubOscillator();
+        sample = sample * (1.0f - subOscMix) + subSample * subOscMix;
 
         // Update filter envelope
         envValue *= (1.0f - envDecay * 0.01f);
@@ -75,22 +79,31 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         // Process through resonant filter
         processFilter(sample);
 
+        // Apply saturation/drive
+        applySaturation(sample);
+
         // Apply amplitude envelope
         float amplitude = adsr.getNextSample();
         sample *= amplitude;
 
+        // Apply volume control
+        sample *= volumeLevel;
+
         // Write to both channels
         for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
-            outputBuffer.addSample(channel, startSample, static_cast<float>(sample) * 0.3f);
+            outputBuffer.addSample(channel, startSample, static_cast<float>(sample));
 
         ++startSample;
 
-        // Smooth portamento
+        // Advance oscillators with smooth portamento
         currentAngle += angleDelta;
+        subAngle += angleDelta * 0.5; // Sub is one octave down
         angleDelta += (targetAngleDelta - angleDelta) * 0.0001;
 
         if (currentAngle > juce::MathConstants<double>::twoPi)
             currentAngle -= juce::MathConstants<double>::twoPi;
+        if (subAngle > juce::MathConstants<double>::twoPi)
+            subAngle -= juce::MathConstants<double>::twoPi;
     }
 }
 
@@ -136,6 +149,21 @@ void AcidVoice::setWaveform(int waveformType)
     waveform = waveformType;
 }
 
+void AcidVoice::setSubOscMix(float mix)
+{
+    subOscMix = juce::jlimit(0.0f, 1.0f, mix);
+}
+
+void AcidVoice::setDrive(float drive)
+{
+    driveAmount = juce::jlimit(0.0f, 1.0f, drive);
+}
+
+void AcidVoice::setVolume(float volume)
+{
+    volumeLevel = juce::jlimit(0.0f, 1.0f, volume);
+}
+
 double AcidVoice::generateOscillator()
 {
     double sample;
@@ -152,6 +180,32 @@ double AcidVoice::generateOscillator()
     }
 
     return sample;
+}
+
+double AcidVoice::generateSubOscillator()
+{
+    // Sub-oscillator is always a sine wave for maximum low-end
+    // One octave below the main oscillator
+    return std::sin(subAngle);
+}
+
+void AcidVoice::applySaturation(double& sample)
+{
+    // Soft clipping saturation
+    // More drive = more harmonic content and aggression
+    if (driveAmount > 0.001f)
+    {
+        // Pre-gain based on drive amount
+        double gain = 1.0 + driveAmount * 4.0; // Up to 5x gain
+        sample *= gain;
+
+        // Soft clipping using tanh
+        // tanh naturally compresses signals > 1.0 and adds harmonics
+        sample = std::tanh(sample);
+
+        // Compensate for volume loss
+        sample *= (1.0 + driveAmount * 0.5);
+    }
 }
 
 void AcidVoice::processFilter(double& sample)

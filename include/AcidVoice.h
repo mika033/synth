@@ -35,13 +35,23 @@ public:
     void setDecay(float decaySeconds);
     void setAccent(float accent);
     void setWaveform(int waveformType); // 0 = saw, 1 = square
+    void setSubOscMix(float mix); // 0 = no sub, 1 = full sub
+    void setDrive(float drive); // 0 = clean, 1 = saturated
+    void setVolume(float volume); // 0 = silent, 1 = full
 
 private:
-    // Oscillator
+    // Main Oscillator
     double currentAngle = 0.0;
     double angleDelta = 0.0;
     double targetAngleDelta = 0.0;
     int waveform = 0; // 0 = saw, 1 = square
+
+    // Sub-oscillator (one octave down)
+    double subAngle = 0.0;
+    float subOscMix = 0.5f; // Mix amount
+
+    // Saturation/Drive
+    float driveAmount = 0.0f;
 
     // Filter (resonant low-pass)
     double filterCutoff = 1000.0;
@@ -63,10 +73,13 @@ private:
     double sampleRate = 44100.0;
     int currentMidiNote = 0;
     float currentVelocity = 0.0f;
+    float volumeLevel = 0.7f;
 
     // Helper functions
     double generateOscillator();
+    double generateSubOscillator();
     void processFilter(double& sample);
+    void applySaturation(double& sample);
     void updateAngleDelta();
 };
 

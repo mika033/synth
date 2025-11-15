@@ -35,7 +35,22 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterChoice>(
                         WAVEFORM_ID, "Waveform",
                         juce::StringArray{"Saw", "Square"},
-                        0)
+                        0),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        SUB_OSC_ID, "Sub Osc",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.5f),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DRIVE_ID, "Drive",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        VOLUME_ID, "Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.7f)
                 })
 {
     // Add 8 voices to the synthesizer
@@ -141,6 +156,9 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     float decay = parameters.getRawParameterValue(DECAY_ID)->load();
     float accent = parameters.getRawParameterValue(ACCENT_ID)->load();
     int waveform = static_cast<int>(parameters.getRawParameterValue(WAVEFORM_ID)->load());
+    float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
+    float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
+    float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
 
     // Update all voices
     for (int i = 0; i < synth.getNumVoices(); ++i)
@@ -153,6 +171,9 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setDecay(decay);
             voice->setAccent(accent);
             voice->setWaveform(waveform);
+            voice->setSubOscMix(subOsc);
+            voice->setDrive(drive);
+            voice->setVolume(volume);
         }
     }
 }

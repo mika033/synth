@@ -63,6 +63,9 @@ private:
     static constexpr const char* DECAY_ID = "decay";
     static constexpr const char* ACCENT_ID = "accent";
     static constexpr const char* WAVEFORM_ID = "waveform";
+    static constexpr const char* SUB_OSC_ID = "subosc";
+    static constexpr const char* DRIVE_ID = "drive";
+    static constexpr const char* VOLUME_ID = "volume";
 
     // Parameter update
     void updateVoiceParameters();

@@ -13,6 +13,7 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
 
 ## Controls
 
+### Filter Section
 - **Cutoff**: Base filter cutoff frequency (20 Hz - 5000 Hz)
 - **Resonance**: Filter resonance amount (0.0 - 0.95) - higher values = more resonance
 - **Env Mod**: Filter envelope modulation depth - how much the envelope affects the filter
@@ -20,7 +21,18 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
 - **Accent**: Velocity sensitivity (0.0 - 1.0) - controls how much note velocity affects filter brightness
   - At 0.0: All notes have same brightness regardless of velocity
   - At 1.0: High velocity notes open filter more, low velocity notes less
-- **Waveform**: Switch between Sawtooth and Square wave
+
+### Tone Shaping Section
+- **Sub Osc**: Sub-oscillator mix (0.0 - 1.0) - adds a sine wave one octave below for extra bass weight
+  - At 0.0: No sub-oscillator, just the main oscillator
+  - At 0.5: Balanced mix of main and sub (recommended)
+  - At 1.0: Only sub-oscillator (very deep bass)
+- **Drive**: Saturation/distortion amount (0.0 - 1.0) - adds harmonics and aggression
+  - At 0.0: Clean sound
+  - At 0.5: Slight warmth and harmonics
+  - At 1.0: Heavy saturation, very aggressive
+- **Volume**: Master output level (0.0 - 1.0)
+- **Waveform**: Switch between Sawtooth (bright, classic) and Square wave (hollow, dark)
 
 ## Build Instructions
 
@@ -87,21 +99,49 @@ Most DAWs will automatically detect the plugin after rescanning. Look for "Acid 
 
 ## Sound Design Tips
 
-### Classic 303 Bass
+### Classic 303 Bass (Fat & Punchy)
 - **Waveform**: Sawtooth
 - **Cutoff**: 500-1000 Hz
 - **Resonance**: 0.7-0.9 (high!)
 - **Env Mod**: 0.5-0.7
 - **Decay**: 0.1-0.3s (short and punchy)
 - **Accent**: 0.6-0.8 (moderate velocity sensitivity)
+- **Sub Osc**: 0.4-0.6 (adds weight without muddiness)
+- **Drive**: 0.2-0.4 (slight analog warmth)
+- **Volume**: 0.6-0.8
 
-### Squelchy Lead
+### Squelchy Lead (Maximum Expression)
 - **Waveform**: Square
 - **Cutoff**: 300-500 Hz (lower)
 - **Resonance**: 0.85-0.95 (maximum!)
 - **Env Mod**: 0.8-1.0 (lots of sweep)
 - **Decay**: 0.5-1.0s (longer)
 - **Accent**: 0.7-1.0 (high sensitivity for expression)
+- **Sub Osc**: 0.2-0.3 (just a hint)
+- **Drive**: 0.5-0.7 (add harmonics and aggression)
+- **Volume**: 0.5-0.7
+
+### Deep Rumble (Sub-Heavy)
+- **Waveform**: Sawtooth or Square
+- **Cutoff**: 200-400 Hz (very low)
+- **Resonance**: 0.5-0.7 (moderate)
+- **Env Mod**: 0.3-0.5 (subtle)
+- **Decay**: 0.4-0.8s
+- **Accent**: 0.3-0.5 (low for consistency)
+- **Sub Osc**: 0.7-0.9 (heavy sub presence!)
+- **Drive**: 0.1-0.3 (keep it clean for maximum low-end)
+- **Volume**: 0.4-0.6 (turn down to prevent clipping)
+
+### Aggressive Distorted Lead
+- **Waveform**: Square
+- **Cutoff**: 800-1500 Hz
+- **Resonance**: 0.8-0.95
+- **Env Mod**: 0.7-0.9
+- **Decay**: 0.2-0.5s
+- **Accent**: 0.8-1.0 (maximum dynamics)
+- **Sub Osc**: 0.0-0.2 (keep it tight, not boomy)
+- **Drive**: 0.7-1.0 (heavy saturation!)
+- **Volume**: 0.5-0.7 (compensate for drive gain)
 
 ### Using Accent for Expression
 - **Accent at 0.0**: All notes sound the same - good for consistent basslines
