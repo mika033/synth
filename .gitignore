@@ -1,0 +1,39 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Compiled files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+
+# JUCE specific
+JuceLibraryCode/
+Builds/
+
+# Plugin binaries (except for distribution)
+*.vst
+*.vst3
+*.component
+*.aaxplugin
