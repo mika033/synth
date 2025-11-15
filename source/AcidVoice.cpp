@@ -28,6 +28,10 @@ void AcidVoice::startNote(int midiNoteNumber, float velocity,
     envValue = 1.0f + velocityModulation;
     envValue = juce::jlimit(0.1f, 2.0f, envValue); // Clamp to reasonable range
 
+    // Reset filter states to prevent instability and volume fluctuations
+    filter1 = 0.0;
+    filter2 = 0.0;
+
     // Update frequency
     updateAngleDelta();
 
@@ -165,13 +169,16 @@ void AcidVoice::processFilter(double& sample)
 
     // State-variable filter implementation
     // Invert resonance: higher filterResonance = less damping = more resonance
-    double damping = 1.0 - filterResonance;
+    // Clamp damping to minimum value to prevent total instability
+    double damping = juce::jlimit(0.05, 1.0, 1.0 - filterResonance);
+
     double lowpass = filter2 + f * filter1;
     double highpass = sample - lowpass - damping * filter1;
     double bandpass = f * highpass + filter1;
 
-    filter1 = bandpass;
-    filter2 = lowpass;
+    // Clamp filter states to prevent runaway values
+    filter1 = juce::jlimit(-10.0, 10.0, bandpass);
+    filter2 = juce::jlimit(-10.0, 10.0, lowpass);
 
     // Output low-pass filtered signal
     sample = lowpass;
