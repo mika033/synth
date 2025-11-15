@@ -14,10 +14,12 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
 ## Controls
 
 - **Cutoff**: Base filter cutoff frequency (20 Hz - 5000 Hz)
-- **Resonance**: Filter resonance amount (0.0 - 0.95)
-- **Env Mod**: Filter envelope modulation depth
-- **Decay**: Filter envelope decay time
-- **Accent**: Accent intensity
+- **Resonance**: Filter resonance amount (0.0 - 0.95) - higher values = more resonance
+- **Env Mod**: Filter envelope modulation depth - how much the envelope affects the filter
+- **Decay**: Filter envelope decay time - how quickly the filter closes
+- **Accent**: Velocity sensitivity (0.0 - 1.0) - controls how much note velocity affects filter brightness
+  - At 0.0: All notes have same brightness regardless of velocity
+  - At 1.0: High velocity notes open filter more, low velocity notes less
 - **Waveform**: Switch between Sawtooth and Square wave
 
 ## Build Instructions
@@ -86,22 +88,27 @@ Most DAWs will automatically detect the plugin after rescanning. Look for "Acid 
 ## Sound Design Tips
 
 ### Classic 303 Bass
-- Use Sawtooth waveform
-- Set Cutoff around 500-1000 Hz
-- High Resonance (0.7-0.9)
-- Moderate Env Mod (0.5-0.7)
-- Short Decay (0.1-0.3s)
+- **Waveform**: Sawtooth
+- **Cutoff**: 500-1000 Hz
+- **Resonance**: 0.7-0.9 (high!)
+- **Env Mod**: 0.5-0.7
+- **Decay**: 0.1-0.3s (short and punchy)
+- **Accent**: 0.6-0.8 (moderate velocity sensitivity)
 
 ### Squelchy Lead
-- Use Square waveform
-- Lower Cutoff (300-500 Hz)
-- Maximum Resonance
-- High Env Mod (0.8-1.0)
-- Longer Decay (0.5-1.0s)
+- **Waveform**: Square
+- **Cutoff**: 300-500 Hz (lower)
+- **Resonance**: 0.85-0.95 (maximum!)
+- **Env Mod**: 0.8-1.0 (lots of sweep)
+- **Decay**: 0.5-1.0s (longer)
+- **Accent**: 0.7-1.0 (high sensitivity for expression)
 
-### Accent Usage
-- Use higher MIDI velocities (>100) to trigger accent
-- Accent adds extra punch and filter opening to notes
+### Using Accent for Expression
+- **Accent at 0.0**: All notes sound the same - good for consistent basslines
+- **Accent at 0.5**: Moderate expression - subtle velocity response
+- **Accent at 1.0**: Maximum expression - play dynamics matter a lot!
+- **Pro tip**: Use varying MIDI velocities (60-127) with Accent at 0.7+ for dynamic acid lines
+- Higher velocity notes will have brighter attack and more filter sweep
 
 ## Technical Details
 

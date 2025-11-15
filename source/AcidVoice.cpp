@@ -21,9 +21,12 @@ void AcidVoice::startNote(int midiNoteNumber, float velocity,
     currentMidiNote = midiNoteNumber;
     currentVelocity = velocity;
 
-    // Start envelope with accent if velocity is high
-    accentAmount = velocity > 0.8f ? 1.0f : 0.0f;
-    envValue = 1.0f + accentAmount;
+    // Use Accent parameter to scale how much velocity affects filter envelope
+    // accentAmount (0-1) controls the intensity of velocity sensitivity
+    // velocity affects the filter envelope start value
+    float velocityModulation = (velocity - 0.5f) * 2.0f * accentAmount; // -1 to +1 scaled by accent
+    envValue = 1.0f + velocityModulation;
+    envValue = juce::jlimit(0.1f, 2.0f, envValue); // Clamp to reasonable range
 
     // Update frequency
     updateAngleDelta();
@@ -161,8 +164,10 @@ void AcidVoice::processFilter(double& sample)
     f = juce::jlimit(0.0, 1.0, f);
 
     // State-variable filter implementation
+    // Invert resonance: higher filterResonance = less damping = more resonance
+    double damping = 1.0 - filterResonance;
     double lowpass = filter2 + f * filter1;
-    double highpass = sample - lowpass - filterResonance * filter1;
+    double highpass = sample - lowpass - damping * filter1;
     double bandpass = f * highpass + filter1;
 
     filter1 = bandpass;
