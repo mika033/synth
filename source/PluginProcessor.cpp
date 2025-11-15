@@ -25,25 +25,33 @@ namespace Defaults
     static constexpr float kSubOsc = 0.5f;
     static constexpr float kDrive = 0.0f;
     static constexpr float kVolume = 0.7f;
+    static constexpr int   kLFORate = 2;    // 1/4 note
+    static constexpr int   kLFODest = 0;    // Off
+    static constexpr float kLFODepth = 0.5f;
+    static constexpr int   kDelayTime = 2;  // 1/4 note
+    static constexpr float kDelayFeedback = 0.3f;
+    static constexpr float kDelayMix = 0.0f; // Off by default
 }
 
 //==============================================================================
 // Factory Presets
 static const Preset kPresets[] = {
+    // Name, Cutoff, Resonance, EnvMod, Decay, Accent, Waveform, SubOsc, Drive, Volume, LFORate, LFODest, LFODepth, DelayTime, DelayFeedback, DelayMix
+
     // Classic 303 Bass (Fat & Punchy)
-    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f },
+    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f, 2, 0, 0.5f, 2, 0.3f, 0.0f },
 
     // Squelchy Lead (Maximum Expression)
-    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f },
+    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f, 2, 1, 0.7f, 2, 0.4f, 0.2f },
 
     // Deep Rumble (Sub-Heavy)
-    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f },
+    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f, 3, 0, 0.3f, 3, 0.2f, 0.0f },
 
     // Aggressive Distorted Lead
-    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f },
+    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f, 1, 2, 0.6f, 2, 0.5f, 0.3f },
 
     // Init (default clean sound)
-    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f }
+    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f, 2, 0, 0.5f, 2, 0.3f, 0.0f }
 };
 
 static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
@@ -97,7 +105,37 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         VOLUME_ID, "Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kVolume)
+                        Defaults::kVolume),
+
+                    std::make_unique<juce::AudioParameterChoice>(
+                        LFO_RATE_ID, "LFO Rate",
+                        juce::StringArray{"1/16", "1/8", "1/4", "1/2", "1/1"},
+                        Defaults::kLFORate),
+
+                    std::make_unique<juce::AudioParameterChoice>(
+                        LFO_DEST_ID, "LFO Dest",
+                        juce::StringArray{"Off", "Cutoff", "Resonance", "Volume"},
+                        Defaults::kLFODest),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        LFO_DEPTH_ID, "LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DELAY_TIME_ID, "Delay Time",
+                        juce::StringArray{"1/16", "1/8", "1/4", "1/2", "1/1"},
+                        Defaults::kDelayTime),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DELAY_FEEDBACK_ID, "Delay Feedback",
+                        juce::NormalisableRange<float>(0.0f, 0.95f, 0.01f),
+                        Defaults::kDelayFeedback),
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DELAY_MIX_ID, "Delay Mix",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kDelayMix)
                 })
 {
     // Add voices to the synthesizer
@@ -170,6 +208,19 @@ void AcidSynthAudioProcessor::changeProgramName(int index, const juce::String& n
 void AcidSynthAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     synth.setCurrentPlaybackSampleRate(sampleRate);
+    currentSampleRate = sampleRate;
+
+    // Prepare delay line (max 4 seconds delay)
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+    spec.numChannels = 2;
+
+    delayLine.prepare(spec);
+    delayLine.reset();
+
+    // Allocate delay buffer
+    delayBuffer.resize(samplesPerBlock * 2, 0.0f);
 }
 
 void AcidSynthAudioProcessor::releaseResources()
@@ -190,6 +241,18 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 {
     juce::ScopedNoDenormals noDenormals;
 
+    // Get BPM from host
+    if (auto* playHead = getPlayHead())
+    {
+        if (auto positionInfo = playHead->getPosition())
+        {
+            if (positionInfo->getBpm().hasValue())
+            {
+                currentBPM = *positionInfo->getBpm();
+            }
+        }
+    }
+
     // Clear output buffer
     buffer.clear();
 
@@ -198,6 +261,47 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     // Render synthesizer
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    // Apply delay effect
+    float delayMix = parameters.getRawParameterValue(DELAY_MIX_ID)->load();
+
+    if (delayMix > 0.001f)
+    {
+        int delayTime = static_cast<int>(parameters.getRawParameterValue(DELAY_TIME_ID)->load());
+        float delayFeedback = parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load();
+
+        // Calculate delay time in samples based on tempo
+        const double divisions[] = { 4.0, 2.0, 1.0, 0.5, 0.25 }; // 1/16, 1/8, 1/4, 1/2, 1/1
+        double beatsPerSecond = currentBPM / 60.0;
+        double notesPerBeat = divisions[delayTime];
+        double delayTimeSeconds = 1.0 / (beatsPerSecond * notesPerBeat);
+        int delaySamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
+        delaySamples = juce::jlimit(1, static_cast<int>(currentSampleRate * 4), delaySamples);
+
+        delayLine.setDelay(static_cast<float>(delaySamples));
+
+        // Process delay for each channel
+        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            auto* channelData = buffer.getWritePointer(channel);
+
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                // Read delayed sample
+                float delayedSample = delayLine.popSample(channel);
+
+                // Mix input with feedback
+                float inputSample = channelData[sample];
+                float feedbackSample = inputSample + delayedSample * delayFeedback;
+
+                // Push to delay line
+                delayLine.pushSample(channel, feedbackSample);
+
+                // Mix dry and wet
+                channelData[sample] = inputSample * (1.0f - delayMix) + delayedSample * delayMix;
+            }
+        }
+    }
 }
 
 void AcidSynthAudioProcessor::updateVoiceParameters()
@@ -211,6 +315,9 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
     float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
     float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
+    int lfoRate = static_cast<int>(parameters.getRawParameterValue(LFO_RATE_ID)->load());
+    int lfoDest = static_cast<int>(parameters.getRawParameterValue(LFO_DEST_ID)->load());
+    float lfoDepth = parameters.getRawParameterValue(LFO_DEPTH_ID)->load();
 
     // Update all voices
     for (int i = 0; i < synth.getNumVoices(); ++i)
@@ -226,6 +333,10 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setSubOscMix(subOsc);
             voice->setDrive(drive);
             voice->setVolume(volume);
+            voice->setLFORate(lfoRate);
+            voice->setLFODestination(lfoDest);
+            voice->setLFODepth(lfoDepth);
+            voice->setBPM(currentBPM);
         }
     }
 }
@@ -264,6 +375,24 @@ void AcidSynthAudioProcessor::loadPreset(int presetIndex)
 
     parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
         parameters.getParameterRange(VOLUME_ID).convertTo0to1(preset.volume));
+
+    parameters.getParameter(LFO_RATE_ID)->setValueNotifyingHost(
+        static_cast<float>(preset.lfoRate));
+
+    parameters.getParameter(LFO_DEST_ID)->setValueNotifyingHost(
+        static_cast<float>(preset.lfoDest));
+
+    parameters.getParameter(LFO_DEPTH_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(LFO_DEPTH_ID).convertTo0to1(preset.lfoDepth));
+
+    parameters.getParameter(DELAY_TIME_ID)->setValueNotifyingHost(
+        static_cast<float>(preset.delayTime));
+
+    parameters.getParameter(DELAY_FEEDBACK_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(DELAY_FEEDBACK_ID).convertTo0to1(preset.delayFeedback));
+
+    parameters.getParameter(DELAY_MIX_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(DELAY_MIX_ID).convertTo0to1(preset.delayMix));
 }
 
 //==============================================================================

@@ -6,7 +6,7 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
     // Set editor size (bigger to fit all controls)
-    setSize(750, 400);
+    setSize(750, 520);
 
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
@@ -114,6 +114,74 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     presetLabel.setText("Preset", juce::dontSendNotification);
     presetLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(presetLabel);
+
+    // Configure LFO Rate selector
+    lfoRateSelector.addItem("1/16", 1);
+    lfoRateSelector.addItem("1/8", 2);
+    lfoRateSelector.addItem("1/4", 3);
+    lfoRateSelector.addItem("1/2", 4);
+    lfoRateSelector.addItem("1/1", 5);
+    addAndMakeVisible(lfoRateSelector);
+    lfoRateLabel.setText("LFO Rate", juce::dontSendNotification);
+    lfoRateLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(lfoRateLabel);
+    lfoRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "lforate", lfoRateSelector);
+
+    // Configure LFO Destination selector
+    lfoDestSelector.addItem("Off", 1);
+    lfoDestSelector.addItem("Cutoff", 2);
+    lfoDestSelector.addItem("Resonance", 3);
+    lfoDestSelector.addItem("Volume", 4);
+    addAndMakeVisible(lfoDestSelector);
+    lfoDestLabel.setText("LFO Dest", juce::dontSendNotification);
+    lfoDestLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(lfoDestLabel);
+    lfoDestAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "lfodest", lfoDestSelector);
+
+    // Configure LFO Depth slider
+    lfoDepthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    lfoDepthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(lfoDepthSlider);
+    lfoDepthLabel.setText("LFO Depth", juce::dontSendNotification);
+    lfoDepthLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(lfoDepthLabel);
+    lfoDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "lfodepth", lfoDepthSlider);
+
+    // Configure Delay Time selector
+    delayTimeSelector.addItem("1/16", 1);
+    delayTimeSelector.addItem("1/8", 2);
+    delayTimeSelector.addItem("1/4", 3);
+    delayTimeSelector.addItem("1/2", 4);
+    delayTimeSelector.addItem("1/1", 5);
+    addAndMakeVisible(delayTimeSelector);
+    delayTimeLabel.setText("Delay Time", juce::dontSendNotification);
+    delayTimeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(delayTimeLabel);
+    delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "delaytime", delayTimeSelector);
+
+    // Configure Delay Feedback slider
+    delayFeedbackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    delayFeedbackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(delayFeedbackSlider);
+    delayFeedbackLabel.setText("Delay FB", juce::dontSendNotification);
+    delayFeedbackLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(delayFeedbackLabel);
+    delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "delayfeedback", delayFeedbackSlider);
+
+    // Configure Delay Mix slider
+    delayMixSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    delayMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    addAndMakeVisible(delayMixSlider);
+    delayMixLabel.setText("Delay Mix", juce::dontSendNotification);
+    delayMixLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(delayMixLabel);
+    delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "delaymix", delayMixSlider);
 }
 
 AcidSynthAudioProcessorEditor::~AcidSynthAudioProcessorEditor()
@@ -178,4 +246,28 @@ void AcidSynthAudioProcessorEditor::resized()
     // Waveform selector
     waveformLabel.setBounds(startX + knobSpacing * 3, row2Y - 20, knobSize, 20);
     waveformSelector.setBounds(startX + knobSpacing * 3, row2Y + 20, knobSize + 30, 30);
+
+    // Third row - LFO controls
+    const int row3Y = startY + 240;
+
+    lfoRateLabel.setBounds(startX, row3Y - 20, knobSize, 20);
+    lfoRateSelector.setBounds(startX, row3Y + 20, knobSize + 30, 30);
+
+    lfoDestLabel.setBounds(startX + knobSpacing, row3Y - 20, knobSize, 20);
+    lfoDestSelector.setBounds(startX + knobSpacing, row3Y + 20, knobSize + 30, 30);
+
+    lfoDepthLabel.setBounds(startX + knobSpacing * 2, row3Y - 20, knobSize, 20);
+    lfoDepthSlider.setBounds(startX + knobSpacing * 2, row3Y, knobSize, knobSize);
+
+    // Fourth row - Delay controls
+    const int row4Y = startY + 360;
+
+    delayTimeLabel.setBounds(startX, row4Y - 20, knobSize, 20);
+    delayTimeSelector.setBounds(startX, row4Y + 20, knobSize + 30, 30);
+
+    delayFeedbackLabel.setBounds(startX + knobSpacing, row4Y - 20, knobSize, 20);
+    delayFeedbackSlider.setBounds(startX + knobSpacing, row4Y, knobSize, knobSize);
+
+    delayMixLabel.setBounds(startX + knobSpacing * 2, row4Y - 20, knobSize, 20);
+    delayMixSlider.setBounds(startX + knobSpacing * 2, row4Y, knobSize, knobSize);
 }

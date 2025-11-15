@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
+#include <juce_dsp/juce_dsp.h>
 #include "AcidVoice.h"
 
 //==============================================================================
@@ -66,12 +67,24 @@ private:
     static constexpr const char* SUB_OSC_ID = "subosc";
     static constexpr const char* DRIVE_ID = "drive";
     static constexpr const char* VOLUME_ID = "volume";
+    static constexpr const char* LFO_RATE_ID = "lforate";
+    static constexpr const char* LFO_DEST_ID = "lfodest";
+    static constexpr const char* LFO_DEPTH_ID = "lfodepth";
+    static constexpr const char* DELAY_TIME_ID = "delaytime";
+    static constexpr const char* DELAY_FEEDBACK_ID = "delayfeedback";
+    static constexpr const char* DELAY_MIX_ID = "delaymix";
 
     // Parameter update
     void updateVoiceParameters();
 
     // Preset management
     void loadPreset(int presetIndex);
+
+    // Delay effect
+    juce::dsp::DelayLine<float> delayLine { 192000 }; // Max 4 seconds at 48kHz
+    std::vector<float> delayBuffer;
+    double currentSampleRate = 44100.0;
+    double currentBPM = 120.0;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)
@@ -90,4 +103,10 @@ struct Preset
     float subOsc;
     float drive;
     float volume;
+    int lfoRate;     // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
+    int lfoDest;     // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
+    float lfoDepth;
+    int delayTime;   // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
+    float delayFeedback;
+    float delayMix;
 };

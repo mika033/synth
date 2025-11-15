@@ -38,6 +38,10 @@ public:
     void setSubOscMix(float mix); // 0 = no sub, 1 = full sub
     void setDrive(float drive); // 0 = clean, 1 = saturated
     void setVolume(float volume); // 0 = silent, 1 = full
+    void setLFORate(int rate); // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
+    void setLFODestination(int dest); // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
+    void setLFODepth(float depth);
+    void setBPM(double bpm);
 
 private:
     // Main Oscillator
@@ -75,12 +79,22 @@ private:
     float currentVelocity = 0.0f;
     float volumeLevel = 0.7f;
 
+    // LFO
+    double lfoPhase = 0.0;
+    double lfoFrequency = 2.0; // Hz
+    int lfoRate = 2; // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
+    int lfoDestination = 0; // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
+    float lfoDepth = 0.5f;
+    double currentBPM = 120.0;
+
     // Helper functions
     double generateOscillator();
     double generateSubOscillator();
     void processFilter(double& sample);
     void applySaturation(double& sample);
     void updateAngleDelta();
+    double getLFOValue();
+    void updateLFOFrequency();
 };
 
 //==============================================================================

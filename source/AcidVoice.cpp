@@ -66,6 +66,9 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
 
     while (--numSamples >= 0)
     {
+        // Get LFO modulation value (-1 to +1)
+        double lfoValue = getLFOValue();
+
         // Generate main oscillator sample
         double sample = generateOscillator();
 
@@ -76,7 +79,7 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         // Update filter envelope
         envValue *= (1.0f - envDecay * 0.01f);
 
-        // Process through resonant filter
+        // Process through resonant filter (with LFO if assigned to cutoff)
         processFilter(sample);
 
         // Apply saturation/drive
@@ -86,8 +89,14 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         float amplitude = adsr.getNextSample();
         sample *= amplitude;
 
-        // Apply volume control
-        sample *= volumeLevel;
+        // Apply volume control (with LFO if assigned to volume)
+        float volumeModulation = 1.0f;
+        if (lfoDestination == 3) // Volume
+        {
+            volumeModulation = 1.0f + static_cast<float>(lfoValue) * lfoDepth * 0.5f;
+            volumeModulation = juce::jlimit(0.5f, 1.5f, volumeModulation);
+        }
+        sample *= volumeLevel * volumeModulation;
 
         // Write to both channels
         for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
@@ -104,6 +113,11 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
             currentAngle -= juce::MathConstants<double>::twoPi;
         if (subAngle > juce::MathConstants<double>::twoPi)
             subAngle -= juce::MathConstants<double>::twoPi;
+
+        // Advance LFO phase
+        lfoPhase += juce::MathConstants<double>::twoPi * lfoFrequency / sampleRate;
+        if (lfoPhase > juce::MathConstants<double>::twoPi)
+            lfoPhase -= juce::MathConstants<double>::twoPi;
     }
 }
 
@@ -164,6 +178,28 @@ void AcidVoice::setVolume(float volume)
     volumeLevel = juce::jlimit(0.0f, 1.0f, volume);
 }
 
+void AcidVoice::setLFORate(int rate)
+{
+    lfoRate = juce::jlimit(0, 4, rate);
+    updateLFOFrequency();
+}
+
+void AcidVoice::setLFODestination(int dest)
+{
+    lfoDestination = juce::jlimit(0, 3, dest);
+}
+
+void AcidVoice::setLFODepth(float depth)
+{
+    lfoDepth = juce::jlimit(0.0f, 1.0f, depth);
+}
+
+void AcidVoice::setBPM(double bpm)
+{
+    currentBPM = juce::jlimit(20.0, 999.0, bpm);
+    updateLFOFrequency();
+}
+
 double AcidVoice::generateOscillator()
 {
     double sample;
@@ -213,8 +249,18 @@ void AcidVoice::processFilter(double& sample)
     // State-variable filter (resonant low-pass)
     // This gives that classic TB-303 sound
 
+    // Get LFO value for filter modulation
+    double lfoValue = getLFOValue();
+
     // Calculate filter frequency with envelope modulation
     double modulation = envValue * envMod * 8000.0;
+
+    // Add LFO modulation to cutoff if assigned
+    if (lfoDestination == 1) // Cutoff
+    {
+        modulation += lfoValue * lfoDepth * 3000.0; // LFO can modulate +/- 3kHz
+    }
+
     double modulatedCutoff = juce::jlimit(20.0, 20000.0, filterCutoff + modulation);
 
     // Calculate filter coefficients
@@ -224,7 +270,16 @@ void AcidVoice::processFilter(double& sample)
     // State-variable filter implementation
     // Invert resonance: higher filterResonance = less damping = more resonance
     // Clamp damping to minimum value to prevent total instability
-    double damping = juce::jlimit(0.05, 1.0, 1.0 - filterResonance);
+    double modulatedResonance = filterResonance;
+
+    // Add LFO modulation to resonance if assigned
+    if (lfoDestination == 2) // Resonance
+    {
+        modulatedResonance += lfoValue * lfoDepth * 0.3; // LFO can modulate +/- 0.3
+        modulatedResonance = juce::jlimit(0.0, 0.99, modulatedResonance);
+    }
+
+    double damping = juce::jlimit(0.05, 1.0, 1.0 - modulatedResonance);
 
     double lowpass = filter2 + f * filter1;
     double highpass = sample - lowpass - damping * filter1;
@@ -242,4 +297,30 @@ void AcidVoice::updateAngleDelta()
 {
     double cyclesPerSecond = juce::MidiMessage::getMidiNoteInHertz(currentMidiNote);
     targetAngleDelta = cyclesPerSecond * juce::MathConstants<double>::twoPi / sampleRate;
+}
+
+void AcidVoice::updateLFOFrequency()
+{
+    // Calculate LFO frequency based on tempo and rate division
+    // BPM to Hz: BPM / 60 gives us beats per second
+    double beatsPerSecond = currentBPM / 60.0;
+
+    // Rate divisions:
+    // 0 = 1/16 note
+    // 1 = 1/8 note
+    // 2 = 1/4 note
+    // 3 = 1/2 note
+    // 4 = 1/1 note (whole note)
+
+    const double divisions[] = { 4.0, 2.0, 1.0, 0.5, 0.25 }; // 1/16, 1/8, 1/4, 1/2, 1/1
+    double notesPerBeat = divisions[lfoRate];
+
+    lfoFrequency = beatsPerSecond * notesPerBeat;
+}
+
+double AcidVoice::getLFOValue()
+{
+    // Generate sine wave LFO (smooth modulation)
+    // Output range: -1 to +1
+    return std::sin(lfoPhase);
 }
