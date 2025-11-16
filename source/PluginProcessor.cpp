@@ -71,11 +71,24 @@ static const Preset kPresets[] = {
 static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
 
 //==============================================================================
+// LFO Rate and Waveform Options
+static const juce::StringArray getLFORateOptions()
+{
+    return juce::StringArray{"1/16", "1/8", "1/4", "1/3", "1/2", "3/4", "1/1", "2/1", "3/1", "4/1", "6/1", "8/1", "12/1", "16/1"};
+}
+
+static const juce::StringArray getLFOWaveformOptions()
+{
+    return juce::StringArray{"Sine", "Triangle", "Saw Up", "Saw Down", "Square", "Random"};
+}
+
+//==============================================================================
 AcidSynthAudioProcessor::AcidSynthAudioProcessor()
     : AudioProcessor(BusesProperties()
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
       parameters(*this, nullptr, "PARAMETERS",
                 {
+                    // Main Parameters
                     std::make_unique<juce::AudioParameterFloat>(
                         CUTOFF_ID, "Cutoff",
                         juce::NormalisableRange<float>(20.0f, 5000.0f, 1.0f, 0.3f),
@@ -101,9 +114,9 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kAccent),
 
-                    std::make_unique<juce::AudioParameterChoice>(
+                    std::make_unique<juce::AudioParameterFloat>(
                         WAVEFORM_ID, "Waveform",
-                        juce::StringArray{"Saw", "Square"},
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kWaveform),
 
                     std::make_unique<juce::AudioParameterFloat>(
@@ -121,21 +134,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kVolume),
 
-                    std::make_unique<juce::AudioParameterChoice>(
-                        LFO_RATE_ID, "LFO Rate",
-                        juce::StringArray{"1/16", "1/8", "1/4", "1/2", "1/1"},
-                        Defaults::kLFORate),
-
-                    std::make_unique<juce::AudioParameterChoice>(
-                        LFO_DEST_ID, "LFO Dest",
-                        juce::StringArray{"Off", "Cutoff", "Resonance", "Volume"},
-                        Defaults::kLFODest),
-
-                    std::make_unique<juce::AudioParameterFloat>(
-                        LFO_DEPTH_ID, "LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kLFODepth),
-
+                    // Delay Parameters
                     std::make_unique<juce::AudioParameterChoice>(
                         DELAY_TIME_ID, "Delay Time",
                         juce::StringArray{"1/16", "1/16.", "1/16T", "1/8", "1/8.", "1/8T", "1/4", "1/4.", "1/4T", "1/2", "1/2.", "1/1"},
@@ -149,7 +148,127 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         DELAY_MIX_ID, "Delay Mix",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kDelayMix)
+                        Defaults::kDelayMix),
+
+                    // Cutoff LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        CUTOFF_LFO_RATE_ID, "Cutoff LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        CUTOFF_LFO_WAVE_ID, "Cutoff LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        CUTOFF_LFO_DEPTH_ID, "Cutoff LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Resonance LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        RESONANCE_LFO_RATE_ID, "Resonance LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        RESONANCE_LFO_WAVE_ID, "Resonance LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        RESONANCE_LFO_DEPTH_ID, "Resonance LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // EnvMod LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ENVMOD_LFO_RATE_ID, "EnvMod LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ENVMOD_LFO_WAVE_ID, "EnvMod LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        ENVMOD_LFO_DEPTH_ID, "EnvMod LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Decay LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DECAY_LFO_RATE_ID, "Decay LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DECAY_LFO_WAVE_ID, "Decay LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DECAY_LFO_DEPTH_ID, "Decay LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Accent LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ACCENT_LFO_RATE_ID, "Accent LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ACCENT_LFO_WAVE_ID, "Accent LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        ACCENT_LFO_DEPTH_ID, "Accent LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Waveform LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        WAVEFORM_LFO_RATE_ID, "Waveform LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        WAVEFORM_LFO_WAVE_ID, "Waveform LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        WAVEFORM_LFO_DEPTH_ID, "Waveform LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // SubOsc LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SUBOSC_LFO_RATE_ID, "SubOsc LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SUBOSC_LFO_WAVE_ID, "SubOsc LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        SUBOSC_LFO_DEPTH_ID, "SubOsc LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Drive LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DRIVE_LFO_RATE_ID, "Drive LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DRIVE_LFO_WAVE_ID, "Drive LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DRIVE_LFO_DEPTH_ID, "Drive LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // Volume LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        VOLUME_LFO_RATE_ID, "Volume LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        VOLUME_LFO_WAVE_ID, "Volume LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        VOLUME_LFO_DEPTH_ID, "Volume LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth),
+
+                    // DelayMix LFO
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DELAYMIX_LFO_RATE_ID, "DelayMix LFO Rate",
+                        getLFORateOptions(), Defaults::kLFORate),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        DELAYMIX_LFO_WAVE_ID, "DelayMix LFO Wave",
+                        getLFOWaveformOptions(), Defaults::kLFOWaveform),
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DELAYMIX_LFO_DEPTH_ID, "DelayMix LFO Depth",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        Defaults::kLFODepth)
                 })
 {
     // Add voices to the synthesizer
