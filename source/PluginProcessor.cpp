@@ -21,16 +21,18 @@ namespace Defaults
     static constexpr float kEnvMod = 0.5f;
     static constexpr float kDecay = 0.3f;
     static constexpr float kAccent = 0.5f;
-    static constexpr int   kWaveform = 0;  // 0 = saw, 1 = square
+    static constexpr float kWaveform = 0.0f;  // 0.0=saw, 1.0=square, morph in between
     static constexpr float kSubOsc = 0.5f;
     static constexpr float kDrive = 0.0f;
     static constexpr float kVolume = 0.7f;
-    static constexpr int   kLFORate = 2;    // 1/4 note
-    static constexpr int   kLFODest = 0;    // Off
-    static constexpr float kLFODepth = 0.5f;
     static constexpr int   kDelayTime = 6;  // 1/4 note
     static constexpr float kDelayFeedback = 0.3f;
     static constexpr float kDelayMix = 0.0f; // Off by default
+
+    // Dedicated LFO defaults (each parameter has its own LFO)
+    static constexpr int   kLFORate = 4;     // Default: 1/4 note (index 4 in expanded list)
+    static constexpr int   kLFOWaveform = 0; // Default: Sine wave
+    static constexpr float kLFODepth = 0.0f; // Default: Off
 }
 
 //==============================================================================

@@ -57,7 +57,7 @@ private:
     juce::Synthesiser synth;
     juce::AudioProcessorValueTreeState parameters;
 
-    // Parameter IDs
+    // Main Parameter IDs
     static constexpr const char* CUTOFF_ID = "cutoff";
     static constexpr const char* RESONANCE_ID = "resonance";
     static constexpr const char* ENV_MOD_ID = "envmod";
@@ -67,12 +67,50 @@ private:
     static constexpr const char* SUB_OSC_ID = "subosc";
     static constexpr const char* DRIVE_ID = "drive";
     static constexpr const char* VOLUME_ID = "volume";
-    static constexpr const char* LFO_RATE_ID = "lforate";
-    static constexpr const char* LFO_DEST_ID = "lfodest";
-    static constexpr const char* LFO_DEPTH_ID = "lfodepth";
     static constexpr const char* DELAY_TIME_ID = "delaytime";
     static constexpr const char* DELAY_FEEDBACK_ID = "delayfeedback";
     static constexpr const char* DELAY_MIX_ID = "delaymix";
+
+    // Dedicated LFO Parameter IDs (Rate, Waveform, Depth for each parameter)
+    static constexpr const char* CUTOFF_LFO_RATE_ID = "cutofflfor";
+    static constexpr const char* CUTOFF_LFO_WAVE_ID = "cutofflfow";
+    static constexpr const char* CUTOFF_LFO_DEPTH_ID = "cutofflfod";
+
+    static constexpr const char* RESONANCE_LFO_RATE_ID = "resonancelforate";
+    static constexpr const char* RESONANCE_LFO_WAVE_ID = "resonancelfowave";
+    static constexpr const char* RESONANCE_LFO_DEPTH_ID = "resonancelfodepth";
+
+    static constexpr const char* ENVMOD_LFO_RATE_ID = "envmodlforate";
+    static constexpr const char* ENVMOD_LFO_WAVE_ID = "envmodlfowave";
+    static constexpr const char* ENVMOD_LFO_DEPTH_ID = "envmodlfodepth";
+
+    static constexpr const char* DECAY_LFO_RATE_ID = "decaylforate";
+    static constexpr const char* DECAY_LFO_WAVE_ID = "decaylfowave";
+    static constexpr const char* DECAY_LFO_DEPTH_ID = "decaylfodepth";
+
+    static constexpr const char* ACCENT_LFO_RATE_ID = "accentlforate";
+    static constexpr const char* ACCENT_LFO_WAVE_ID = "accentlfowave";
+    static constexpr const char* ACCENT_LFO_DEPTH_ID = "accentlfodepth";
+
+    static constexpr const char* WAVEFORM_LFO_RATE_ID = "waveformlforate";
+    static constexpr const char* WAVEFORM_LFO_WAVE_ID = "waveformlfowave";
+    static constexpr const char* WAVEFORM_LFO_DEPTH_ID = "waveformlfodepth";
+
+    static constexpr const char* SUBOSC_LFO_RATE_ID = "subosclforate";
+    static constexpr const char* SUBOSC_LFO_WAVE_ID = "subosclfowave";
+    static constexpr const char* SUBOSC_LFO_DEPTH_ID = "subosclfodepth";
+
+    static constexpr const char* DRIVE_LFO_RATE_ID = "drivelforate";
+    static constexpr const char* DRIVE_LFO_WAVE_ID = "drivelfowave";
+    static constexpr const char* DRIVE_LFO_DEPTH_ID = "drivelfodepth";
+
+    static constexpr const char* VOLUME_LFO_RATE_ID = "volumelforate";
+    static constexpr const char* VOLUME_LFO_WAVE_ID = "volumelfowave";
+    static constexpr const char* VOLUME_LFO_DEPTH_ID = "volumelfodepth";
+
+    static constexpr const char* DELAYMIX_LFO_RATE_ID = "delaymixlforate";
+    static constexpr const char* DELAYMIX_LFO_WAVE_ID = "delaymixlfowave";
+    static constexpr const char* DELAYMIX_LFO_DEPTH_ID = "delaymixlfodepth";
 
     // Parameter update
     void updateVoiceParameters();
@@ -90,23 +128,44 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)
 };
 
+// LFO settings structure
+struct LFOSettings
+{
+    int rate;      // Index into rate options
+    int waveform;  // 0=Sine, 1=Triangle, 2=SawUp, 3=SawDown, 4=Square, 5=Random
+    float depth;   // 0.0-1.0
+};
+
 // Preset structure
 struct Preset
 {
     juce::String name;
+
+    // Main parameters
     float cutoff;
     float resonance;
     float envMod;
     float decay;
     float accent;
-    int waveform;  // 0 = saw, 1 = square
+    float waveform;  // 0.0=saw, 1.0=square, morph in between
     float subOsc;
     float drive;
     float volume;
-    int lfoRate;     // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
-    int lfoDest;     // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
-    float lfoDepth;
-    int delayTime;   // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
+
+    // Delay parameters
+    int delayTime;
     float delayFeedback;
     float delayMix;
+
+    // Dedicated LFOs (10 total)
+    LFOSettings cutoffLFO;
+    LFOSettings resonanceLFO;
+    LFOSettings envModLFO;
+    LFOSettings decayLFO;
+    LFOSettings accentLFO;
+    LFOSettings waveformLFO;
+    LFOSettings subOscLFO;
+    LFOSettings driveLFO;
+    LFOSettings volumeLFO;
+    LFOSettings delayMixLFO;
 };
