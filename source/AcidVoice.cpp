@@ -255,7 +255,7 @@ void AcidVoice::setBPM(double bpm)
 // Dedicated LFO setters
 void AcidVoice::setCutoffLFO(int rate, int waveform, float depth)
 {
-    cutoffLFO.rate = juce::jlimit(0, 13, rate);
+    cutoffLFO.rate = juce::jlimit(0, 14, rate);
     cutoffLFO.waveform = juce::jlimit(0, 5, waveform);
     cutoffLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(cutoffLFO);
@@ -263,7 +263,7 @@ void AcidVoice::setCutoffLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setResonanceLFO(int rate, int waveform, float depth)
 {
-    resonanceLFO.rate = juce::jlimit(0, 13, rate);
+    resonanceLFO.rate = juce::jlimit(0, 14, rate);
     resonanceLFO.waveform = juce::jlimit(0, 5, waveform);
     resonanceLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(resonanceLFO);
@@ -271,7 +271,7 @@ void AcidVoice::setResonanceLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setEnvModLFO(int rate, int waveform, float depth)
 {
-    envModLFO.rate = juce::jlimit(0, 13, rate);
+    envModLFO.rate = juce::jlimit(0, 14, rate);
     envModLFO.waveform = juce::jlimit(0, 5, waveform);
     envModLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(envModLFO);
@@ -279,7 +279,7 @@ void AcidVoice::setEnvModLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setDecayLFO(int rate, int waveform, float depth)
 {
-    decayLFO.rate = juce::jlimit(0, 13, rate);
+    decayLFO.rate = juce::jlimit(0, 14, rate);
     decayLFO.waveform = juce::jlimit(0, 5, waveform);
     decayLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(decayLFO);
@@ -287,7 +287,7 @@ void AcidVoice::setDecayLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setAccentLFO(int rate, int waveform, float depth)
 {
-    accentLFO.rate = juce::jlimit(0, 13, rate);
+    accentLFO.rate = juce::jlimit(0, 14, rate);
     accentLFO.waveform = juce::jlimit(0, 5, waveform);
     accentLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(accentLFO);
@@ -295,7 +295,7 @@ void AcidVoice::setAccentLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setWaveformLFO(int rate, int waveform, float depth)
 {
-    waveformLFO.rate = juce::jlimit(0, 13, rate);
+    waveformLFO.rate = juce::jlimit(0, 14, rate);
     waveformLFO.waveform = juce::jlimit(0, 5, waveform);
     waveformLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(waveformLFO);
@@ -303,7 +303,7 @@ void AcidVoice::setWaveformLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setSubOscLFO(int rate, int waveform, float depth)
 {
-    subOscLFO.rate = juce::jlimit(0, 13, rate);
+    subOscLFO.rate = juce::jlimit(0, 14, rate);
     subOscLFO.waveform = juce::jlimit(0, 5, waveform);
     subOscLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(subOscLFO);
@@ -311,7 +311,7 @@ void AcidVoice::setSubOscLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setDriveLFO(int rate, int waveform, float depth)
 {
-    driveLFO.rate = juce::jlimit(0, 13, rate);
+    driveLFO.rate = juce::jlimit(0, 14, rate);
     driveLFO.waveform = juce::jlimit(0, 5, waveform);
     driveLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(driveLFO);
@@ -319,7 +319,7 @@ void AcidVoice::setDriveLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setVolumeLFO(int rate, int waveform, float depth)
 {
-    volumeLFO.rate = juce::jlimit(0, 13, rate);
+    volumeLFO.rate = juce::jlimit(0, 14, rate);
     volumeLFO.waveform = juce::jlimit(0, 5, waveform);
     volumeLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(volumeLFO);
@@ -327,7 +327,7 @@ void AcidVoice::setVolumeLFO(int rate, int waveform, float depth)
 
 void AcidVoice::setDelayMixLFO(int rate, int waveform, float depth)
 {
-    delayMixLFO.rate = juce::jlimit(0, 13, rate);
+    delayMixLFO.rate = juce::jlimit(0, 14, rate);
     delayMixLFO.waveform = juce::jlimit(0, 5, waveform);
     delayMixLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
     updateLFOFrequency(delayMixLFO);
@@ -421,8 +421,8 @@ void AcidVoice::updateLFOFrequency(LFO& lfo)
     // Calculate LFO frequency based on tempo and rate division
     double beatsPerSecond = currentBPM / 60.0;
 
-    // Rate divisions (14 options):
-    // 0=1/16, 1=1/8, 2=1/4, 3=1/3, 4=1/2, 5=3/4, 6=1/1, 7=2/1, 8=3/1, 9=4/1, 10=6/1, 11=8/1, 12=12/1, 13=16/1
+    // Rate divisions (15 options):
+    // 0=1/16, 1=1/8, 2=1/4, 3=1/3, 4=1/2, 5=3/4, 6=1/1, 7=3/2, 8=2/1, 9=3/1, 10=4/1, 11=6/1, 12=8/1, 13=12/1, 14=16/1
     const double divisions[] = {
         4.0,     // 1/16
         2.0,     // 1/8
@@ -431,6 +431,7 @@ void AcidVoice::updateLFOFrequency(LFO& lfo)
         0.5,     // 1/2
         0.333,   // 3/4
         0.25,    // 1/1 (whole note)
+        0.1667,  // 3/2 (dotted whole note = 1.5 bars)
         0.125,   // 2/1 (two whole notes)
         0.0833,  // 3/1
         0.0625,  // 4/1

@@ -935,9 +935,9 @@ void AcidSynthAudioProcessor::updateDelayMixLFO()
     delayMixLFO.depth = parameters.getRawParameterValue(DELAYMIX_LFO_DEPTH_ID)->load();
 
     // Calculate LFO frequency based on rate (tempo-synced)
-    // Rates: 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1/1, 2/1, 3/1, 4/1, 6/1, 8/1, 12/1, 16/1
-    const double rateMultipliers[] = {16.0, 8.0, 4.0, 3.0, 2.0, 1.333, 1.0, 0.5, 0.333, 0.25, 0.167, 0.125, 0.083, 0.0625};
-    int rateIndex = juce::jlimit(0, 13, delayMixLFO.rate);
+    // Rates: 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1/1, 3/2, 2/1, 3/1, 4/1, 6/1, 8/1, 12/1, 16/1
+    const double rateMultipliers[] = {16.0, 8.0, 4.0, 3.0, 2.0, 1.333, 1.0, 0.667, 0.5, 0.333, 0.25, 0.167, 0.125, 0.083, 0.0625};
+    int rateIndex = juce::jlimit(0, 14, delayMixLFO.rate);
     double beatsPerSecond = currentBPM / 60.0;
     delayMixLFO.frequency = beatsPerSecond * rateMultipliers[rateIndex];
 }

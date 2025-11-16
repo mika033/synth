@@ -189,13 +189,14 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     lfo.rateSelector.addItem("1/2", 5);
     lfo.rateSelector.addItem("3/4", 6);
     lfo.rateSelector.addItem("1/1", 7);
-    lfo.rateSelector.addItem("2/1", 8);
-    lfo.rateSelector.addItem("3/1", 9);
-    lfo.rateSelector.addItem("4/1", 10);
-    lfo.rateSelector.addItem("6/1", 11);
-    lfo.rateSelector.addItem("8/1", 12);
-    lfo.rateSelector.addItem("12/1", 13);
-    lfo.rateSelector.addItem("16/1", 14);
+    lfo.rateSelector.addItem("3/2", 8);
+    lfo.rateSelector.addItem("2/1", 9);
+    lfo.rateSelector.addItem("3/1", 10);
+    lfo.rateSelector.addItem("4/1", 11);
+    lfo.rateSelector.addItem("6/1", 12);
+    lfo.rateSelector.addItem("8/1", 13);
+    lfo.rateSelector.addItem("12/1", 14);
+    lfo.rateSelector.addItem("16/1", 15);
     lfo.rateSelector.setTooltip("Rate");
     addAndMakeVisible(lfo.rateSelector);
     lfo.rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
