@@ -44,28 +44,25 @@ REM Detect Visual Studio version
 echo Detecting Visual Studio installation...
 echo.
 
-REM Try different Visual Studio versions - using dir to avoid parentheses issues
-set GENERATOR=
+REM Try different Visual Studio versions
+set "GENERATOR="
 
-dir "%ProgramFiles%\Microsoft Visual Studio\2022" >nul 2>&1
-if not errorlevel 1 (
-    set GENERATOR=Visual Studio 17 2022
-    echo Found Visual Studio 2022
-    goto generator_found
+REM Check for VS 2022
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community" set "GENERATOR=Visual Studio 17 2022"
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional" set "GENERATOR=Visual Studio 17 2022"
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" set "GENERATOR=Visual Studio 17 2022"
+
+REM Check for VS 2019 if not found
+if not defined GENERATOR if exist "C:\Program Files\Microsoft Visual Studio\2019\Community" set "GENERATOR=Visual Studio 16 2019"
+if not defined GENERATOR if exist "C:\Program Files\Microsoft Visual Studio\2019\Professional" set "GENERATOR=Visual Studio 16 2019"
+if not defined GENERATOR if exist "C:\Program Files\Microsoft Visual Studio\2019\Enterprise" set "GENERATOR=Visual Studio 16 2019"
+
+if defined GENERATOR (
+    echo Found Visual Studio
+) else (
+    echo WARNING: Could not detect Visual Studio installation
+    echo Trying auto-detection...
 )
-
-dir "C:\Program Files\Microsoft Visual Studio\2019" >nul 2>&1
-if not errorlevel 1 (
-    set GENERATOR=Visual Studio 16 2019
-    echo Found Visual Studio 2019
-    goto generator_found
-)
-
-echo WARNING: Could not detect Visual Studio installation
-echo Trying auto-detection...
-set GENERATOR=
-
-:generator_found
 
 REM Configure with CMake
 echo.
@@ -74,8 +71,8 @@ echo This will download JUCE framework (may take a few minutes)...
 echo.
 
 if defined GENERATOR (
-    echo Using generator: %GENERATOR%
-    cmake .. -G "%GENERATOR%" -A x64
+    echo Using generator: !GENERATOR!
+    cmake .. -G "!GENERATOR!" -A x64
 ) else (
     echo Using auto-detected generator
     cmake ..
