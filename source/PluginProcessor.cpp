@@ -228,7 +228,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         CUTOFF_LFO_DEPTH_ID, "Cutoff LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Resonance LFO
@@ -240,7 +240,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         RESONANCE_LFO_DEPTH_ID, "Resonance LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // EnvMod LFO
@@ -252,7 +252,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         ENVMOD_LFO_DEPTH_ID, "EnvMod LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Decay LFO
@@ -264,7 +264,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         DECAY_LFO_DEPTH_ID, "Decay LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Accent LFO
@@ -276,7 +276,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         ACCENT_LFO_DEPTH_ID, "Accent LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Waveform LFO
@@ -288,7 +288,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         WAVEFORM_LFO_DEPTH_ID, "Waveform LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // SubOsc LFO
@@ -300,7 +300,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         SUBOSC_LFO_DEPTH_ID, "SubOsc LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Drive LFO
@@ -312,7 +312,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         DRIVE_LFO_DEPTH_ID, "Drive LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Volume LFO
@@ -324,7 +324,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         VOLUME_LFO_DEPTH_ID, "Volume LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // DelayMix LFO
@@ -336,7 +336,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         getLFOWaveformOptions(), Defaults::kLFOWaveform),
                     std::make_unique<juce::AudioParameterFloat>(
                         DELAYMIX_LFO_DEPTH_ID, "DelayMix LFO Depth",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 0.5f, 0.01f),
                         Defaults::kLFODepth),
 
                     // Arpeggiator parameters

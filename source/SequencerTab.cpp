@@ -22,11 +22,11 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
         audioProcessor.getValueTreeState(), "arponoff", arpOnOffToggle);
 
     // Arpeggiator Mode selector
-    arpModeSelector.addItem("Up", 1);
-    arpModeSelector.addItem("Down", 2);
-    arpModeSelector.addItem("Up-Down", 3);
-    arpModeSelector.addItem("Random", 4);
-    arpModeSelector.addItem("As Played", 5);
+    arpModeSelector.addItem("Up", 0);
+    arpModeSelector.addItem("Down", 1);
+    arpModeSelector.addItem("Up-Down", 2);
+    arpModeSelector.addItem("Random", 3);
+    arpModeSelector.addItem("As Played", 4);
     addAndMakeVisible(arpModeSelector);
     arpModeLabel.setText("Mode", juce::dontSendNotification);
     arpModeLabel.setJustificationType(juce::Justification::centredLeft);
@@ -35,13 +35,13 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
         audioProcessor.getValueTreeState(), "arpmode", arpModeSelector);
 
     // Arpeggiator Rate selector
-    arpRateSelector.addItem("1/32", 1);
-    arpRateSelector.addItem("1/16", 2);
-    arpRateSelector.addItem("1/16T", 3);
-    arpRateSelector.addItem("1/8", 4);
-    arpRateSelector.addItem("1/8T", 5);
-    arpRateSelector.addItem("1/4", 6);
-    arpRateSelector.addItem("1/4T", 7);
+    arpRateSelector.addItem("1/32", 0);
+    arpRateSelector.addItem("1/16", 1);
+    arpRateSelector.addItem("1/16T", 2);
+    arpRateSelector.addItem("1/8", 3);
+    arpRateSelector.addItem("1/8T", 4);
+    arpRateSelector.addItem("1/4", 5);
+    arpRateSelector.addItem("1/4T", 6);
     addAndMakeVisible(arpRateSelector);
     arpRateLabel.setText("Rate", juce::dontSendNotification);
     arpRateLabel.setJustificationType(juce::Justification::centredLeft);
