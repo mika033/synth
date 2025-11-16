@@ -155,10 +155,10 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
 
         ++startSample;
 
-        // Advance oscillators with smooth portamento
+        // Advance oscillators (no portamento - instant pitch changes)
         currentAngle += angleDelta;
         subAngle += angleDelta * 0.5; // Sub is one octave down
-        angleDelta += (targetAngleDelta - angleDelta) * 0.0001;
+        angleDelta = targetAngleDelta; // Instant pitch change (no slide)
 
         if (currentAngle > juce::MathConstants<double>::twoPi)
             currentAngle -= juce::MathConstants<double>::twoPi;
