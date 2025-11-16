@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 REM Acid Synth VST Build Script for Windows
 REM This script automates the build process
 
@@ -46,28 +47,32 @@ REM Detect Visual Studio version
 echo Detecting Visual Studio installation...
 echo.
 
-REM Set up environment variable paths (avoids parentheses issues)
-set "PROGFILES=%ProgramFiles%"
-set "PROGFILESX86=%ProgramFiles(x86)%"
-
 REM Try different Visual Studio versions
 set GENERATOR=
-if exist "%PROGFILES%\Microsoft Visual Studio\2022" (
+
+REM Check VS 2022 in Program Files
+if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
     goto generator_found
 )
-if exist "%PROGFILESX86%\Microsoft Visual Studio\2022" (
+
+REM Check VS 2022 in Program Files x86 (use direct path construction)
+if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
     goto generator_found
 )
-if exist "%PROGFILES%\Microsoft Visual Studio\2019" (
+
+REM Check VS 2019 in Program Files
+if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
     set GENERATOR=Visual Studio 16 2019
     echo Found Visual Studio 2019
     goto generator_found
 )
-if exist "%PROGFILESX86%\Microsoft Visual Studio\2019" (
+
+REM Check VS 2019 in Program Files x86
+if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019" (
     set GENERATOR=Visual Studio 16 2019
     echo Found Visual Studio 2019
     goto generator_found
