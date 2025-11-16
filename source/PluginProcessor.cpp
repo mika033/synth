@@ -751,8 +751,15 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
             // Add note to held notes if not already there
             if (std::find(heldNotes.begin(), heldNotes.end(), note) == heldNotes.end())
             {
+                bool wasEmpty = heldNotes.empty();
                 heldNotes.push_back(note);
                 std::sort(heldNotes.begin(), heldNotes.end()); // Keep sorted for Up mode
+
+                // If this is the first note pressed, trigger immediately by setting arpStepTime high
+                if (wasEmpty)
+                {
+                    arpStepTime = 999999.0; // Large value to trigger first note immediately
+                }
             }
         }
         else if (message.isNoteOff())
@@ -785,7 +792,15 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
         int octaveShift = static_cast<int>(parameters.getRawParameterValue(ARP_OCTAVE_SHIFT_ID)->load());
         double noteOffTime = stepLength * gateLength;
 
-        arpStepTime += numSamples;
+        // If arpStepTime was set to trigger immediately, normalize it to stepLength
+        if (arpStepTime > stepLength * 2)
+        {
+            arpStepTime = stepLength;
+        }
+        else
+        {
+            arpStepTime += numSamples;
+        }
 
         // Check if we need to turn off the current note
         if (isNoteCurrentlyOn && lastNoteOffTime <= 0 && lastPlayedNote >= 0)
