@@ -14,10 +14,10 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     presetSelector.addItem("Dub Delay Bass", 6);
     presetSelector.addItem("Wobble Bass", 7);
     presetSelector.addItem("Soft Pad", 8);
-    presetSelector.addItem("Init", 9);
-    presetSelector.addItem("Smooth Lead", 10);
-    presetSelector.addItem("Warm Bass", 11);
-    presetSelector.addItem("Evolving Pad", 12);
+    presetSelector.addItem("Smooth Lead", 9);
+    presetSelector.addItem("Warm Bass", 10);
+    presetSelector.addItem("Evolving Pad", 11);
+    presetSelector.addItem("Init", 12);
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();
@@ -31,7 +31,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    cutoffSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    cutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(cutoffSlider);
     cutoffLabel.setText("Cutoff", juce::dontSendNotification);
     cutoffLabel.setJustificationType(juce::Justification::centredLeft);
@@ -41,7 +41,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure resonance slider
     resonanceSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    resonanceSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    resonanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(resonanceSlider);
     resonanceLabel.setText("Resonance", juce::dontSendNotification);
     resonanceLabel.setJustificationType(juce::Justification::centredLeft);
@@ -51,7 +51,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure envelope mod slider
     envModSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    envModSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    envModSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(envModSlider);
     envModLabel.setText("Env Mod", juce::dontSendNotification);
     envModLabel.setJustificationType(juce::Justification::centredLeft);
@@ -61,7 +61,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure decay slider
     decaySlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    decaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    decaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(decaySlider);
     decayLabel.setText("Decay", juce::dontSendNotification);
     decayLabel.setJustificationType(juce::Justification::centredLeft);
@@ -71,7 +71,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure accent slider
     accentSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    accentSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    accentSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(accentSlider);
     accentLabel.setText("Accent", juce::dontSendNotification);
     accentLabel.setJustificationType(juce::Justification::centredLeft);
@@ -81,7 +81,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure waveform slider
     waveformSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    waveformSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    waveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(waveformSlider);
     waveformLabel.setText("Waveform", juce::dontSendNotification);
     waveformLabel.setJustificationType(juce::Justification::centredLeft);
@@ -91,7 +91,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure sub-oscillator slider
     subOscSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    subOscSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    subOscSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(subOscSlider);
     subOscLabel.setText("Sub Osc", juce::dontSendNotification);
     subOscLabel.setJustificationType(juce::Justification::centredLeft);
@@ -101,7 +101,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure drive slider
     driveSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    driveSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    driveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(driveSlider);
     driveLabel.setText("Drive", juce::dontSendNotification);
     driveLabel.setJustificationType(juce::Justification::centredLeft);
@@ -111,7 +111,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure volume slider
     volumeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(volumeSlider);
     volumeLabel.setText("Volume", juce::dontSendNotification);
     volumeLabel.setJustificationType(juce::Justification::centredLeft);
@@ -141,7 +141,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure Delay Feedback slider
     delayFeedbackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    delayFeedbackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    delayFeedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(delayFeedbackSlider);
     delayFeedbackLabel.setText("Delay FB", juce::dontSendNotification);
     delayFeedbackLabel.setJustificationType(juce::Justification::centredLeft);
@@ -151,7 +151,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Configure Delay Mix slider
     delayMixSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    delayMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    delayMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(delayMixSlider);
     delayMixLabel.setText("Delay Mix", juce::dontSendNotification);
     delayMixLabel.setJustificationType(juce::Justification::centredLeft);
@@ -197,10 +197,6 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     lfo.rateSelector.addItem("12/1", 13);
     lfo.rateSelector.addItem("16/1", 14);
     addAndMakeVisible(lfo.rateSelector);
-    lfo.rateLabel.setText("Rate", juce::dontSendNotification);
-    lfo.rateLabel.setJustificationType(juce::Justification::centredTop);
-    lfo.rateLabel.setFont(juce::Font(10.0f));
-    addAndMakeVisible(lfo.rateLabel);
     lfo.rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), rateParamID, lfo.rateSelector);
 
@@ -212,21 +208,13 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     lfo.waveformSelector.addItem("Square", 5);
     lfo.waveformSelector.addItem("Random", 6);
     addAndMakeVisible(lfo.waveformSelector);
-    lfo.waveformLabel.setText("Wave", juce::dontSendNotification);
-    lfo.waveformLabel.setJustificationType(juce::Justification::centredTop);
-    lfo.waveformLabel.setFont(juce::Font(10.0f));
-    addAndMakeVisible(lfo.waveformLabel);
     lfo.waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), waveParamID, lfo.waveformSelector);
 
     // Setup LFO Depth slider
     lfo.depthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    lfo.depthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 16);
+    lfo.depthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(lfo.depthSlider);
-    lfo.depthLabel.setText("Depth", juce::dontSendNotification);
-    lfo.depthLabel.setJustificationType(juce::Justification::centredTop);
-    lfo.depthLabel.setFont(juce::Font(10.0f));
-    addAndMakeVisible(lfo.depthLabel);
     lfo.depthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), depthParamID, lfo.depthSlider);
 }
@@ -254,8 +242,7 @@ void SynthTab::paint(juce::Graphics& g)
 
 void SynthTab::resized()
 {
-    const int paramKnobSize = 55;
-    const int lfoKnobSize = 45;
+    const int knobSize = 50;  // All knobs same size
     const int rowHeight = 60;
     const int startY = 20;
     const int paramLabelX = 20;
@@ -273,20 +260,17 @@ void SynthTab::resized()
         int y = startY + rowIndex * rowHeight;
 
         // Main parameter
-        paramLabel.setBounds(paramLabelX, y - 5, 90, 20);
-        paramSlider.setBounds(paramKnobX, y - 10, paramKnobSize, paramKnobSize + 20);
+        paramLabel.setBounds(paramLabelX, y + 10, 90, 20);
+        paramSlider.setBounds(paramKnobX, y, knobSize, knobSize);
 
-        // LFO Rate
-        lfo.rateLabel.setBounds(lfoStartX, y + paramKnobSize + 5, 80, 12);
-        lfo.rateSelector.setBounds(lfoStartX, y + 5, 80, 22);
+        // LFO Rate selector
+        lfo.rateSelector.setBounds(lfoStartX, y + 12, 80, 26);
 
-        // LFO Waveform
-        lfo.waveformLabel.setBounds(lfoStartX + lfoSpacing, y + paramKnobSize + 5, 80, 12);
-        lfo.waveformSelector.setBounds(lfoStartX + lfoSpacing, y + 5, 80, 22);
+        // LFO Waveform selector
+        lfo.waveformSelector.setBounds(lfoStartX + lfoSpacing, y + 12, 80, 26);
 
-        // LFO Depth
-        lfo.depthLabel.setBounds(lfoStartX + lfoSpacing * 2, y + paramKnobSize + 5, 70, 12);
-        lfo.depthSlider.setBounds(lfoStartX + lfoSpacing * 2, y - 10, lfoKnobSize, lfoKnobSize + 20);
+        // LFO Depth knob
+        lfo.depthSlider.setBounds(lfoStartX + lfoSpacing * 2, y, knobSize, knobSize);
     };
 
     // Layout all 10 rows with dedicated LFO controls
@@ -302,11 +286,11 @@ void SynthTab::resized()
 
     // Row 9: Delay Time and Delay Feedback (no LFOs for these)
     int delayRow1Y = startY + 9 * rowHeight;
-    delayTimeLabel.setBounds(paramLabelX, delayRow1Y - 5, 90, 20);
-    delayTimeSelector.setBounds(paramKnobX, delayRow1Y + 5, 80, 22);
+    delayTimeLabel.setBounds(paramLabelX, delayRow1Y + 10, 90, 20);
+    delayTimeSelector.setBounds(paramKnobX, delayRow1Y + 12, 80, 26);
 
-    delayFeedbackLabel.setBounds(paramLabelX + 180, delayRow1Y - 5, 90, 20);
-    delayFeedbackSlider.setBounds(paramKnobX + 180, delayRow1Y - 10, paramKnobSize, paramKnobSize + 20);
+    delayFeedbackLabel.setBounds(lfoStartX, delayRow1Y + 10, 90, 20);
+    delayFeedbackSlider.setBounds(lfoStartX + 90, delayRow1Y, knobSize, knobSize);
 
     // Row 10: Delay Mix with LFO controls
     layoutRow(10, delayMixSlider, delayMixLabel, delayMixLFO);

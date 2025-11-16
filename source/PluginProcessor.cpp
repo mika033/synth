@@ -102,14 +102,6 @@ static const Preset kPresets[] = {
       {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {2, 0, 0.4f}, {6, 0, 0.0f}
     },
 
-    // Init (default clean sound) - All LFOs disabled
-    { "Init",
-      1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0.0f, 0.5f, 0.0f, 0.7f,
-      6, 0.3f, 0.0f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
     // ===== TRADITIONAL SYNTH PRESETS =====
 
     // Smooth Lead - Melodic lead with morphed waveform, moderate filter, no LFOs
@@ -134,6 +126,14 @@ static const Preset kPresets[] = {
       10, 0.4f, 0.35f,
       {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
       {5, 0, 0.25f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
+
+    // Init (default clean sound) - All LFOs disabled - MOVED TO BOTTOM
+    { "Init",
+      1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0.0f, 0.5f, 0.0f, 0.7f,
+      6, 0.3f, 0.0f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
     }
 };
 
@@ -660,46 +660,8 @@ void AcidSynthAudioProcessor::loadPreset(int presetIndex)
     parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
         parameters.getParameterRange(VOLUME_ID).convertTo0to1(preset.volume));
 
-    // Load all 10 dedicated LFO settings
-    parameters.getParameter(CUTOFF_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.cutoffLFO.rate));
-    parameters.getParameter(CUTOFF_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.cutoffLFO.waveform));
-    parameters.getParameter(CUTOFF_LFO_DEPTH_ID)->setValueNotifyingHost(preset.cutoffLFO.depth);
-
-    parameters.getParameter(RESONANCE_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.resonanceLFO.rate));
-    parameters.getParameter(RESONANCE_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.resonanceLFO.waveform));
-    parameters.getParameter(RESONANCE_LFO_DEPTH_ID)->setValueNotifyingHost(preset.resonanceLFO.depth);
-
-    parameters.getParameter(ENVMOD_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.envModLFO.rate));
-    parameters.getParameter(ENVMOD_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.envModLFO.waveform));
-    parameters.getParameter(ENVMOD_LFO_DEPTH_ID)->setValueNotifyingHost(preset.envModLFO.depth);
-
-    parameters.getParameter(DECAY_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.decayLFO.rate));
-    parameters.getParameter(DECAY_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.decayLFO.waveform));
-    parameters.getParameter(DECAY_LFO_DEPTH_ID)->setValueNotifyingHost(preset.decayLFO.depth);
-
-    parameters.getParameter(ACCENT_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.accentLFO.rate));
-    parameters.getParameter(ACCENT_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.accentLFO.waveform));
-    parameters.getParameter(ACCENT_LFO_DEPTH_ID)->setValueNotifyingHost(preset.accentLFO.depth);
-
-    parameters.getParameter(WAVEFORM_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.waveformLFO.rate));
-    parameters.getParameter(WAVEFORM_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.waveformLFO.waveform));
-    parameters.getParameter(WAVEFORM_LFO_DEPTH_ID)->setValueNotifyingHost(preset.waveformLFO.depth);
-
-    parameters.getParameter(SUBOSC_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.subOscLFO.rate));
-    parameters.getParameter(SUBOSC_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.subOscLFO.waveform));
-    parameters.getParameter(SUBOSC_LFO_DEPTH_ID)->setValueNotifyingHost(preset.subOscLFO.depth);
-
-    parameters.getParameter(DRIVE_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.driveLFO.rate));
-    parameters.getParameter(DRIVE_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.driveLFO.waveform));
-    parameters.getParameter(DRIVE_LFO_DEPTH_ID)->setValueNotifyingHost(preset.driveLFO.depth);
-
-    parameters.getParameter(VOLUME_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.volumeLFO.rate));
-    parameters.getParameter(VOLUME_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.volumeLFO.waveform));
-    parameters.getParameter(VOLUME_LFO_DEPTH_ID)->setValueNotifyingHost(preset.volumeLFO.depth);
-
-    parameters.getParameter(DELAYMIX_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.delayMixLFO.rate));
-    parameters.getParameter(DELAYMIX_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.delayMixLFO.waveform));
-    parameters.getParameter(DELAYMIX_LFO_DEPTH_ID)->setValueNotifyingHost(preset.delayMixLFO.depth);
+    // NOTE: LFO settings are NOT loaded from presets - they are left untouched
+    // This allows users to set up their LFO configurations independently of presets
 
     parameters.getParameter(DELAY_TIME_ID)->setValueNotifyingHost(
         static_cast<float>(preset.delayTime));

@@ -51,7 +51,7 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
 
     // Arpeggiator Octaves slider
     arpOctavesSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    arpOctavesSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    arpOctavesSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(arpOctavesSlider);
     arpOctavesLabel.setText("Octaves", juce::dontSendNotification);
     arpOctavesLabel.setJustificationType(juce::Justification::centred);
@@ -61,7 +61,7 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
 
     // Arpeggiator Gate slider
     arpGateSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    arpGateSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    arpGateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(arpGateSlider);
     arpGateLabel.setText("Gate Length", juce::dontSendNotification);
     arpGateLabel.setJustificationType(juce::Justification::centred);
