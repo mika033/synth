@@ -32,5 +32,8 @@ private:
     std::unique_ptr<SequencerTab> sequencerTab;
     std::unique_ptr<ModulationTab> modulationTab;
 
+    // Play/Stop button for standalone mode
+    juce::TextButton playStopButton;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessorEditor)
 };

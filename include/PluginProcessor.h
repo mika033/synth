@@ -52,6 +52,11 @@ public:
     // Parameter access
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
 
+    //==============================================================================
+    // Internal playback control (for standalone mode)
+    void startInternalPlayback();
+    void stopInternalPlayback();
+
 private:
     //==============================================================================
     juce::Synthesiser synth;
@@ -156,6 +161,11 @@ private:
     int lastPlayedNote = -1;     // Last arpeggio note that was triggered
     bool isNoteCurrentlyOn = false; // Track if we're in note-on phase
     int arpStepCounter = 0;      // Counter for swing (even/odd steps)
+
+    // Internal playback state (for standalone mode)
+    bool isInternalPlaybackActive = false;
+    static constexpr int INTERNAL_PLAYBACK_NOTE = 60; // C3 (MIDI note 60)
+    static constexpr double DEFAULT_BPM = 120.0;
 
     // Arpeggiator helper functions
     void processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples);

@@ -478,7 +478,8 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 {
     juce::ScopedNoDenormals noDenormals;
 
-    // Get BPM from host
+    // Get BPM from host, or use default for standalone mode
+    bool bpmFromHost = false;
     if (auto* playHead = getPlayHead())
     {
         if (auto positionInfo = playHead->getPosition())
@@ -486,8 +487,22 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             if (positionInfo->getBpm().hasValue())
             {
                 currentBPM = *positionInfo->getBpm();
+                bpmFromHost = true;
             }
         }
+    }
+
+    // Use default BPM if no host BPM available
+    if (!bpmFromHost)
+    {
+        currentBPM = DEFAULT_BPM;
+    }
+
+    // Handle internal playback (for standalone mode)
+    if (isInternalPlaybackActive)
+    {
+        // Inject C3 note-on message at the start of the buffer
+        midiMessages.addEvent(juce::MidiMessage::noteOn(1, INTERNAL_PLAYBACK_NOTE, (juce::uint8)100), 0);
     }
 
     // Clear output buffer
@@ -1012,6 +1027,33 @@ void AcidSynthAudioProcessor::advanceDelayMixLFO()
     delayMixLFO.phase += delayMixLFO.frequency * juce::MathConstants<double>::twoPi / currentSampleRate;
     if (delayMixLFO.phase >= juce::MathConstants<double>::twoPi)
         delayMixLFO.phase -= juce::MathConstants<double>::twoPi;
+}
+
+//==============================================================================
+// Internal playback control (for standalone mode)
+void AcidSynthAudioProcessor::startInternalPlayback()
+{
+    isInternalPlaybackActive = true;
+}
+
+void AcidSynthAudioProcessor::stopInternalPlayback()
+{
+    isInternalPlaybackActive = false;
+
+    // Send note-off for the internal playback note to stop any held notes
+    juce::MidiBuffer stopMessages;
+    stopMessages.addEvent(juce::MidiMessage::noteOff(1, INTERNAL_PLAYBACK_NOTE), 0);
+
+    // Clear the held notes in arpeggiator
+    heldNotes.clear();
+    currentArpNote = 0;
+    arpStepTime = 0.0;
+    if (isNoteCurrentlyOn && lastPlayedNote >= 0)
+    {
+        synth.noteOff(1, lastPlayedNote, 0.0f, true);
+    }
+    lastPlayedNote = -1;
+    isNoteCurrentlyOn = false;
 }
 
 //==============================================================================
