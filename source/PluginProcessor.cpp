@@ -389,7 +389,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
                     // Arpeggiator parameters
                     std::make_unique<juce::AudioParameterBool>(
-                        ARP_ONOFF_ID, "Arp On/Off", false),
+                        ARP_ONOFF_ID, "Arp On/Off", true), // Default: enabled
                     std::make_unique<juce::AudioParameterChoice>(
                         ARP_MODE_ID, "Arp Mode",
                         juce::StringArray{"Up", "Down", "Up-Down", "Random", "As Played"}, 0),
