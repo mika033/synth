@@ -21,12 +21,12 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
     arpOnOffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "arponoff", arpOnOffToggle);
 
-    // Arpeggiator Mode selector
-    arpModeSelector.addItem("Up", 0);
-    arpModeSelector.addItem("Down", 1);
-    arpModeSelector.addItem("Up-Down", 2);
-    arpModeSelector.addItem("Random", 3);
-    arpModeSelector.addItem("As Played", 4);
+    // Arpeggiator Mode selector (IDs must start at 1, not 0 - JUCE requirement)
+    arpModeSelector.addItem("Up", 1);
+    arpModeSelector.addItem("Down", 2);
+    arpModeSelector.addItem("Up-Down", 3);
+    arpModeSelector.addItem("Random", 4);
+    arpModeSelector.addItem("As Played", 5);
     addAndMakeVisible(arpModeSelector);
     arpModeLabel.setText("Mode", juce::dontSendNotification);
     arpModeLabel.setJustificationType(juce::Justification::centredLeft);
@@ -34,14 +34,14 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
     arpModeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "arpmode", arpModeSelector);
 
-    // Arpeggiator Rate selector
-    arpRateSelector.addItem("1/32", 0);
-    arpRateSelector.addItem("1/16", 1);
-    arpRateSelector.addItem("1/16T", 2);
-    arpRateSelector.addItem("1/8", 3);
-    arpRateSelector.addItem("1/8T", 4);
-    arpRateSelector.addItem("1/4", 5);
-    arpRateSelector.addItem("1/4T", 6);
+    // Arpeggiator Rate selector (IDs must start at 1, not 0 - JUCE requirement)
+    arpRateSelector.addItem("1/32", 1);
+    arpRateSelector.addItem("1/16", 2);
+    arpRateSelector.addItem("1/16T", 3);
+    arpRateSelector.addItem("1/8", 4);
+    arpRateSelector.addItem("1/8T", 5);
+    arpRateSelector.addItem("1/4", 6);
+    arpRateSelector.addItem("1/4T", 7);
     addAndMakeVisible(arpRateSelector);
     arpRateLabel.setText("Rate", juce::dontSendNotification);
     arpRateLabel.setJustificationType(juce::Justification::centredLeft);

@@ -5,19 +5,19 @@
 SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     : audioProcessor(p)
 {
-    // Configure preset selector
-    presetSelector.addItem("Classic 303 Bass", 0);
-    presetSelector.addItem("Squelchy Lead", 1);
-    presetSelector.addItem("Deep Rumble", 2);
-    presetSelector.addItem("Aggressive Lead", 3);
-    presetSelector.addItem("Pulsing Bass", 4);
-    presetSelector.addItem("Dub Delay Bass", 5);
-    presetSelector.addItem("Wobble Bass", 6);
-    presetSelector.addItem("Soft Pad", 7);
-    presetSelector.addItem("Smooth Lead", 8);
-    presetSelector.addItem("Warm Bass", 9);
-    presetSelector.addItem("Evolving Pad", 10);
-    presetSelector.addItem("Init", 11);
+    // Configure preset selector (IDs must start at 1, not 0 - JUCE requirement)
+    presetSelector.addItem("Classic 303 Bass", 1);
+    presetSelector.addItem("Squelchy Lead", 2);
+    presetSelector.addItem("Deep Rumble", 3);
+    presetSelector.addItem("Aggressive Lead", 4);
+    presetSelector.addItem("Pulsing Bass", 5);
+    presetSelector.addItem("Dub Delay Bass", 6);
+    presetSelector.addItem("Wobble Bass", 7);
+    presetSelector.addItem("Soft Pad", 8);
+    presetSelector.addItem("Smooth Lead", 9);
+    presetSelector.addItem("Warm Bass", 10);
+    presetSelector.addItem("Evolving Pad", 11);
+    presetSelector.addItem("Init", 12);
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();
@@ -119,19 +119,19 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     volumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "volume", volumeSlider);
 
-    // Configure Delay Time selector
-    delayTimeSelector.addItem("1/16", 0);
-    delayTimeSelector.addItem("1/16.", 1);
-    delayTimeSelector.addItem("1/16T", 2);
-    delayTimeSelector.addItem("1/8", 3);
-    delayTimeSelector.addItem("1/8.", 4);
-    delayTimeSelector.addItem("1/8T", 5);
-    delayTimeSelector.addItem("1/4", 6);
-    delayTimeSelector.addItem("1/4.", 7);
-    delayTimeSelector.addItem("1/4T", 8);
-    delayTimeSelector.addItem("1/2", 9);
-    delayTimeSelector.addItem("1/2.", 10);
-    delayTimeSelector.addItem("1/1", 11);
+    // Configure Delay Time selector (IDs must start at 1, not 0 - JUCE requirement)
+    delayTimeSelector.addItem("1/16", 1);
+    delayTimeSelector.addItem("1/16.", 2);
+    delayTimeSelector.addItem("1/16T", 3);
+    delayTimeSelector.addItem("1/8", 4);
+    delayTimeSelector.addItem("1/8.", 5);
+    delayTimeSelector.addItem("1/8T", 6);
+    delayTimeSelector.addItem("1/4", 7);
+    delayTimeSelector.addItem("1/4.", 8);
+    delayTimeSelector.addItem("1/4T", 9);
+    delayTimeSelector.addItem("1/2", 10);
+    delayTimeSelector.addItem("1/2.", 11);
+    delayTimeSelector.addItem("1/1", 12);
     addAndMakeVisible(delayTimeSelector);
     delayTimeLabel.setText("Delay Time", juce::dontSendNotification);
     delayTimeLabel.setJustificationType(juce::Justification::centredLeft);
@@ -181,33 +181,33 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
                                  const juce::String& waveParamID,
                                  const juce::String& depthParamID)
 {
-    // Setup LFO Rate selector
-    lfo.rateSelector.addItem("1/16", 0);
-    lfo.rateSelector.addItem("1/8", 1);
-    lfo.rateSelector.addItem("1/4", 2);
-    lfo.rateSelector.addItem("1/3", 3);
-    lfo.rateSelector.addItem("1/2", 4);
-    lfo.rateSelector.addItem("3/4", 5);
-    lfo.rateSelector.addItem("1/1", 6);
-    lfo.rateSelector.addItem("2/1", 7);
-    lfo.rateSelector.addItem("3/1", 8);
-    lfo.rateSelector.addItem("4/1", 9);
-    lfo.rateSelector.addItem("6/1", 10);
-    lfo.rateSelector.addItem("8/1", 11);
-    lfo.rateSelector.addItem("12/1", 12);
-    lfo.rateSelector.addItem("16/1", 13);
+    // Setup LFO Rate selector (IDs must start at 1, not 0 - JUCE requirement)
+    lfo.rateSelector.addItem("1/16", 1);
+    lfo.rateSelector.addItem("1/8", 2);
+    lfo.rateSelector.addItem("1/4", 3);
+    lfo.rateSelector.addItem("1/3", 4);
+    lfo.rateSelector.addItem("1/2", 5);
+    lfo.rateSelector.addItem("3/4", 6);
+    lfo.rateSelector.addItem("1/1", 7);
+    lfo.rateSelector.addItem("2/1", 8);
+    lfo.rateSelector.addItem("3/1", 9);
+    lfo.rateSelector.addItem("4/1", 10);
+    lfo.rateSelector.addItem("6/1", 11);
+    lfo.rateSelector.addItem("8/1", 12);
+    lfo.rateSelector.addItem("12/1", 13);
+    lfo.rateSelector.addItem("16/1", 14);
     lfo.rateSelector.setTooltip("Rate");
     addAndMakeVisible(lfo.rateSelector);
     lfo.rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), rateParamID, lfo.rateSelector);
 
-    // Setup LFO Waveform selector
-    lfo.waveformSelector.addItem("Sine", 0);
-    lfo.waveformSelector.addItem("Triangle", 1);
-    lfo.waveformSelector.addItem("Saw Up", 2);
-    lfo.waveformSelector.addItem("Saw Dn", 3);
-    lfo.waveformSelector.addItem("Square", 4);
-    lfo.waveformSelector.addItem("Random", 5);
+    // Setup LFO Waveform selector (IDs must start at 1, not 0 - JUCE requirement)
+    lfo.waveformSelector.addItem("Sine", 1);
+    lfo.waveformSelector.addItem("Triangle", 2);
+    lfo.waveformSelector.addItem("Saw Up", 3);
+    lfo.waveformSelector.addItem("Saw Dn", 4);
+    lfo.waveformSelector.addItem("Square", 5);
+    lfo.waveformSelector.addItem("Random", 6);
     lfo.waveformSelector.setTooltip("Wave");
     addAndMakeVisible(lfo.waveformSelector);
     lfo.waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
