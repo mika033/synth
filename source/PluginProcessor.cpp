@@ -25,7 +25,7 @@ namespace Defaults
     static constexpr float kSubOsc = 0.5f;
     static constexpr float kDrive = 0.0f;
     static constexpr float kVolume = 0.7f;
-    static constexpr int   kDelayTime = 6;  // 1/4 note
+    static constexpr int   kDelayTime = 3;  // 1/8 note (index 3)
     static constexpr float kDelayFeedback = 0.3f;
     static constexpr float kDelayMix = 0.0f; // Off by default
 
