@@ -108,6 +108,9 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     presetSelector.addItem("Wobble Bass", 7);
     presetSelector.addItem("Soft Pad", 8);
     presetSelector.addItem("Init", 9);
+    presetSelector.addItem("Smooth Lead", 10);
+    presetSelector.addItem("Warm Bass", 11);
+    presetSelector.addItem("Evolving Pad", 12);
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();

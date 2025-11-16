@@ -108,6 +108,32 @@ static const Preset kPresets[] = {
       6, 0.3f, 0.0f,
       {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
       {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
+
+    // ===== TRADITIONAL SYNTH PRESETS =====
+
+    // Smooth Lead - Melodic lead with morphed waveform, moderate filter, no LFOs
+    { "Smooth Lead",
+      1800.0f, 0.4f, 0.5f, 0.4f, 0.3f, 0.5f, 0.2f, 0.2f, 0.65f,
+      6, 0.2f, 0.1f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
+
+    // Warm Bass - Fat traditional bass with sub-oscillator, low resonance
+    { "Warm Bass",
+      600.0f, 0.3f, 0.4f, 0.35f, 0.4f, 0.2f, 0.7f, 0.15f, 0.7f,
+      6, 0.25f, 0.0f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
+
+    // Evolving Pad - Morphing waveform with gentle LFO for evolving texture
+    { "Evolving Pad",
+      2000.0f, 0.35f, 0.3f, 0.7f, 0.2f, 0.6f, 0.25f, 0.05f, 0.55f,
+      10, 0.4f, 0.35f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {5, 0, 0.25f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
     }
 };
 
