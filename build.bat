@@ -25,7 +25,7 @@ echo.
 REM Check if we should do a clean build
 if "%1"=="clean" (
     if exist build (
-        echo Performing clean build (deleting build directory)...
+        echo Performing clean build - deleting build directory
         rmdir /s /q build
     )
 )
@@ -66,8 +66,8 @@ if defined GENERATOR (
 
 REM Configure with CMake
 echo.
-echo Configuring project with CMake...
-echo This will download JUCE framework (may take a few minutes)...
+echo Configuring project with CMake
+echo This will download JUCE framework - may take a few minutes
 echo.
 
 if defined GENERATOR (
@@ -106,8 +106,8 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Build the project
 echo.
-echo Building Acid Synth VST (Release)...
-echo Using parallel compilation (all CPU cores)...
+echo Building Acid Synth VST in Release mode
+echo Using parallel compilation with all CPU cores
 echo.
 cmake --build . --config Release --parallel
 
