@@ -28,31 +28,50 @@ public:
 
     void setCurrentPlaybackSampleRate(double newRate) override;
 
-    // Parameter setters
+    // Main Parameter setters
     void setCutoff(float cutoffHz);
     void setResonance(float resonance);
     void setEnvMod(float envMod);
     void setDecay(float decaySeconds);
     void setAccent(float accent);
-    void setWaveform(int waveformType); // 0 = saw, 1 = square
-    void setSubOscMix(float mix); // 0 = no sub, 1 = full sub
-    void setDrive(float drive); // 0 = clean, 1 = saturated
-    void setVolume(float volume); // 0 = silent, 1 = full
-    void setLFORate(int rate); // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
-    void setLFODestination(int dest); // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
-    void setLFODepth(float depth);
+    void setWaveform(float waveformMorph); // 0.0 = saw, 1.0 = square, morph in between
+    void setSubOscMix(float mix);
+    void setDrive(float drive);
+    void setVolume(float volume);
     void setBPM(double bpm);
 
+    // Dedicated LFO setters (for each of 10 parameters)
+    void setCutoffLFO(int rate, int waveform, float depth);
+    void setResonanceLFO(int rate, int waveform, float depth);
+    void setEnvModLFO(int rate, int waveform, float depth);
+    void setDecayLFO(int rate, int waveform, float depth);
+    void setAccentLFO(int rate, int waveform, float depth);
+    void setWaveformLFO(int rate, int waveform, float depth);
+    void setSubOscLFO(int rate, int waveform, float depth);
+    void setDriveLFO(int rate, int waveform, float depth);
+    void setVolumeLFO(int rate, int waveform, float depth);
+    void setDelayMixLFO(int rate, int waveform, float depth);
+
 private:
+    // LFO State structure
+    struct LFO
+    {
+        double phase = 0.0;
+        double frequency = 2.0;
+        int rate = 6;  // Index 6 = 1/1 (whole note)
+        int waveform = 0; // 0=Sine, 1=Triangle, 2=SawUp, 3=SawDown, 4=Square, 5=Random
+        float depth = 0.0f;
+        float lastRandomValue = 0.0f;
+    };
     // Main Oscillator
     double currentAngle = 0.0;
     double angleDelta = 0.0;
     double targetAngleDelta = 0.0;
-    int waveform = 0; // 0 = saw, 1 = square
+    float waveformMorph = 0.0f; // 0.0 = saw, 1.0 = square, morph in between
 
     // Sub-oscillator (one octave down)
     double subAngle = 0.0;
-    float subOscMix = 0.5f; // Mix amount
+    float subOscMix = 0.5f;
 
     // Saturation/Drive
     float driveAmount = 0.0f;
@@ -78,14 +97,19 @@ private:
     int currentMidiNote = 0;
     float currentVelocity = 0.0f;
     float volumeLevel = 0.7f;
-
-    // LFO
-    double lfoPhase = 0.0;
-    double lfoFrequency = 2.0; // Hz
-    int lfoRate = 2; // 0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1/1
-    int lfoDestination = 0; // 0=Off, 1=Cutoff, 2=Resonance, 3=Volume
-    float lfoDepth = 0.5f;
     double currentBPM = 120.0;
+
+    // 10 Dedicated LFOs (one for each parameter)
+    LFO cutoffLFO;
+    LFO resonanceLFO;
+    LFO envModLFO;
+    LFO decayLFO;
+    LFO accentLFO;
+    LFO waveformLFO;
+    LFO subOscLFO;
+    LFO driveLFO;
+    LFO volumeLFO;
+    LFO delayMixLFO;
 
     // Helper functions
     double generateOscillator();
@@ -93,8 +117,9 @@ private:
     void processFilter(double& sample);
     void applySaturation(double& sample);
     void updateAngleDelta();
-    double getLFOValue();
-    void updateLFOFrequency();
+    double getLFOValue(LFO& lfo);
+    void updateLFOFrequency(LFO& lfo);
+    void advanceLFO(LFO& lfo);
 };
 
 //==============================================================================
