@@ -66,7 +66,6 @@ private:
     static constexpr const char* CUTOFF_ID = "cutoff";
     static constexpr const char* RESONANCE_ID = "resonance";
     static constexpr const char* ENV_MOD_ID = "envmod";
-    static constexpr const char* DECAY_ID = "decay";
     static constexpr const char* ACCENT_ID = "accent";
     static constexpr const char* WAVEFORM_ID = "waveform";
     static constexpr const char* SUB_OSC_ID = "subosc";
@@ -79,6 +78,18 @@ private:
     // Filter & Saturation Enhancement Parameters
     static constexpr const char* FILTER_FEEDBACK_ID = "filterfeedback";
     static constexpr const char* SATURATION_TYPE_ID = "saturationtype";
+
+    // Filter ADSR Parameters
+    static constexpr const char* FILTER_ATTACK_ID = "filterattack";
+    static constexpr const char* FILTER_DECAY_ID = "filterdecay";
+    static constexpr const char* FILTER_SUSTAIN_ID = "filtersustain";
+    static constexpr const char* FILTER_RELEASE_ID = "filterrelease";
+
+    // Amplitude ADSR Parameters
+    static constexpr const char* AMP_ATTACK_ID = "ampattack";
+    static constexpr const char* AMP_DECAY_ID = "ampdecay";
+    static constexpr const char* AMP_SUSTAIN_ID = "ampsustain";
+    static constexpr const char* AMP_RELEASE_ID = "amprelease";
 
     // Dedicated LFO Parameter IDs (Rate, Waveform, Depth for each parameter)
     static constexpr const char* CUTOFF_LFO_RATE_ID = "cutofflfor";

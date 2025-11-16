@@ -174,14 +174,51 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         Defaults::kEnvMod),
 
                     std::make_unique<juce::AudioParameterFloat>(
-                        DECAY_ID, "Decay",
-                        juce::NormalisableRange<float>(0.01f, 2.0f, 0.01f, 0.5f),
-                        Defaults::kDecay),
-
-                    std::make_unique<juce::AudioParameterFloat>(
                         ACCENT_ID, "Accent",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kAccent),
+
+                    // Filter ADSR Parameters
+                    std::make_unique<juce::AudioParameterFloat>(
+                        FILTER_ATTACK_ID, "Filter Attack",
+                        juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f, 0.5f),
+                        0.003f), // Default: 3ms fast attack
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        FILTER_DECAY_ID, "Filter Decay",
+                        juce::NormalisableRange<float>(0.001f, 5.0f, 0.001f, 0.5f),
+                        0.3f), // Default: 300ms
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        FILTER_SUSTAIN_ID, "Filter Sustain",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: no sustain (classic 303 behavior)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        FILTER_RELEASE_ID, "Filter Release",
+                        juce::NormalisableRange<float>(0.0f, 5.0f, 0.001f, 0.5f),
+                        0.1f), // Default: 100ms
+
+                    // Amplitude ADSR Parameters
+                    std::make_unique<juce::AudioParameterFloat>(
+                        AMP_ATTACK_ID, "Amp Attack",
+                        juce::NormalisableRange<float>(0.0f, 2.0f, 0.001f, 0.5f),
+                        0.003f), // Default: 3ms fast attack
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        AMP_DECAY_ID, "Amp Decay",
+                        juce::NormalisableRange<float>(0.001f, 5.0f, 0.001f, 0.5f),
+                        0.3f), // Default: 300ms
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        AMP_SUSTAIN_ID, "Amp Sustain",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: no sustain (classic 303 behavior)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        AMP_RELEASE_ID, "Amp Release",
+                        juce::NormalisableRange<float>(0.0f, 5.0f, 0.001f, 0.5f),
+                        0.1f), // Default: 100ms
 
                     std::make_unique<juce::AudioParameterFloat>(
                         WAVEFORM_ID, "Waveform",
@@ -594,7 +631,6 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     float cutoff = parameters.getRawParameterValue(CUTOFF_ID)->load();
     float resonance = parameters.getRawParameterValue(RESONANCE_ID)->load();
     float envMod = parameters.getRawParameterValue(ENV_MOD_ID)->load();
-    float decay = parameters.getRawParameterValue(DECAY_ID)->load();
     float accent = parameters.getRawParameterValue(ACCENT_ID)->load();
     float waveform = parameters.getRawParameterValue(WAVEFORM_ID)->load(); // Now float for morphing
     float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
@@ -602,6 +638,18 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
     float filterFeedback = parameters.getRawParameterValue(FILTER_FEEDBACK_ID)->load();
     int saturationType = static_cast<int>(parameters.getRawParameterValue(SATURATION_TYPE_ID)->load());
+
+    // Filter ADSR parameters
+    float filterAttack = parameters.getRawParameterValue(FILTER_ATTACK_ID)->load();
+    float filterDecay = parameters.getRawParameterValue(FILTER_DECAY_ID)->load();
+    float filterSustain = parameters.getRawParameterValue(FILTER_SUSTAIN_ID)->load();
+    float filterRelease = parameters.getRawParameterValue(FILTER_RELEASE_ID)->load();
+
+    // Amplitude ADSR parameters
+    float ampAttack = parameters.getRawParameterValue(AMP_ATTACK_ID)->load();
+    float ampDecay = parameters.getRawParameterValue(AMP_DECAY_ID)->load();
+    float ampSustain = parameters.getRawParameterValue(AMP_SUSTAIN_ID)->load();
+    float ampRelease = parameters.getRawParameterValue(AMP_RELEASE_ID)->load();
 
     // Dedicated LFO parameters (3 per parameter: rate, waveform, depth)
     int cutoffLFORate = static_cast<int>(parameters.getRawParameterValue(CUTOFF_LFO_RATE_ID)->load());
@@ -653,7 +701,6 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setCutoff(cutoff);
             voice->setResonance(resonance);
             voice->setEnvMod(envMod);
-            voice->setDecay(decay);
             voice->setAccent(accent);
             voice->setWaveform(waveform);
             voice->setSubOscMix(subOsc);
@@ -662,6 +709,10 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setBPM(currentBPM);
             voice->setFilterFeedback(filterFeedback);
             voice->setSaturationType(saturationType);
+
+            // Set ADSR parameters
+            voice->setFilterADSR(filterAttack, filterDecay, filterSustain, filterRelease);
+            voice->setAmpADSR(ampAttack, ampDecay, ampSustain, ampRelease);
 
             // Set all 10 dedicated LFOs
             voice->setCutoffLFO(cutoffLFORate, cutoffLFOWave, cutoffLFODepth);

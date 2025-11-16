@@ -32,7 +32,6 @@ public:
     void setCutoff(float cutoffHz);
     void setResonance(float resonance);
     void setEnvMod(float envMod);
-    void setDecay(float decaySeconds);
     void setAccent(float accent);
     void setWaveform(float waveformMorph); // 0.0 = saw, 1.0 = square, morph in between
     void setSubOscMix(float mix);
@@ -41,6 +40,10 @@ public:
     void setBPM(double bpm);
     void setFilterFeedback(float feedback);
     void setSaturationType(int type);
+
+    // ADSR setters
+    void setFilterADSR(float attack, float decay, float sustain, float release);
+    void setAmpADSR(float attack, float decay, float sustain, float release);
 
     // Dedicated LFO setters (for each of 10 parameters)
     void setCutoffLFO(int rate, int waveform, float depth);
@@ -86,15 +89,17 @@ private:
     double filter1 = 0.0;
     double filter2 = 0.0;
 
-    // Envelope
-    float envValue = 0.0f;
-    float envDecay = 0.3f;
+    // Envelope modulation amount and accent
     float envMod = 0.5f;
     float accentAmount = 0.0f;
 
-    // ADSR for amplitude
-    juce::ADSR adsr;
-    juce::ADSR::Parameters adsrParams;
+    // ADSR for filter envelope
+    juce::ADSR filterADSR;
+    juce::ADSR::Parameters filterADSRParams;
+
+    // ADSR for amplitude envelope
+    juce::ADSR ampADSR;
+    juce::ADSR::Parameters ampADSRParams;
 
     // Playback
     double sampleRate = 44100.0;
