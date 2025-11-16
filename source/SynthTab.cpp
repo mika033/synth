@@ -34,7 +34,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     cutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(cutoffSlider);
     cutoffLabel.setText("Cutoff", juce::dontSendNotification);
-    cutoffLabel.setJustificationType(juce::Justification::centredLeft);
+    cutoffLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(cutoffLabel);
     cutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "cutoff", cutoffSlider);
@@ -44,7 +44,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     resonanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(resonanceSlider);
     resonanceLabel.setText("Resonance", juce::dontSendNotification);
-    resonanceLabel.setJustificationType(juce::Justification::centredLeft);
+    resonanceLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(resonanceLabel);
     resonanceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "resonance", resonanceSlider);
@@ -54,7 +54,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     envModSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(envModSlider);
     envModLabel.setText("Env Mod", juce::dontSendNotification);
-    envModLabel.setJustificationType(juce::Justification::centredLeft);
+    envModLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(envModLabel);
     envModAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "envmod", envModSlider);
@@ -64,7 +64,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     decaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(decaySlider);
     decayLabel.setText("Decay", juce::dontSendNotification);
-    decayLabel.setJustificationType(juce::Justification::centredLeft);
+    decayLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(decayLabel);
     decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "decay", decaySlider);
@@ -74,7 +74,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     accentSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(accentSlider);
     accentLabel.setText("Accent", juce::dontSendNotification);
-    accentLabel.setJustificationType(juce::Justification::centredLeft);
+    accentLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(accentLabel);
     accentAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "accent", accentSlider);
@@ -84,7 +84,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     waveformSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(waveformSlider);
     waveformLabel.setText("Waveform", juce::dontSendNotification);
-    waveformLabel.setJustificationType(juce::Justification::centredLeft);
+    waveformLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(waveformLabel);
     waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "waveform", waveformSlider);
@@ -94,7 +94,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     subOscSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(subOscSlider);
     subOscLabel.setText("Sub Osc", juce::dontSendNotification);
-    subOscLabel.setJustificationType(juce::Justification::centredLeft);
+    subOscLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(subOscLabel);
     subOscAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "subosc", subOscSlider);
@@ -104,7 +104,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     driveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(driveSlider);
     driveLabel.setText("Drive", juce::dontSendNotification);
-    driveLabel.setJustificationType(juce::Justification::centredLeft);
+    driveLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(driveLabel);
     driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "drive", driveSlider);
@@ -114,7 +114,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(volumeSlider);
     volumeLabel.setText("Volume", juce::dontSendNotification);
-    volumeLabel.setJustificationType(juce::Justification::centredLeft);
+    volumeLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(volumeLabel);
     volumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "volume", volumeSlider);
@@ -134,7 +134,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     delayTimeSelector.addItem("1/1", 12);
     addAndMakeVisible(delayTimeSelector);
     delayTimeLabel.setText("Delay Time", juce::dontSendNotification);
-    delayTimeLabel.setJustificationType(juce::Justification::centredLeft);
+    delayTimeLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(delayTimeLabel);
     delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "delaytime", delayTimeSelector);
@@ -144,7 +144,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     delayFeedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(delayFeedbackSlider);
     delayFeedbackLabel.setText("Delay FB", juce::dontSendNotification);
-    delayFeedbackLabel.setJustificationType(juce::Justification::centredLeft);
+    delayFeedbackLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(delayFeedbackLabel);
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "delayfeedback", delayFeedbackSlider);
@@ -154,73 +154,14 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     delayMixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(delayMixSlider);
     delayMixLabel.setText("Delay Mix", juce::dontSendNotification);
-    delayMixLabel.setJustificationType(juce::Justification::centredLeft);
+    delayMixLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(delayMixLabel);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "delaymix", delayMixSlider);
-
-    // Setup all 10 dedicated LFO control sets
-    setupLFOControls(cutoffLFO, "cutofflfor", "cutofflfow", "cutofflfod");
-    setupLFOControls(resonanceLFO, "resonancelforate", "resonancelfowave", "resonancelfodepth");
-    setupLFOControls(envModLFO, "envmodlforate", "envmodlfowave", "envmodlfodepth");
-    setupLFOControls(decayLFO, "decaylforate", "decaylfowave", "decaylfodepth");
-    setupLFOControls(accentLFO, "accentlforate", "accentlfowave", "accentlfodepth");
-    setupLFOControls(waveformLFO, "waveformlforate", "waveformlfowave", "waveformlfodepth");
-    setupLFOControls(subOscLFO, "subosclforate", "subosclfowave", "subosclfodepth");
-    setupLFOControls(driveLFO, "drivelforate", "drivelfowave", "drivelfodepth");
-    setupLFOControls(volumeLFO, "volumelforate", "volumelfowave", "volumelfodepth");
-    setupLFOControls(delayMixLFO, "delaymixlforate", "delaymixlfowave", "delaymixlfodepth");
 }
 
 SynthTab::~SynthTab()
 {
-}
-
-void SynthTab::setupLFOControls(LFOControls& lfo,
-                                 const juce::String& rateParamID,
-                                 const juce::String& waveParamID,
-                                 const juce::String& depthParamID)
-{
-    // Setup LFO Rate selector (IDs must start at 1, not 0 - JUCE requirement)
-    lfo.rateSelector.addItem("1/16", 1);
-    lfo.rateSelector.addItem("1/8", 2);
-    lfo.rateSelector.addItem("1/4", 3);
-    lfo.rateSelector.addItem("1/3", 4);
-    lfo.rateSelector.addItem("1/2", 5);
-    lfo.rateSelector.addItem("3/4", 6);
-    lfo.rateSelector.addItem("1/1", 7);
-    lfo.rateSelector.addItem("3/2", 8);
-    lfo.rateSelector.addItem("2/1", 9);
-    lfo.rateSelector.addItem("3/1", 10);
-    lfo.rateSelector.addItem("4/1", 11);
-    lfo.rateSelector.addItem("6/1", 12);
-    lfo.rateSelector.addItem("8/1", 13);
-    lfo.rateSelector.addItem("12/1", 14);
-    lfo.rateSelector.addItem("16/1", 15);
-    lfo.rateSelector.setTooltip("Rate");
-    addAndMakeVisible(lfo.rateSelector);
-    lfo.rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.getValueTreeState(), rateParamID, lfo.rateSelector);
-
-    // Setup LFO Waveform selector (IDs must start at 1, not 0 - JUCE requirement)
-    lfo.waveformSelector.addItem("Sine", 1);
-    lfo.waveformSelector.addItem("Triangle", 2);
-    lfo.waveformSelector.addItem("Saw Up", 3);
-    lfo.waveformSelector.addItem("Saw Dn", 4);
-    lfo.waveformSelector.addItem("Square", 5);
-    lfo.waveformSelector.addItem("Random", 6);
-    lfo.waveformSelector.setTooltip("Wave");
-    addAndMakeVisible(lfo.waveformSelector);
-    lfo.waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.getValueTreeState(), waveParamID, lfo.waveformSelector);
-
-    // Setup LFO Depth slider
-    lfo.depthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    lfo.depthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    lfo.depthSlider.setTooltip("Depth");
-    addAndMakeVisible(lfo.depthSlider);
-    lfo.depthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), depthParamID, lfo.depthSlider);
 }
 
 //==============================================================================
@@ -229,66 +170,69 @@ void SynthTab::paint(juce::Graphics& g)
     // Draw panel background
     g.fillAll(juce::Colour(0xff2a2a2a));
 
-    // Draw row separators
+    // Draw section backgrounds
     g.setColour(juce::Colour(0xff3a3a3a));
-    for (int i = 1; i <= 10; ++i)
-    {
-        int y = 5 + i * 60;
-        g.drawLine(10.0f, static_cast<float>(y), static_cast<float>(getWidth() - 10), static_cast<float>(y), 1.0f);
-    }
+    g.fillRoundedRectangle(20, 60, getWidth() - 40, 280, 10); // Filter/Envelope section
+    g.fillRoundedRectangle(20, 360, getWidth() - 40, 180, 10); // Oscillator section
+    g.fillRoundedRectangle(20, 560, getWidth() - 40, 180, 10); // Delay section
+
+    // Draw section labels
+    g.setColour(juce::Colours::lightgrey);
+    g.setFont(14.0f);
+    g.drawText("FILTER & ENVELOPE", 30, 65, 200, 20, juce::Justification::left);
+    g.drawText("OSCILLATOR", 30, 365, 200, 20, juce::Justification::left);
+    g.drawText("DELAY", 30, 565, 200, 20, juce::Justification::left);
 }
 
 void SynthTab::resized()
 {
-    const int knobSize = 50;  // All knobs same size
-    const int rowHeight = 60;
-    const int startY = 20;
-    const int paramLabelX = 20;
-    const int paramKnobX = 120;
-    const int lfoStartX = 200;
-    const int lfoSpacing = 120;
+    const int knobSize = 80;
+    const int labelHeight = 20;
+    const int spacing = 130;
 
     // Preset selector at the top
-    presetLabel.setBounds(getWidth() - 220, 5, 60, 20);
-    presetSelector.setBounds(getWidth() - 150, 5, 130, 25);
+    presetLabel.setBounds(getWidth() - 220, 15, 60, 20);
+    presetSelector.setBounds(getWidth() - 150, 15, 130, 25);
 
-    // Row-based layout helper lambda
-    auto layoutRow = [&](int rowIndex, juce::Slider& paramSlider, juce::Label& paramLabel, LFOControls& lfo)
-    {
-        int y = startY + rowIndex * rowHeight;
+    // Filter & Envelope section
+    int filterY = 100;
+    cutoffLabel.setBounds(50, filterY + knobSize, knobSize, labelHeight);
+    cutoffSlider.setBounds(50, filterY, knobSize, knobSize);
 
-        // Main parameter
-        paramLabel.setBounds(paramLabelX, y + 10, 90, 20);
-        paramSlider.setBounds(paramKnobX, y, knobSize, knobSize);
+    resonanceLabel.setBounds(50 + spacing, filterY + knobSize, knobSize, labelHeight);
+    resonanceSlider.setBounds(50 + spacing, filterY, knobSize, knobSize);
 
-        // LFO Rate selector
-        lfo.rateSelector.setBounds(lfoStartX, y + 12, 80, 26);
+    envModLabel.setBounds(50 + spacing * 2, filterY + knobSize, knobSize, labelHeight);
+    envModSlider.setBounds(50 + spacing * 2, filterY, knobSize, knobSize);
 
-        // LFO Waveform selector
-        lfo.waveformSelector.setBounds(lfoStartX + lfoSpacing, y + 12, 80, 26);
+    decayLabel.setBounds(50 + spacing * 3, filterY + knobSize, knobSize, labelHeight);
+    decaySlider.setBounds(50 + spacing * 3, filterY, knobSize, knobSize);
 
-        // LFO Depth knob
-        lfo.depthSlider.setBounds(lfoStartX + lfoSpacing * 2, y, knobSize, knobSize);
-    };
+    accentLabel.setBounds(50 + spacing * 4, filterY + knobSize, knobSize, labelHeight);
+    accentSlider.setBounds(50 + spacing * 4, filterY, knobSize, knobSize);
 
-    // Layout all 10 rows with dedicated LFO controls
-    layoutRow(0, cutoffSlider, cutoffLabel, cutoffLFO);
-    layoutRow(1, resonanceSlider, resonanceLabel, resonanceLFO);
-    layoutRow(2, envModSlider, envModLabel, envModLFO);
-    layoutRow(3, decaySlider, decayLabel, decayLFO);
-    layoutRow(4, accentSlider, accentLabel, accentLFO);
-    layoutRow(5, waveformSlider, waveformLabel, waveformLFO);
-    layoutRow(6, subOscSlider, subOscLabel, subOscLFO);
-    layoutRow(7, driveSlider, driveLabel, driveLFO);
-    layoutRow(8, volumeSlider, volumeLabel, volumeLFO);
+    // Oscillator section
+    int oscY = 400;
+    waveformLabel.setBounds(50, oscY + knobSize, knobSize, labelHeight);
+    waveformSlider.setBounds(50, oscY, knobSize, knobSize);
 
-    // Row 9: Delay Mix with LFO controls
-    layoutRow(9, delayMixSlider, delayMixLabel, delayMixLFO);
+    subOscLabel.setBounds(50 + spacing, oscY + knobSize, knobSize, labelHeight);
+    subOscSlider.setBounds(50 + spacing, oscY, knobSize, knobSize);
 
-    // Row 10: Delay Time and Delay Feedback (no LFOs for these)
-    int delayRow1Y = startY + 10 * rowHeight;
-    delayTimeLabel.setBounds(paramLabelX, delayRow1Y + 10, 90, 20);
-    delayTimeSelector.setBounds(paramKnobX, delayRow1Y + 12, 80, 26);
+    driveLabel.setBounds(50 + spacing * 2, oscY + knobSize, knobSize, labelHeight);
+    driveSlider.setBounds(50 + spacing * 2, oscY, knobSize, knobSize);
 
-    delayFeedbackSlider.setBounds(lfoStartX, delayRow1Y, knobSize, knobSize);
+    volumeLabel.setBounds(50 + spacing * 3, oscY + knobSize, knobSize, labelHeight);
+    volumeSlider.setBounds(50 + spacing * 3, oscY, knobSize, knobSize);
+
+    // Delay section
+    int delayY = 600;
+    delayTimeLabel.setBounds(50, delayY + knobSize, knobSize, labelHeight);
+    delayTimeSelector.setBounds(50 + 10, delayY + 30, 60, 25);
+
+    delayFeedbackLabel.setBounds(50 + spacing, delayY + knobSize, knobSize, labelHeight);
+    delayFeedbackSlider.setBounds(50 + spacing, delayY, knobSize, knobSize);
+
+    delayMixLabel.setBounds(50 + spacing * 2, delayY + knobSize, knobSize, labelHeight);
+    delayMixSlider.setBounds(50 + spacing * 2, delayY, knobSize, knobSize);
 }

@@ -5,6 +5,7 @@
 #include "PluginProcessor.h"
 #include "SynthTab.h"
 #include "SequencerTab.h"
+#include "ModulationTab.h"
 
 //==============================================================================
 /**
@@ -29,6 +30,7 @@ private:
     // Tab components
     std::unique_ptr<SynthTab> synthTab;
     std::unique_ptr<SequencerTab> sequencerTab;
+    std::unique_ptr<ModulationTab> modulationTab;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessorEditor)
 };

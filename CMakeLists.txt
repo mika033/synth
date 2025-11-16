@@ -63,6 +63,7 @@ target_sources(${PLUGIN_NAME} PRIVATE
     source/AcidVoice.cpp
     source/SynthTab.cpp
     source/SequencerTab.cpp
+    source/ModulationTab.cpp
 )
 
 # Header files
