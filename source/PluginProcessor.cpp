@@ -165,7 +165,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
                     std::make_unique<juce::AudioParameterFloat>(
                         RESONANCE_ID, "Resonance",
-                        juce::NormalisableRange<float>(0.0f, 0.95f, 0.01f),
+                        juce::NormalisableRange<float>(0.0f, 1.5f, 0.01f),
                         Defaults::kResonance),
 
                     std::make_unique<juce::AudioParameterFloat>(
@@ -202,6 +202,17 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         VOLUME_ID, "Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kVolume),
+
+                    // Filter & Saturation Enhancement Parameters
+                    std::make_unique<juce::AudioParameterFloat>(
+                        FILTER_FEEDBACK_ID, "Filter Feedback",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: no feedback
+
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SATURATION_TYPE_ID, "Saturation Type",
+                        juce::StringArray{"Clean", "Warm", "Tube", "Hard", "Acid"},
+                        0), // Default: Clean
 
                     // Delay Parameters
                     std::make_unique<juce::AudioParameterChoice>(

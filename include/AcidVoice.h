@@ -39,6 +39,8 @@ public:
     void setDrive(float drive);
     void setVolume(float volume);
     void setBPM(double bpm);
+    void setFilterFeedback(float feedback);
+    void setSaturationType(int type);
 
     // Dedicated LFO setters (for each of 10 parameters)
     void setCutoffLFO(int rate, int waveform, float depth);
@@ -75,10 +77,12 @@ private:
 
     // Saturation/Drive
     float driveAmount = 0.0f;
+    int saturationType = 0; // 0=Clean, 1=Warm, 2=Tube, 3=Hard, 4=Acid
 
     // Filter (resonant low-pass)
     double filterCutoff = 1000.0;
     double filterResonance = 0.7;
+    float filterFeedback = 0.0f;
     double filter1 = 0.0;
     double filter2 = 0.0;
 

@@ -252,6 +252,16 @@ void AcidVoice::setBPM(double bpm)
     updateLFOFrequency(delayMixLFO);
 }
 
+void AcidVoice::setFilterFeedback(float feedback)
+{
+    filterFeedback = juce::jlimit(0.0f, 1.0f, feedback);
+}
+
+void AcidVoice::setSaturationType(int type)
+{
+    saturationType = juce::jlimit(0, 4, type); // 0=Clean, 1=Warm, 2=Tube, 3=Hard, 4=Acid
+}
+
 // Dedicated LFO setters
 void AcidVoice::setCutoffLFO(int rate, int waveform, float depth)
 {
