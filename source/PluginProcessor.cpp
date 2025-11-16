@@ -746,11 +746,28 @@ void AcidSynthAudioProcessor::loadPreset(int presetIndex)
     parameters.getParameter(ENV_MOD_ID)->setValueNotifyingHost(
         parameters.getParameterRange(ENV_MOD_ID).convertTo0to1(preset.envMod));
 
-    parameters.getParameter(DECAY_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(DECAY_ID).convertTo0to1(preset.decay));
-
     parameters.getParameter(ACCENT_ID)->setValueNotifyingHost(
         parameters.getParameterRange(ACCENT_ID).convertTo0to1(preset.accent));
+
+    // Set Filter ADSR parameters (use default values for now - will update presets later)
+    parameters.getParameter(FILTER_ATTACK_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(FILTER_ATTACK_ID).convertTo0to1(0.003f));
+    parameters.getParameter(FILTER_DECAY_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(FILTER_DECAY_ID).convertTo0to1(0.3f));
+    parameters.getParameter(FILTER_SUSTAIN_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(FILTER_SUSTAIN_ID).convertTo0to1(0.0f));
+    parameters.getParameter(FILTER_RELEASE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(FILTER_RELEASE_ID).convertTo0to1(0.1f));
+
+    // Set Amplitude ADSR parameters (use default values for now - will update presets later)
+    parameters.getParameter(AMP_ATTACK_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(AMP_ATTACK_ID).convertTo0to1(0.003f));
+    parameters.getParameter(AMP_DECAY_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(AMP_DECAY_ID).convertTo0to1(0.3f));
+    parameters.getParameter(AMP_SUSTAIN_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(AMP_SUSTAIN_ID).convertTo0to1(0.0f));
+    parameters.getParameter(AMP_RELEASE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(AMP_RELEASE_ID).convertTo0to1(0.1f));
 
     parameters.getParameter(WAVEFORM_ID)->setValueNotifyingHost(preset.waveform);
 

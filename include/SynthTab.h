@@ -37,6 +37,18 @@ private:
     juce::ComboBox delayTimeSelector;
     juce::ComboBox presetSelector;
 
+    // Filter ADSR sliders
+    juce::Slider filterAttackSlider;
+    juce::Slider filterDecaySlider;
+    juce::Slider filterSustainSlider;
+    juce::Slider filterReleaseSlider;
+
+    // Amplitude ADSR sliders
+    juce::Slider ampAttackSlider;
+    juce::Slider ampDecaySlider;
+    juce::Slider ampSustainSlider;
+    juce::Slider ampReleaseSlider;
+
     // Main parameter labels
     juce::Label cutoffLabel;
     juce::Label resonanceLabel;
@@ -54,6 +66,18 @@ private:
     juce::Label delayMixLabel;
     juce::Label presetLabel;
 
+    // Filter ADSR labels
+    juce::Label filterAttackLabel;
+    juce::Label filterDecayLabel;
+    juce::Label filterSustainLabel;
+    juce::Label filterReleaseLabel;
+
+    // Amplitude ADSR labels
+    juce::Label ampAttackLabel;
+    juce::Label ampDecayLabel;
+    juce::Label ampSustainLabel;
+    juce::Label ampReleaseLabel;
+
     // Main parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> resonanceAttachment;
@@ -69,6 +93,18 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> delayTimeAttachment;
+
+    // Filter ADSR attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterAttackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterDecayAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterSustainAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterReleaseAttachment;
+
+    // Amplitude ADSR attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> ampAttackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> ampDecayAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> ampSustainAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> ampReleaseAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthTab)
 };
