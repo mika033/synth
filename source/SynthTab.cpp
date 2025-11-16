@@ -158,6 +158,29 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     addAndMakeVisible(delayMixLabel);
     delayMixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "delaymix", delayMixSlider);
+
+    // Configure Filter Feedback slider
+    filterFeedbackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    filterFeedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(filterFeedbackSlider);
+    filterFeedbackLabel.setText("Filter FB", juce::dontSendNotification);
+    filterFeedbackLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(filterFeedbackLabel);
+    filterFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "filterfeedback", filterFeedbackSlider);
+
+    // Configure Saturation Type selector (IDs must start at 1, not 0 - JUCE requirement)
+    saturationTypeSelector.addItem("Clean", 1);
+    saturationTypeSelector.addItem("Warm", 2);
+    saturationTypeSelector.addItem("Tube", 3);
+    saturationTypeSelector.addItem("Hard", 4);
+    saturationTypeSelector.addItem("Acid", 5);
+    addAndMakeVisible(saturationTypeSelector);
+    saturationTypeLabel.setText("Saturation", juce::dontSendNotification);
+    saturationTypeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(saturationTypeLabel);
+    saturationTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "saturationtype", saturationTypeSelector);
 }
 
 SynthTab::~SynthTab()
@@ -210,6 +233,14 @@ void SynthTab::resized()
 
     accentLabel.setBounds(50 + spacing * 4, filterY + knobSize, knobSize, labelHeight);
     accentSlider.setBounds(50 + spacing * 4, filterY, knobSize, knobSize);
+
+    // Second row of Filter section - Feedback & Saturation
+    int filterY2 = filterY + 140;
+    filterFeedbackLabel.setBounds(50, filterY2 + knobSize, knobSize, labelHeight);
+    filterFeedbackSlider.setBounds(50, filterY2, knobSize, knobSize);
+
+    saturationTypeLabel.setBounds(50 + spacing, filterY2 + knobSize, knobSize, labelHeight);
+    saturationTypeSelector.setBounds(50 + spacing + 10, filterY2 + 30, 60, 25);
 
     // Oscillator section
     int oscY = 400;
