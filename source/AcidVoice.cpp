@@ -111,8 +111,19 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         // Update filter envelope with modulated decay
         envValue *= (1.0f - modulatedDecay * 0.01f);
 
+        // Apply accent LFO modulation to envelope value for rhythmic filter movement
+        float accentModulation = 1.0f + static_cast<float>(accentLFOValue) * accentLFO.depth * 0.5f;
+        float modulatedEnvValue = envValue * accentModulation;
+
+        // Store original envValue
+        float originalEnvValue = envValue;
+        envValue = modulatedEnvValue;
+
         // Process through resonant filter (with dedicated cutoff and resonance LFOs)
         processFilter(sample, cutoffLFOValue, resonanceLFOValue, modulatedEnvMod);
+
+        // Restore original envValue
+        envValue = originalEnvValue;
 
         // Apply drive LFO modulation
         float modulatedDrive = driveAmount + static_cast<float>(driveLFOValue) * driveLFO.depth;

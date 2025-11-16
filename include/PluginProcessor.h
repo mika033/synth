@@ -132,6 +132,17 @@ private:
     double currentSampleRate = 44100.0;
     double currentBPM = 120.0;
 
+    // Delay Mix LFO state
+    struct DelayMixLFO {
+        double phase = 0.0;
+        double frequency = 2.0;
+        int rate = 6;  // Index 6 = 1/1
+        int waveform = 0; // 0=Sine
+        float depth = 0.0f;
+        float lastRandomValue = 0.0f;
+    };
+    DelayMixLFO delayMixLFO;
+
     // Arpeggiator state
     std::vector<int> heldNotes; // Currently held MIDI notes
     int currentArpNote = 0;      // Index into heldNotes
@@ -144,6 +155,11 @@ private:
     void processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples);
     double getArpStepLengthInSamples() const;
     int getNextArpNote();
+
+    // Delay Mix LFO helper functions
+    void updateDelayMixLFO();
+    double getDelayMixLFOValue();
+    void advanceDelayMixLFO();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)

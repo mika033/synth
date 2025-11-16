@@ -490,7 +490,10 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     // Apply delay effect
     float delayMix = parameters.getRawParameterValue(DELAY_MIX_ID)->load();
 
-    if (delayMix > 0.001f)
+    // Update delay mix LFO settings
+    updateDelayMixLFO();
+
+    if (delayMix > 0.001f || delayMixLFO.depth > 0.001f)
     {
         int delayTime = static_cast<int>(parameters.getRawParameterValue(DELAY_TIME_ID)->load());
         float delayFeedback = parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load();
@@ -526,6 +529,11 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
             for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
             {
+                // Get delay mix LFO value and apply modulation
+                double lfoValue = getDelayMixLFOValue();
+                float modulatedDelayMix = delayMix + static_cast<float>(lfoValue) * delayMixLFO.depth;
+                modulatedDelayMix = juce::jlimit(0.0f, 1.0f, modulatedDelayMix);
+
                 // Read delayed sample
                 float delayedSample = delayLine.popSample(channel);
 
@@ -536,8 +544,12 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                 // Push to delay line
                 delayLine.pushSample(channel, feedbackSample);
 
-                // Mix dry and wet
-                channelData[sample] = inputSample * (1.0f - delayMix) + delayedSample * delayMix;
+                // Mix dry and wet with LFO-modulated mix
+                channelData[sample] = inputSample * (1.0f - modulatedDelayMix) + delayedSample * modulatedDelayMix;
+
+                // Advance LFO phase (only on channel 0 to avoid double-advancing)
+                if (channel == 0)
+                    advanceDelayMixLFO();
             }
         }
     }
@@ -895,6 +907,65 @@ int AcidSynthAudioProcessor::getNextArpNote()
     currentArpNote++;
 
     return juce::jlimit(0, 127, midiNote);
+}
+
+//==============================================================================
+// Delay Mix LFO Implementation
+
+void AcidSynthAudioProcessor::updateDelayMixLFO()
+{
+    // Read current LFO settings from parameters
+    delayMixLFO.rate = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_RATE_ID)->load());
+    delayMixLFO.waveform = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_WAVE_ID)->load());
+    delayMixLFO.depth = parameters.getRawParameterValue(DELAYMIX_LFO_DEPTH_ID)->load();
+
+    // Calculate LFO frequency based on rate (tempo-synced)
+    // Rates: 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1/1, 2/1, 3/1, 4/1, 6/1, 8/1, 12/1, 16/1
+    const double rateMultipliers[] = {16.0, 8.0, 4.0, 3.0, 2.0, 1.333, 1.0, 0.5, 0.333, 0.25, 0.167, 0.125, 0.083, 0.0625};
+    int rateIndex = juce::jlimit(0, 13, delayMixLFO.rate);
+    double beatsPerSecond = currentBPM / 60.0;
+    delayMixLFO.frequency = beatsPerSecond * rateMultipliers[rateIndex];
+}
+
+double AcidSynthAudioProcessor::getDelayMixLFOValue()
+{
+    // Generate LFO value based on waveform type
+    double value = 0.0;
+
+    switch (delayMixLFO.waveform)
+    {
+        case 0: // Sine
+            value = std::sin(delayMixLFO.phase);
+            break;
+        case 1: // Triangle
+            value = 2.0 * std::abs(2.0 * (delayMixLFO.phase / juce::MathConstants<double>::twoPi - 0.5)) - 1.0;
+            break;
+        case 2: // Saw Up
+            value = 2.0 * (delayMixLFO.phase / juce::MathConstants<double>::twoPi) - 1.0;
+            break;
+        case 3: // Saw Down
+            value = 1.0 - 2.0 * (delayMixLFO.phase / juce::MathConstants<double>::twoPi);
+            break;
+        case 4: // Square
+            value = (delayMixLFO.phase < juce::MathConstants<double>::pi) ? 1.0 : -1.0;
+            break;
+        case 5: // Random (sample & hold)
+            if (delayMixLFO.phase < juce::MathConstants<double>::pi && delayMixLFO.phase + (delayMixLFO.frequency * juce::MathConstants<double>::twoPi / currentSampleRate) >= juce::MathConstants<double>::pi)
+            {
+                delayMixLFO.lastRandomValue = (static_cast<float>(rand()) / RAND_MAX) * 2.0f - 1.0f;
+            }
+            value = delayMixLFO.lastRandomValue;
+            break;
+    }
+
+    return value; // Returns -1 to +1
+}
+
+void AcidSynthAudioProcessor::advanceDelayMixLFO()
+{
+    delayMixLFO.phase += delayMixLFO.frequency * juce::MathConstants<double>::twoPi / currentSampleRate;
+    if (delayMixLFO.phase >= juce::MathConstants<double>::twoPi)
+        delayMixLFO.phase -= juce::MathConstants<double>::twoPi;
 }
 
 //==============================================================================
