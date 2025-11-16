@@ -38,34 +38,77 @@ namespace Defaults
 //==============================================================================
 // Factory Presets
 static const Preset kPresets[] = {
-    // Name, Cutoff, Resonance, EnvMod, Decay, Accent, Waveform, SubOsc, Drive, Volume, LFORate, LFODest, LFODepth, DelayTime, DelayFeedback, DelayMix
+    // Classic 303 Bass (Fat & Punchy) - No LFOs for traditional sound
+    { "Classic 303 Bass",
+      750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0.0f, 0.5f, 0.3f, 0.7f,
+      6, 0.3f, 0.0f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Classic 303 Bass (Fat & Punchy)
-    { "Classic 303 Bass", 750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0, 0.5f, 0.3f, 0.7f, 2, 0, 0.5f, 6, 0.3f, 0.0f },
+    // Squelchy Lead (Maximum Expression) - Cutoff LFO for movement
+    { "Squelchy Lead",
+      400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1.0f, 0.25f, 0.6f, 0.6f,
+      4, 0.4f, 0.2f,
+      {1, 0, 0.7f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Squelchy Lead (Maximum Expression)
-    { "Squelchy Lead", 400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1, 0.25f, 0.6f, 0.6f, 2, 1, 0.7f, 4, 0.4f, 0.2f },
+    // Deep Rumble (Sub-Heavy) - Volume LFO for subtle pulse
+    { "Deep Rumble",
+      300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0.0f, 0.8f, 0.2f, 0.5f,
+      9, 0.2f, 0.0f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {2, 0, 0.3f}, {6, 0, 0.0f}
+    },
 
-    // Deep Rumble (Sub-Heavy)
-    { "Deep Rumble", 300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0, 0.8f, 0.2f, 0.5f, 3, 0, 0.3f, 9, 0.2f, 0.0f },
+    // Aggressive Distorted Lead - Resonance LFO for aggression
+    { "Aggressive Lead",
+      1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1.0f, 0.1f, 0.85f, 0.6f,
+      7, 0.5f, 0.3f,
+      {6, 0, 0.0f}, {1, 0, 0.6f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Aggressive Distorted Lead
-    { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f, 1, 2, 0.6f, 7, 0.5f, 0.3f },
+    // Pulsing Bass - Cutoff LFO at 1/8 rate
+    { "Pulsing Bass",
+      600.0f, 0.75f, 0.7f, 0.4f, 0.6f, 0.0f, 0.6f, 0.2f, 0.65f,
+      6, 0.3f, 0.1f,
+      {1, 0, 0.8f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Pulsing Bass (LFO Cutoff)
-    { "Pulsing Bass", 600.0f, 0.75f, 0.7f, 0.4f, 0.6f, 0, 0.6f, 0.2f, 0.65f, 2, 1, 0.8f, 6, 0.3f, 0.1f },
+    // Dub Delay Bass - No LFOs (relies on delay effect)
+    { "Dub Delay Bass",
+      500.0f, 0.7f, 0.5f, 0.35f, 0.5f, 0.0f, 0.7f, 0.1f, 0.6f,
+      7, 0.6f, 0.4f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Dub Delay Bass
-    { "Dub Delay Bass", 500.0f, 0.7f, 0.5f, 0.35f, 0.5f, 0, 0.7f, 0.1f, 0.6f, 2, 0, 0.3f, 7, 0.6f, 0.4f },
+    // Wobble Bass - Resonance LFO at faster rate
+    { "Wobble Bass",
+      800.0f, 0.85f, 0.8f, 0.3f, 0.7f, 0.0f, 0.4f, 0.3f, 0.7f,
+      3, 0.2f, 0.0f,
+      {6, 0, 0.0f}, {1, 0, 0.75f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    },
 
-    // Wobble Bass (LFO Resonance)
-    { "Wobble Bass", 800.0f, 0.85f, 0.8f, 0.3f, 0.7f, 0, 0.4f, 0.3f, 0.7f, 1, 2, 0.75f, 3, 0.2f, 0.0f },
+    // Soft Pad - Volume LFO for subtle modulation
+    { "Soft Pad",
+      1200.0f, 0.5f, 0.3f, 0.8f, 0.2f, 1.0f, 0.3f, 0.0f, 0.5f,
+      10, 0.7f, 0.5f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {2, 0, 0.4f}, {6, 0, 0.0f}
+    },
 
-    // Soft Pad (Square + Delay)
-    { "Soft Pad", 1200.0f, 0.5f, 0.3f, 0.8f, 0.2f, 1, 0.3f, 0.0f, 0.5f, 3, 3, 0.4f, 10, 0.7f, 0.5f },
-
-    // Init (default clean sound)
-    { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f, 2, 0, 0.5f, 6, 0.3f, 0.0f }
+    // Init (default clean sound) - All LFOs disabled
+    { "Init",
+      1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0.0f, 0.5f, 0.0f, 0.7f,
+      6, 0.3f, 0.0f,
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
+      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
+    }
 };
 
 static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
@@ -560,8 +603,7 @@ void AcidSynthAudioProcessor::loadPreset(int presetIndex)
     parameters.getParameter(ACCENT_ID)->setValueNotifyingHost(
         parameters.getParameterRange(ACCENT_ID).convertTo0to1(preset.accent));
 
-    parameters.getParameter(WAVEFORM_ID)->setValueNotifyingHost(
-        static_cast<float>(preset.waveform));
+    parameters.getParameter(WAVEFORM_ID)->setValueNotifyingHost(preset.waveform);
 
     parameters.getParameter(SUB_OSC_ID)->setValueNotifyingHost(
         parameters.getParameterRange(SUB_OSC_ID).convertTo0to1(preset.subOsc));
@@ -572,14 +614,46 @@ void AcidSynthAudioProcessor::loadPreset(int presetIndex)
     parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
         parameters.getParameterRange(VOLUME_ID).convertTo0to1(preset.volume));
 
-    parameters.getParameter(LFO_RATE_ID)->setValueNotifyingHost(
-        static_cast<float>(preset.lfoRate));
+    // Load all 10 dedicated LFO settings
+    parameters.getParameter(CUTOFF_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.cutoffLFO.rate));
+    parameters.getParameter(CUTOFF_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.cutoffLFO.waveform));
+    parameters.getParameter(CUTOFF_LFO_DEPTH_ID)->setValueNotifyingHost(preset.cutoffLFO.depth);
 
-    parameters.getParameter(LFO_DEST_ID)->setValueNotifyingHost(
-        static_cast<float>(preset.lfoDest));
+    parameters.getParameter(RESONANCE_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.resonanceLFO.rate));
+    parameters.getParameter(RESONANCE_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.resonanceLFO.waveform));
+    parameters.getParameter(RESONANCE_LFO_DEPTH_ID)->setValueNotifyingHost(preset.resonanceLFO.depth);
 
-    parameters.getParameter(LFO_DEPTH_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(LFO_DEPTH_ID).convertTo0to1(preset.lfoDepth));
+    parameters.getParameter(ENVMOD_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.envModLFO.rate));
+    parameters.getParameter(ENVMOD_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.envModLFO.waveform));
+    parameters.getParameter(ENVMOD_LFO_DEPTH_ID)->setValueNotifyingHost(preset.envModLFO.depth);
+
+    parameters.getParameter(DECAY_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.decayLFO.rate));
+    parameters.getParameter(DECAY_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.decayLFO.waveform));
+    parameters.getParameter(DECAY_LFO_DEPTH_ID)->setValueNotifyingHost(preset.decayLFO.depth);
+
+    parameters.getParameter(ACCENT_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.accentLFO.rate));
+    parameters.getParameter(ACCENT_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.accentLFO.waveform));
+    parameters.getParameter(ACCENT_LFO_DEPTH_ID)->setValueNotifyingHost(preset.accentLFO.depth);
+
+    parameters.getParameter(WAVEFORM_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.waveformLFO.rate));
+    parameters.getParameter(WAVEFORM_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.waveformLFO.waveform));
+    parameters.getParameter(WAVEFORM_LFO_DEPTH_ID)->setValueNotifyingHost(preset.waveformLFO.depth);
+
+    parameters.getParameter(SUBOSC_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.subOscLFO.rate));
+    parameters.getParameter(SUBOSC_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.subOscLFO.waveform));
+    parameters.getParameter(SUBOSC_LFO_DEPTH_ID)->setValueNotifyingHost(preset.subOscLFO.depth);
+
+    parameters.getParameter(DRIVE_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.driveLFO.rate));
+    parameters.getParameter(DRIVE_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.driveLFO.waveform));
+    parameters.getParameter(DRIVE_LFO_DEPTH_ID)->setValueNotifyingHost(preset.driveLFO.depth);
+
+    parameters.getParameter(VOLUME_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.volumeLFO.rate));
+    parameters.getParameter(VOLUME_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.volumeLFO.waveform));
+    parameters.getParameter(VOLUME_LFO_DEPTH_ID)->setValueNotifyingHost(preset.volumeLFO.depth);
+
+    parameters.getParameter(DELAYMIX_LFO_RATE_ID)->setValueNotifyingHost(static_cast<float>(preset.delayMixLFO.rate));
+    parameters.getParameter(DELAYMIX_LFO_WAVE_ID)->setValueNotifyingHost(static_cast<float>(preset.delayMixLFO.waveform));
+    parameters.getParameter(DELAYMIX_LFO_DEPTH_ID)->setValueNotifyingHost(preset.delayMixLFO.depth);
 
     parameters.getParameter(DELAY_TIME_ID)->setValueNotifyingHost(
         static_cast<float>(preset.delayTime));
