@@ -158,9 +158,9 @@ void AcidVoice::setAccent(float accent)
     accentAmount = juce::jlimit(0.0f, 1.0f, accent);
 }
 
-void AcidVoice::setWaveform(int waveformType)
+void AcidVoice::setWaveform(float morph)
 {
-    waveform = waveformType;
+    waveformMorph = juce::jlimit(0.0f, 1.0f, morph);
 }
 
 void AcidVoice::setSubOscMix(float mix)
@@ -178,42 +178,111 @@ void AcidVoice::setVolume(float volume)
     volumeLevel = juce::jlimit(0.0f, 1.0f, volume);
 }
 
-void AcidVoice::setLFORate(int rate)
-{
-    lfoRate = juce::jlimit(0, 4, rate);
-    updateLFOFrequency();
-}
-
-void AcidVoice::setLFODestination(int dest)
-{
-    lfoDestination = juce::jlimit(0, 3, dest);
-}
-
-void AcidVoice::setLFODepth(float depth)
-{
-    lfoDepth = juce::jlimit(0.0f, 1.0f, depth);
-}
-
 void AcidVoice::setBPM(double bpm)
 {
     currentBPM = juce::jlimit(20.0, 999.0, bpm);
-    updateLFOFrequency();
+    // Update all LFO frequencies when BPM changes
+    updateLFOFrequency(cutoffLFO);
+    updateLFOFrequency(resonanceLFO);
+    updateLFOFrequency(envModLFO);
+    updateLFOFrequency(decayLFO);
+    updateLFOFrequency(accentLFO);
+    updateLFOFrequency(waveformLFO);
+    updateLFOFrequency(subOscLFO);
+    updateLFOFrequency(driveLFO);
+    updateLFOFrequency(volumeLFO);
+    updateLFOFrequency(delayMixLFO);
+}
+
+// Dedicated LFO setters
+void AcidVoice::setCutoffLFO(int rate, int waveform, float depth)
+{
+    cutoffLFO.rate = juce::jlimit(0, 13, rate);
+    cutoffLFO.waveform = juce::jlimit(0, 5, waveform);
+    cutoffLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(cutoffLFO);
+}
+
+void AcidVoice::setResonanceLFO(int rate, int waveform, float depth)
+{
+    resonanceLFO.rate = juce::jlimit(0, 13, rate);
+    resonanceLFO.waveform = juce::jlimit(0, 5, waveform);
+    resonanceLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(resonanceLFO);
+}
+
+void AcidVoice::setEnvModLFO(int rate, int waveform, float depth)
+{
+    envModLFO.rate = juce::jlimit(0, 13, rate);
+    envModLFO.waveform = juce::jlimit(0, 5, waveform);
+    envModLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(envModLFO);
+}
+
+void AcidVoice::setDecayLFO(int rate, int waveform, float depth)
+{
+    decayLFO.rate = juce::jlimit(0, 13, rate);
+    decayLFO.waveform = juce::jlimit(0, 5, waveform);
+    decayLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(decayLFO);
+}
+
+void AcidVoice::setAccentLFO(int rate, int waveform, float depth)
+{
+    accentLFO.rate = juce::jlimit(0, 13, rate);
+    accentLFO.waveform = juce::jlimit(0, 5, waveform);
+    accentLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(accentLFO);
+}
+
+void AcidVoice::setWaveformLFO(int rate, int waveform, float depth)
+{
+    waveformLFO.rate = juce::jlimit(0, 13, rate);
+    waveformLFO.waveform = juce::jlimit(0, 5, waveform);
+    waveformLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(waveformLFO);
+}
+
+void AcidVoice::setSubOscLFO(int rate, int waveform, float depth)
+{
+    subOscLFO.rate = juce::jlimit(0, 13, rate);
+    subOscLFO.waveform = juce::jlimit(0, 5, waveform);
+    subOscLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(subOscLFO);
+}
+
+void AcidVoice::setDriveLFO(int rate, int waveform, float depth)
+{
+    driveLFO.rate = juce::jlimit(0, 13, rate);
+    driveLFO.waveform = juce::jlimit(0, 5, waveform);
+    driveLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(driveLFO);
+}
+
+void AcidVoice::setVolumeLFO(int rate, int waveform, float depth)
+{
+    volumeLFO.rate = juce::jlimit(0, 13, rate);
+    volumeLFO.waveform = juce::jlimit(0, 5, waveform);
+    volumeLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(volumeLFO);
+}
+
+void AcidVoice::setDelayMixLFO(int rate, int waveform, float depth)
+{
+    delayMixLFO.rate = juce::jlimit(0, 13, rate);
+    delayMixLFO.waveform = juce::jlimit(0, 5, waveform);
+    delayMixLFO.depth = juce::jlimit(0.0f, 1.0f, depth);
+    updateLFOFrequency(delayMixLFO);
 }
 
 double AcidVoice::generateOscillator()
 {
-    double sample;
+    // Generate both waveforms
+    double sawtoothSample = (currentAngle / juce::MathConstants<double>::pi) - 1.0;
+    double squareSample = currentAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0;
 
-    if (waveform == 0)
-    {
-        // Sawtooth wave
-        sample = (currentAngle / juce::MathConstants<double>::pi) - 1.0;
-    }
-    else
-    {
-        // Square wave
-        sample = currentAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0;
-    }
+    // Morph between them based on waveformMorph (0.0 = saw, 1.0 = square)
+    double sample = sawtoothSample * (1.0 - waveformMorph) + squareSample * waveformMorph;
 
     return sample;
 }
@@ -299,28 +368,77 @@ void AcidVoice::updateAngleDelta()
     targetAngleDelta = cyclesPerSecond * juce::MathConstants<double>::twoPi / sampleRate;
 }
 
-void AcidVoice::updateLFOFrequency()
+void AcidVoice::updateLFOFrequency(LFO& lfo)
 {
     // Calculate LFO frequency based on tempo and rate division
-    // BPM to Hz: BPM / 60 gives us beats per second
     double beatsPerSecond = currentBPM / 60.0;
 
-    // Rate divisions:
-    // 0 = 1/16 note
-    // 1 = 1/8 note
-    // 2 = 1/4 note
-    // 3 = 1/2 note
-    // 4 = 1/1 note (whole note)
+    // Rate divisions (14 options):
+    // 0=1/16, 1=1/8, 2=1/4, 3=1/3, 4=1/2, 5=3/4, 6=1/1, 7=2/1, 8=3/1, 9=4/1, 10=6/1, 11=8/1, 12=12/1, 13=16/1
+    const double divisions[] = {
+        4.0,     // 1/16
+        2.0,     // 1/8
+        1.0,     // 1/4
+        1.333,   // 1/3
+        0.5,     // 1/2
+        0.333,   // 3/4
+        0.25,    // 1/1 (whole note)
+        0.125,   // 2/1 (two whole notes)
+        0.0833,  // 3/1
+        0.0625,  // 4/1
+        0.0417,  // 6/1
+        0.03125, // 8/1
+        0.0208,  // 12/1
+        0.015625 // 16/1
+    };
 
-    const double divisions[] = { 4.0, 2.0, 1.0, 0.5, 0.25 }; // 1/16, 1/8, 1/4, 1/2, 1/1
-    double notesPerBeat = divisions[lfoRate];
-
-    lfoFrequency = beatsPerSecond * notesPerBeat;
+    double notesPerBeat = divisions[lfo.rate];
+    lfo.frequency = beatsPerSecond * notesPerBeat;
 }
 
-double AcidVoice::getLFOValue()
+double AcidVoice::getLFOValue(LFO& lfo)
 {
-    // Generate sine wave LFO (smooth modulation)
+    // Generate LFO waveform based on type
     // Output range: -1 to +1
-    return std::sin(lfoPhase);
+
+    switch (lfo.waveform)
+    {
+        case 0: // Sine
+            return std::sin(lfo.phase);
+
+        case 1: // Triangle
+        {
+            double t = lfo.phase / juce::MathConstants<double>::twoPi;
+            return 4.0 * std::abs(t - 0.5) - 1.0;
+        }
+
+        case 2: // Saw Up
+            return (lfo.phase / juce::MathConstants<double>::pi) - 1.0;
+
+        case 3: // Saw Down
+            return 1.0 - (lfo.phase / juce::MathConstants<double>::pi);
+
+        case 4: // Square
+            return lfo.phase < juce::MathConstants<double>::pi ? 1.0 : -1.0;
+
+        case 5: // Random (sample & hold)
+        {
+            // Update random value when phase wraps
+            if (lfo.phase < juce::MathConstants<double>::twoPi / sampleRate)
+            {
+                lfo.lastRandomValue = (static_cast<float>(std::rand()) / RAND_MAX) * 2.0f - 1.0f;
+            }
+            return lfo.lastRandomValue;
+        }
+
+        default:
+            return std::sin(lfo.phase);
+    }
+}
+
+void AcidVoice::advanceLFO(LFO& lfo)
+{
+    lfo.phase += juce::MathConstants<double>::twoPi * lfo.frequency / sampleRate;
+    if (lfo.phase >= juce::MathConstants<double>::twoPi)
+        lfo.phase -= juce::MathConstants<double>::twoPi;
 }
