@@ -30,7 +30,7 @@ namespace Defaults
     static constexpr float kDelayMix = 0.0f; // Off by default
 
     // Dedicated LFO defaults (each parameter has its own LFO)
-    static constexpr int   kLFORate = 4;     // Default: 1/4 note (index 4 in expanded list)
+    static constexpr int   kLFORate = 6;     // Default: 1/1 (whole note)
     static constexpr int   kLFOWaveform = 0; // Default: Sine wave
     static constexpr float kLFODepth = 0.0f; // Default: Off
 }

@@ -196,6 +196,7 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     lfo.rateSelector.addItem("8/1", 12);
     lfo.rateSelector.addItem("12/1", 13);
     lfo.rateSelector.addItem("16/1", 14);
+    lfo.rateSelector.setTooltip("Rate");
     addAndMakeVisible(lfo.rateSelector);
     lfo.rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), rateParamID, lfo.rateSelector);
@@ -207,6 +208,7 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     lfo.waveformSelector.addItem("Saw Dn", 4);
     lfo.waveformSelector.addItem("Square", 5);
     lfo.waveformSelector.addItem("Random", 6);
+    lfo.waveformSelector.setTooltip("Wave");
     addAndMakeVisible(lfo.waveformSelector);
     lfo.waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), waveParamID, lfo.waveformSelector);
@@ -214,6 +216,7 @@ void SynthTab::setupLFOControls(LFOControls& lfo,
     // Setup LFO Depth slider
     lfo.depthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     lfo.depthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    lfo.depthSlider.setTooltip("Depth");
     addAndMakeVisible(lfo.depthSlider);
     lfo.depthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), depthParamID, lfo.depthSlider);
@@ -232,12 +235,6 @@ void SynthTab::paint(juce::Graphics& g)
         int y = 5 + i * 60;
         g.drawLine(10.0f, static_cast<float>(y), static_cast<float>(getWidth() - 10), static_cast<float>(y), 1.0f);
     }
-
-    // Draw LFO section labels
-    g.setColour(juce::Colours::lightgrey);
-    g.setFont(juce::Font(9.0f));
-    int lfoHeaderX = 200;
-    g.drawText("--- LFO Controls ---", lfoHeaderX, 13, 600, 15, juce::Justification::centredLeft);
 }
 
 void SynthTab::resized()
@@ -284,14 +281,13 @@ void SynthTab::resized()
     layoutRow(7, driveSlider, driveLabel, driveLFO);
     layoutRow(8, volumeSlider, volumeLabel, volumeLFO);
 
-    // Row 9: Delay Time and Delay Feedback (no LFOs for these)
-    int delayRow1Y = startY + 9 * rowHeight;
+    // Row 9: Delay Mix with LFO controls
+    layoutRow(9, delayMixSlider, delayMixLabel, delayMixLFO);
+
+    // Row 10: Delay Time and Delay Feedback (no LFOs for these)
+    int delayRow1Y = startY + 10 * rowHeight;
     delayTimeLabel.setBounds(paramLabelX, delayRow1Y + 10, 90, 20);
     delayTimeSelector.setBounds(paramKnobX, delayRow1Y + 12, 80, 26);
 
-    delayFeedbackLabel.setBounds(lfoStartX, delayRow1Y + 10, 90, 20);
-    delayFeedbackSlider.setBounds(lfoStartX + 90, delayRow1Y, knobSize, knobSize);
-
-    // Row 10: Delay Mix with LFO controls
-    layoutRow(10, delayMixSlider, delayMixLabel, delayMixLFO);
+    delayFeedbackSlider.setBounds(lfoStartX, delayRow1Y, knobSize, knobSize);
 }

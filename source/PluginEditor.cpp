@@ -7,7 +7,7 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
       tabbedComponent(juce::TabbedButtonBar::TabsAtTop)
 {
     // Set editor size
-    setSize(900, 750);
+    setSize(900, 820);
 
     // Create tab components
     synthTab = std::make_unique<SynthTab>(audioProcessor);
