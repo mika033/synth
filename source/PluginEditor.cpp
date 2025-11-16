@@ -16,8 +16,8 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
 
     // Add tabs to tabbed component
     tabbedComponent.addTab("Synth", juce::Colour(0xff2a2a2a), synthTab.get(), false);
-    tabbedComponent.addTab("Sequencer", juce::Colour(0xff2a2a2a), sequencerTab.get(), false);
     tabbedComponent.addTab("Modulation", juce::Colour(0xff2a2a2a), modulationTab.get(), false);
+    tabbedComponent.addTab("Sequencer", juce::Colour(0xff2a2a2a), sequencerTab.get(), false);
 
     // Configure tabbed component appearance
     tabbedComponent.setTabBarDepth(35);
