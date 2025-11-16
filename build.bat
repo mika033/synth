@@ -46,33 +46,31 @@ REM Detect Visual Studio version
 echo Detecting Visual Studio installation...
 echo.
 
-REM Try Visual Studio 2022 (17)
-where vswhere >nul 2>nul
-if %ERRORLEVEL% EQU 0 (
-    for /f "usebackq tokens=*" %%i in (`vswhere -latest -property installationVersion`) do set VS_VERSION=%%i
-)
+REM Set up environment variable paths (avoids parentheses issues)
+set "PROGFILES=%ProgramFiles%"
+set "PROGFILESX86=%ProgramFiles(x86)%"
 
 REM Try different Visual Studio versions
 set GENERATOR=
-if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
+if exist "%PROGFILES%\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
-    goto :generator_found
+    goto generator_found
 )
-if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022" (
+if exist "%PROGFILESX86%\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
-    goto :generator_found
+    goto generator_found
 )
-if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
+if exist "%PROGFILES%\Microsoft Visual Studio\2019" (
     set GENERATOR=Visual Studio 16 2019
     echo Found Visual Studio 2019
-    goto :generator_found
+    goto generator_found
 )
-if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019" (
+if exist "%PROGFILESX86%\Microsoft Visual Studio\2019" (
     set GENERATOR=Visual Studio 16 2019
     echo Found Visual Studio 2019
-    goto :generator_found
+    goto generator_found
 )
 
 echo WARNING: Could not detect Visual Studio installation
