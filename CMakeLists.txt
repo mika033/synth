@@ -61,6 +61,8 @@ target_sources(${PLUGIN_NAME} PRIVATE
     source/PluginProcessor.cpp
     source/PluginEditor.cpp
     source/AcidVoice.cpp
+    source/SynthTab.cpp
+    source/SequencerTab.cpp
 )
 
 # Header files

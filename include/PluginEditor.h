@@ -3,10 +3,12 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "PluginProcessor.h"
+#include "SynthTab.h"
+#include "SequencerTab.h"
 
 //==============================================================================
 /**
- * UI Editor for Acid Synth plugin with dedicated LFO controls
+ * UI Editor for Acid Synth plugin with tabbed interface
  */
 class AcidSynthAudioProcessorEditor : public juce::AudioProcessorEditor
 {
@@ -21,79 +23,12 @@ public:
 private:
     AcidSynthAudioProcessor& audioProcessor;
 
-    // Helper structure for LFO controls (each parameter gets one)
-    struct LFOControls
-    {
-        juce::ComboBox rateSelector;
-        juce::ComboBox waveformSelector;
-        juce::Slider depthSlider;
-        juce::Label rateLabel;
-        juce::Label waveformLabel;
-        juce::Label depthLabel;
-        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rateAttachment;
-        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
-        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> depthAttachment;
-    };
+    // Tabbed component
+    juce::TabbedComponent tabbedComponent;
 
-    // Main parameter sliders
-    juce::Slider cutoffSlider;
-    juce::Slider resonanceSlider;
-    juce::Slider envModSlider;
-    juce::Slider decaySlider;
-    juce::Slider accentSlider;
-    juce::Slider waveformSlider;  // Changed from ComboBox to Slider for morphing
-    juce::Slider subOscSlider;
-    juce::Slider driveSlider;
-    juce::Slider volumeSlider;
-    juce::Slider delayFeedbackSlider;
-    juce::Slider delayMixSlider;
-    juce::ComboBox delayTimeSelector;
-    juce::ComboBox presetSelector;
-
-    // Main parameter labels
-    juce::Label cutoffLabel;
-    juce::Label resonanceLabel;
-    juce::Label envModLabel;
-    juce::Label decayLabel;
-    juce::Label accentLabel;
-    juce::Label waveformLabel;
-    juce::Label subOscLabel;
-    juce::Label driveLabel;
-    juce::Label volumeLabel;
-    juce::Label delayTimeLabel;
-    juce::Label delayFeedbackLabel;
-    juce::Label delayMixLabel;
-    juce::Label presetLabel;
-
-    // 10 Dedicated LFO control sets
-    LFOControls cutoffLFO;
-    LFOControls resonanceLFO;
-    LFOControls envModLFO;
-    LFOControls decayLFO;
-    LFOControls accentLFO;
-    LFOControls waveformLFO;
-    LFOControls subOscLFO;
-    LFOControls driveLFO;
-    LFOControls volumeLFO;
-    LFOControls delayMixLFO;
-
-    // Main parameter attachments
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> resonanceAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> envModAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOscAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> delayTimeAttachment;
-
-    // Helper function to setup LFO controls
-    void setupLFOControls(LFOControls& lfo, const juce::String& rateParamID,
-                          const juce::String& waveParamID, const juce::String& depthParamID);
+    // Tab components
+    std::unique_ptr<SynthTab> synthTab;
+    std::unique_ptr<SequencerTab> sequencerTab;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessorEditor)
 };

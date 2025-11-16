@@ -337,7 +337,24 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         DELAYMIX_LFO_DEPTH_ID, "DelayMix LFO Depth",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kLFODepth)
+                        Defaults::kLFODepth),
+
+                    // Arpeggiator parameters
+                    std::make_unique<juce::AudioParameterBool>(
+                        ARP_ONOFF_ID, "Arp On/Off", false),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ARP_MODE_ID, "Arp Mode",
+                        juce::StringArray{"Up", "Down", "Up-Down", "Random", "As Played"}, 0),
+                    std::make_unique<juce::AudioParameterChoice>(
+                        ARP_RATE_ID, "Arp Rate",
+                        juce::StringArray{"1/32", "1/16", "1/16T", "1/8", "1/8T", "1/4", "1/4T"}, 3), // Default to 1/8
+                    std::make_unique<juce::AudioParameterInt>(
+                        ARP_OCTAVES_ID, "Arp Octaves",
+                        1, 4, 1), // 1-4 octaves
+                    std::make_unique<juce::AudioParameterFloat>(
+                        ARP_GATE_ID, "Arp Gate",
+                        juce::NormalisableRange<float>(0.1f, 1.0f, 0.01f),
+                        0.8f) // Default 80% gate
                 })
 {
     // Add voices to the synthesizer
@@ -460,6 +477,9 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     // Update voice parameters
     updateVoiceParameters();
+
+    // Process arpeggiator (modifies MIDI messages)
+    processArpeggiator(midiMessages, buffer.getNumSamples());
 
     // Render synthesizer
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
@@ -717,6 +737,192 @@ void AcidSynthAudioProcessor::setStateInformation(const void* data, int sizeInBy
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName(parameters.state.getType()))
             parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+}
+
+//==============================================================================
+// Arpeggiator Implementation
+
+void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples)
+{
+    bool arpEnabled = parameters.getRawParameterValue(ARP_ONOFF_ID)->load() > 0.5f;
+
+    if (!arpEnabled)
+    {
+        // Arpeggiator is off, clear state and pass through MIDI
+        heldNotes.clear();
+        currentArpNote = 0;
+        arpStepTime = 0.0;
+        if (isNoteCurrentlyOn && lastPlayedNote >= 0)
+        {
+            midiMessages.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), 0);
+            isNoteCurrentlyOn = false;
+        }
+        lastPlayedNote = -1;
+        return;
+    }
+
+    // Arpeggiator is enabled - process incoming MIDI to build held notes list
+    juce::MidiBuffer processedMidi;
+
+    for (const auto metadata : midiMessages)
+    {
+        auto message = metadata.getMessage();
+
+        if (message.isNoteOn())
+        {
+            int note = message.getNoteNumber();
+            // Add note to held notes if not already there
+            if (std::find(heldNotes.begin(), heldNotes.end(), note) == heldNotes.end())
+            {
+                heldNotes.push_back(note);
+                std::sort(heldNotes.begin(), heldNotes.end()); // Keep sorted for Up mode
+            }
+        }
+        else if (message.isNoteOff())
+        {
+            int note = message.getNoteNumber();
+            // Remove note from held notes
+            heldNotes.erase(std::remove(heldNotes.begin(), heldNotes.end(), note), heldNotes.end());
+
+            // If no notes held, send note-off for last played note
+            if (heldNotes.empty())
+            {
+                if (isNoteCurrentlyOn && lastPlayedNote >= 0)
+                {
+                    processedMidi.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), metadata.samplePosition);
+                    isNoteCurrentlyOn = false;
+                }
+                lastPlayedNote = -1;
+                currentArpNote = 0;
+                arpStepTime = 0.0;
+            }
+        }
+        // Don't pass through original note messages when arp is on
+    }
+
+    // Generate arpeggiated notes
+    if (!heldNotes.empty())
+    {
+        double stepLength = getArpStepLengthInSamples();
+        float gateLength = parameters.getRawParameterValue(ARP_GATE_ID)->load();
+        double noteOffTime = stepLength * gateLength;
+
+        arpStepTime += numSamples;
+
+        // Check if we need to turn off the current note
+        if (isNoteCurrentlyOn && lastNoteOffTime <= 0 && lastPlayedNote >= 0)
+        {
+            processedMidi.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), 0);
+            isNoteCurrentlyOn = false;
+        }
+
+        // Check if it's time for the next arp step
+        if (arpStepTime >= stepLength)
+        {
+            // Send note-off for previous note if still on
+            if (isNoteCurrentlyOn && lastPlayedNote >= 0)
+            {
+                processedMidi.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), 0);
+                isNoteCurrentlyOn = false;
+            }
+
+            // Get next note to play
+            int noteToPlay = getNextArpNote();
+
+            if (noteToPlay >= 0)
+            {
+                processedMidi.addEvent(juce::MidiMessage::noteOn(1, noteToPlay, (juce::uint8)100), 0);
+                lastPlayedNote = noteToPlay;
+                isNoteCurrentlyOn = true;
+                lastNoteOffTime = noteOffTime;
+            }
+
+            arpStepTime -= stepLength;
+        }
+
+        lastNoteOffTime -= numSamples;
+    }
+
+    // Replace MIDI buffer with processed arpeggiator output
+    midiMessages.swapWith(processedMidi);
+}
+
+double AcidSynthAudioProcessor::getArpStepLengthInSamples() const
+{
+    int rateIndex = static_cast<int>(parameters.getRawParameterValue(ARP_RATE_ID)->load());
+
+    // Rate divisions: 1/32, 1/16, 1/16T, 1/8, 1/8T, 1/4, 1/4T
+    const double divisions[] = {
+        8.0,        // 1/32
+        4.0,        // 1/16
+        6.0,        // 1/16T (triplet)
+        2.0,        // 1/8
+        3.0,        // 1/8T (triplet)
+        1.0,        // 1/4
+        1.5         // 1/4T (triplet)
+    };
+
+    rateIndex = juce::jlimit(0, 6, rateIndex);
+
+    double beatsPerSecond = currentBPM / 60.0;
+    double notesPerBeat = divisions[rateIndex];
+    double stepFrequency = beatsPerSecond * notesPerBeat;
+
+    return currentSampleRate / stepFrequency;
+}
+
+int AcidSynthAudioProcessor::getNextArpNote()
+{
+    if (heldNotes.empty())
+        return -1;
+
+    int mode = static_cast<int>(parameters.getRawParameterValue(ARP_MODE_ID)->load());
+    int octaves = static_cast<int>(parameters.getRawParameterValue(ARP_OCTAVES_ID)->load());
+
+    // Calculate total number of notes across octaves
+    int totalNotes = static_cast<int>(heldNotes.size()) * octaves;
+
+    if (totalNotes == 0)
+        return -1;
+
+    int noteIndex = 0;
+
+    switch (mode)
+    {
+        case 0: // Up
+            noteIndex = currentArpNote % totalNotes;
+            break;
+
+        case 1: // Down
+            noteIndex = (totalNotes - 1) - (currentArpNote % totalNotes);
+            break;
+
+        case 2: // Up-Down
+        {
+            int cycle = totalNotes * 2 - 2;
+            if (cycle <= 0) cycle = 1;
+            int pos = currentArpNote % cycle;
+            noteIndex = (pos < totalNotes) ? pos : (cycle - pos);
+            break;
+        }
+
+        case 3: // Random
+            noteIndex = juce::Random::getSystemRandom().nextInt(totalNotes);
+            break;
+
+        case 4: // As Played
+            noteIndex = currentArpNote % totalNotes;
+            break;
+    }
+
+    // Convert note index to actual MIDI note with octave
+    int baseNoteIndex = noteIndex % static_cast<int>(heldNotes.size());
+    int octaveOffset = noteIndex / static_cast<int>(heldNotes.size());
+    int midiNote = heldNotes[baseNoteIndex] + (octaveOffset * 12);
+
+    currentArpNote++;
+
+    return juce::jlimit(0, 127, midiNote);
 }
 
 //==============================================================================

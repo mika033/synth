@@ -112,6 +112,13 @@ private:
     static constexpr const char* DELAYMIX_LFO_WAVE_ID = "delaymixlfowave";
     static constexpr const char* DELAYMIX_LFO_DEPTH_ID = "delaymixlfodepth";
 
+    // Arpeggiator Parameter IDs
+    static constexpr const char* ARP_ONOFF_ID = "arponoff";
+    static constexpr const char* ARP_MODE_ID = "arpmode";
+    static constexpr const char* ARP_RATE_ID = "arprate";
+    static constexpr const char* ARP_OCTAVES_ID = "arpoctaves";
+    static constexpr const char* ARP_GATE_ID = "arpgate";
+
     // Parameter update
     void updateVoiceParameters();
 
@@ -123,6 +130,19 @@ private:
     std::vector<float> delayBuffer;
     double currentSampleRate = 44100.0;
     double currentBPM = 120.0;
+
+    // Arpeggiator state
+    std::vector<int> heldNotes; // Currently held MIDI notes
+    int currentArpNote = 0;      // Index into heldNotes
+    double arpStepTime = 0.0;    // Time since last arp step (in samples)
+    double lastNoteOffTime = 0.0; // Time for note-off based on gate length
+    int lastPlayedNote = -1;     // Last arpeggio note that was triggered
+    bool isNoteCurrentlyOn = false; // Track if we're in note-on phase
+
+    // Arpeggiator helper functions
+    void processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples);
+    double getArpStepLengthInSamples() const;
+    int getNextArpNote();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)
