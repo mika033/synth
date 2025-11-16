@@ -390,7 +390,8 @@ void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double reso
 
     // State-variable filter implementation
     // Apply dedicated resonance LFO modulation
-    double modulatedResonance = filterResonance + resonanceLFOValue * resonanceLFO.depth * 0.3;
+    // Note: Negate LFO value because resonance gets inverted later (1.0 - modulatedResonance)
+    double modulatedResonance = filterResonance - resonanceLFOValue * resonanceLFO.depth * 0.3;
     modulatedResonance = juce::jlimit(0.0, 0.99, modulatedResonance);
 
     // Invert resonance: higher filterResonance = less damping = more resonance
