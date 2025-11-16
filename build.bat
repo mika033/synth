@@ -23,10 +23,7 @@ cmake --version
 echo.
 
 REM Check if we should do a clean build
-set CLEAN_BUILD=0
-if "%1"=="clean" set CLEAN_BUILD=1
-
-if %CLEAN_BUILD%==1 (
+if "%1"=="clean" (
     if exist build (
         echo Performing clean build (deleting build directory)...
         rmdir /s /q build
@@ -47,32 +44,18 @@ REM Detect Visual Studio version
 echo Detecting Visual Studio installation...
 echo.
 
-REM Try different Visual Studio versions
+REM Try different Visual Studio versions - using dir to avoid parentheses issues
 set GENERATOR=
 
-REM Check VS 2022 in Program Files
-if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
+dir "%ProgramFiles%\Microsoft Visual Studio\2022" >nul 2>&1
+if not errorlevel 1 (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
     goto generator_found
 )
 
-REM Check VS 2022 in Program Files x86 (use direct path construction)
-if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022" (
-    set GENERATOR=Visual Studio 17 2022
-    echo Found Visual Studio 2022
-    goto generator_found
-)
-
-REM Check VS 2019 in Program Files
-if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
-    set GENERATOR=Visual Studio 16 2019
-    echo Found Visual Studio 2019
-    goto generator_found
-)
-
-REM Check VS 2019 in Program Files x86
-if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019" (
+dir "C:\Program Files\Microsoft Visual Studio\2019" >nul 2>&1
+if not errorlevel 1 (
     set GENERATOR=Visual Studio 16 2019
     echo Found Visual Studio 2019
     goto generator_found
@@ -145,7 +128,7 @@ echo Build completed successfully!
 echo ========================================
 echo.
 echo The VST3 plugin should be installed at:
-echo %ProgramFiles%\Common Files\VST3\AcidSynth.vst3
+echo C:\Program Files\Common Files\VST3\AcidSynth.vst3
 echo.
 echo Or check: build\AcidSynth_artefacts\Release\VST3\
 echo.
