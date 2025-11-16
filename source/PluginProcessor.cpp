@@ -354,7 +354,10 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         ARP_GATE_ID, "Arp Gate",
                         juce::NormalisableRange<float>(0.1f, 1.0f, 0.01f),
-                        0.8f) // Default 80% gate
+                        0.8f), // Default 80% gate
+                    std::make_unique<juce::AudioParameterInt>(
+                        ARP_OCTAVE_SHIFT_ID, "Arp Octave Shift",
+                        -2, 2, 0) // -2 to +2 octaves, default 0
                 })
 {
     // Add voices to the synthesizer
@@ -767,6 +770,7 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
     {
         double stepLength = getArpStepLengthInSamples();
         float gateLength = parameters.getRawParameterValue(ARP_GATE_ID)->load();
+        int octaveShift = static_cast<int>(parameters.getRawParameterValue(ARP_OCTAVE_SHIFT_ID)->load());
         double noteOffTime = stepLength * gateLength;
 
         arpStepTime += numSamples;
@@ -793,8 +797,14 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
 
             if (noteToPlay >= 0)
             {
-                processedMidi.addEvent(juce::MidiMessage::noteOn(1, noteToPlay, (juce::uint8)100), 0);
-                lastPlayedNote = noteToPlay;
+                // Apply octave shift (1 octave = 12 semitones)
+                int shiftedNote = noteToPlay + (octaveShift * 12);
+
+                // Constrain to valid MIDI range (0-127)
+                shiftedNote = juce::jlimit(0, 127, shiftedNote);
+
+                processedMidi.addEvent(juce::MidiMessage::noteOn(1, shiftedNote, (juce::uint8)100), 0);
+                lastPlayedNote = shiftedNote;
                 isNoteCurrentlyOn = true;
                 lastNoteOffTime = noteOffTime;
             }

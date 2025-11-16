@@ -118,6 +118,7 @@ private:
     static constexpr const char* ARP_RATE_ID = "arprate";
     static constexpr const char* ARP_OCTAVES_ID = "arpoctaves";
     static constexpr const char* ARP_GATE_ID = "arpgate";
+    static constexpr const char* ARP_OCTAVE_SHIFT_ID = "arpoctaveshift";
 
     // Parameter update
     void updateVoiceParameters();

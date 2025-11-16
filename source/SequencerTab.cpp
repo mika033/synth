@@ -68,6 +68,16 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
     addAndMakeVisible(arpGateLabel);
     arpGateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "arpgate", arpGateSlider);
+
+    // Arpeggiator Octave Shift slider
+    arpOctaveShiftSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    arpOctaveShiftSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(arpOctaveShiftSlider);
+    arpOctaveShiftLabel.setText("Octave Shift", juce::dontSendNotification);
+    arpOctaveShiftLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(arpOctaveShiftLabel);
+    arpOctaveShiftAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "arpoctaveshift", arpOctaveShiftSlider);
 }
 
 SequencerTab::~SequencerTab()
@@ -108,11 +118,14 @@ void SequencerTab::resized()
     arpRateLabel.setBounds(startX, 160, 120, labelHeight);
     arpRateSelector.setBounds(startX + 120, 160, 120, 25);
 
-    // Row 4: Octaves and Gate knobs
+    // Row 4: Octaves, Gate, and Octave Shift knobs
     int knobsY = 220;
     arpOctavesLabel.setBounds(startX, knobsY - labelHeight, knobSize, labelHeight);
     arpOctavesSlider.setBounds(startX, knobsY, knobSize, knobSize);
 
     arpGateLabel.setBounds(startX + spacing, knobsY - labelHeight, knobSize + 20, labelHeight);
     arpGateSlider.setBounds(startX + spacing, knobsY, knobSize, knobSize);
+
+    arpOctaveShiftLabel.setBounds(startX + spacing * 2, knobsY - labelHeight, knobSize + 20, labelHeight);
+    arpOctaveShiftSlider.setBounds(startX + spacing * 2, knobsY, knobSize, knobSize);
 }
