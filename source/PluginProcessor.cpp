@@ -143,7 +143,7 @@ static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
 // LFO Rate and Waveform Options
 static const juce::StringArray getLFORateOptions()
 {
-    return juce::StringArray{"1/16", "1/8", "1/4", "1/3", "1/2", "3/4", "1/1", "2/1", "3/1", "4/1", "6/1", "8/1", "12/1", "16/1"};
+    return juce::StringArray{"1/16", "1/8", "1/4", "1/3", "1/2", "3/4", "1/1", "3/2", "2/1", "3/1", "4/1", "6/1", "8/1", "12/1", "16/1"};
 }
 
 static const juce::StringArray getLFOWaveformOptions()
