@@ -119,6 +119,7 @@ private:
     static constexpr const char* ARP_OCTAVES_ID = "arpoctaves";
     static constexpr const char* ARP_GATE_ID = "arpgate";
     static constexpr const char* ARP_OCTAVE_SHIFT_ID = "arpoctaveshift";
+    static constexpr const char* ARP_SWING_ID = "arpswing";
 
     // Parameter update
     void updateVoiceParameters();
@@ -150,6 +151,7 @@ private:
     double lastNoteOffTime = 0.0; // Time for note-off based on gate length
     int lastPlayedNote = -1;     // Last arpeggio note that was triggered
     bool isNoteCurrentlyOn = false; // Track if we're in note-on phase
+    int arpStepCounter = 0;      // Counter for swing (even/odd steps)
 
     // Arpeggiator helper functions
     void processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples);

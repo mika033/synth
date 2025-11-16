@@ -357,7 +357,11 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         0.8f), // Default 80% gate
                     std::make_unique<juce::AudioParameterInt>(
                         ARP_OCTAVE_SHIFT_ID, "Arp Octave Shift",
-                        -2, 2, 0) // -2 to +2 octaves, default 0
+                        -2, 2, 0), // -2 to +2 octaves, default 0
+                    std::make_unique<juce::AudioParameterFloat>(
+                        ARP_SWING_ID, "Arp Swing",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f) // Default 0% swing (straight timing)
                 })
 {
     // Add voices to the synthesizer
@@ -729,6 +733,7 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
         heldNotes.clear();
         currentArpNote = 0;
         arpStepTime = 0.0;
+        arpStepCounter = 0;
         if (isNoteCurrentlyOn && lastPlayedNote >= 0)
         {
             midiMessages.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), 0);
@@ -759,6 +764,7 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
                 if (wasEmpty)
                 {
                     arpStepTime = 999999.0; // Large value to trigger first note immediately
+                    arpStepCounter = 0; // Reset swing counter for new arpeggio sequence
                 }
             }
         }
@@ -779,6 +785,7 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
                 lastPlayedNote = -1;
                 currentArpNote = 0;
                 arpStepTime = 0.0;
+                arpStepCounter = 0;
             }
         }
         // Don't pass through original note messages when arp is on
@@ -787,9 +794,15 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
     // Generate arpeggiated notes
     if (!heldNotes.empty())
     {
-        double stepLength = getArpStepLengthInSamples();
+        double baseStepLength = getArpStepLengthInSamples();
         float gateLength = parameters.getRawParameterValue(ARP_GATE_ID)->load();
         int octaveShift = static_cast<int>(parameters.getRawParameterValue(ARP_OCTAVE_SHIFT_ID)->load());
+        float swing = parameters.getRawParameterValue(ARP_SWING_ID)->load();
+
+        // Apply swing to step length (alternating between longer and shorter steps)
+        // Even steps (0, 2, 4...) get longer, odd steps (1, 3, 5...) get shorter
+        double swingAmount = (arpStepCounter % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+        double stepLength = baseStepLength * swingAmount;
         double noteOffTime = stepLength * gateLength;
 
         // If arpStepTime was set to trigger immediately, normalize it to stepLength
@@ -834,6 +847,9 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
                 lastPlayedNote = shiftedNote;
                 isNoteCurrentlyOn = true;
                 lastNoteOffTime = noteOffTime;
+
+                // Increment step counter for swing timing
+                arpStepCounter++;
             }
 
             arpStepTime -= stepLength;

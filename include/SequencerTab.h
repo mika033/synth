@@ -27,6 +27,7 @@ private:
     juce::Slider arpOctavesSlider;
     juce::Slider arpGateSlider;
     juce::Slider arpOctaveShiftSlider;
+    juce::Slider arpSwingSlider;
 
     // Labels
     juce::Label arpOnOffLabel;
@@ -35,6 +36,7 @@ private:
     juce::Label arpOctavesLabel;
     juce::Label arpGateLabel;
     juce::Label arpOctaveShiftLabel;
+    juce::Label arpSwingLabel;
     juce::Label titleLabel;
 
     // Attachments
@@ -44,6 +46,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> arpOctavesAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> arpGateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> arpOctaveShiftAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> arpSwingAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SequencerTab)
 };
