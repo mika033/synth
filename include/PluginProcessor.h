@@ -71,6 +71,10 @@ private:
     static constexpr const char* DELAY_FEEDBACK_ID = "delayfeedback";
     static constexpr const char* DELAY_MIX_ID = "delaymix";
 
+    // Filter & Saturation Enhancement Parameters
+    static constexpr const char* FILTER_FEEDBACK_ID = "filterfeedback";
+    static constexpr const char* SATURATION_TYPE_ID = "saturationtype";
+
     // Dedicated LFO Parameter IDs (Rate, Waveform, Depth for each parameter)
     static constexpr const char* CUTOFF_LFO_RATE_ID = "cutofflfor";
     static constexpr const char* CUTOFF_LFO_WAVE_ID = "cutofflfow";
