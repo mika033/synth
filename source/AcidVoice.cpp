@@ -3,7 +3,7 @@
 AcidVoice::AcidVoice()
 {
     // Setup ADSR for amplitude envelope
-    adsrParams.attack = 0.001f;   // Fast attack
+    adsrParams.attack = 0.003f;   // Fast attack (3ms to prevent clicks)
     adsrParams.decay = 0.3f;       // Medium decay
     adsrParams.sustain = 0.0f;     // No sustain (classic 303 behavior)
     adsrParams.release = 0.1f;     // Short release
