@@ -6,7 +6,7 @@
 
 //==============================================================================
 /**
- * UI Editor for Acid Synth plugin
+ * UI Editor for Acid Synth plugin with dedicated LFO controls
  */
 class AcidSynthAudioProcessorEditor : public juce::AudioProcessorEditor
 {
@@ -21,58 +21,79 @@ public:
 private:
     AcidSynthAudioProcessor& audioProcessor;
 
-    // Sliders
+    // Helper structure for LFO controls (each parameter gets one)
+    struct LFOControls
+    {
+        juce::ComboBox rateSelector;
+        juce::ComboBox waveformSelector;
+        juce::Slider depthSlider;
+        juce::Label rateLabel;
+        juce::Label waveformLabel;
+        juce::Label depthLabel;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rateAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> depthAttachment;
+    };
+
+    // Main parameter sliders
     juce::Slider cutoffSlider;
     juce::Slider resonanceSlider;
     juce::Slider envModSlider;
     juce::Slider decaySlider;
     juce::Slider accentSlider;
+    juce::Slider waveformSlider;  // Changed from ComboBox to Slider for morphing
     juce::Slider subOscSlider;
     juce::Slider driveSlider;
     juce::Slider volumeSlider;
-    juce::Slider lfoDepthSlider;
     juce::Slider delayFeedbackSlider;
     juce::Slider delayMixSlider;
-    juce::ComboBox waveformSelector;
-    juce::ComboBox presetSelector;
-    juce::ComboBox lfoRateSelector;
-    juce::ComboBox lfoDestSelector;
     juce::ComboBox delayTimeSelector;
+    juce::ComboBox presetSelector;
 
-    // Labels
+    // Main parameter labels
     juce::Label cutoffLabel;
     juce::Label resonanceLabel;
     juce::Label envModLabel;
     juce::Label decayLabel;
     juce::Label accentLabel;
+    juce::Label waveformLabel;
     juce::Label subOscLabel;
     juce::Label driveLabel;
     juce::Label volumeLabel;
-    juce::Label waveformLabel;
-    juce::Label presetLabel;
-    juce::Label lfoRateLabel;
-    juce::Label lfoDestLabel;
-    juce::Label lfoDepthLabel;
     juce::Label delayTimeLabel;
     juce::Label delayFeedbackLabel;
     juce::Label delayMixLabel;
+    juce::Label presetLabel;
 
-    // Attachments
+    // 10 Dedicated LFO control sets
+    LFOControls cutoffLFO;
+    LFOControls resonanceLFO;
+    LFOControls envModLFO;
+    LFOControls decayLFO;
+    LFOControls accentLFO;
+    LFOControls waveformLFO;
+    LFOControls subOscLFO;
+    LFOControls driveLFO;
+    LFOControls volumeLFO;
+    LFOControls delayMixLFO;
+
+    // Main parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> resonanceAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> envModAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> waveformAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOscAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfoDepthAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoRateAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfoDestAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> delayTimeAttachment;
+
+    // Helper function to setup LFO controls
+    void setupLFOControls(LFOControls& lfo, const juce::String& rateParamID,
+                          const juce::String& waveParamID, const juce::String& depthParamID);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessorEditor)
 };
