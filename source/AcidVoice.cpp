@@ -364,20 +364,70 @@ double AcidVoice::generateSubOscillator()
 
 void AcidVoice::applySaturation(double& sample)
 {
-    // Soft clipping saturation
-    // More drive = more harmonic content and aggression
-    if (driveAmount > 0.001f)
+    if (driveAmount < 0.001f)
+        return;
+
+    // Pre-gain based on drive amount
+    double gain = 1.0 + driveAmount * 4.0; // Up to 5x gain
+    sample *= gain;
+
+    // Apply different saturation algorithms based on type
+    switch (saturationType)
     {
-        // Pre-gain based on drive amount
-        double gain = 1.0 + driveAmount * 4.0; // Up to 5x gain
-        sample *= gain;
+        case 0: // Clean - Soft tanh clipping
+            sample = std::tanh(sample);
+            sample *= (1.0 + driveAmount * 0.5);
+            break;
 
-        // Soft clipping using tanh
-        // tanh naturally compresses signals > 1.0 and adds harmonics
-        sample = std::tanh(sample);
+        case 1: // Warm - Soft asymmetric clipping (even harmonics)
+            {
+                double absVal = std::abs(sample);
+                double sign = (sample >= 0.0) ? 1.0 : -1.0;
+                // Asymmetric curve adds even harmonics for warmth
+                sample = sign * (absVal / (1.0 + absVal * 0.7));
+                sample *= (1.0 + driveAmount * 0.7);
+            }
+            break;
 
-        // Compensate for volume loss
-        sample *= (1.0 + driveAmount * 0.5);
+        case 2: // Tube - Soft saturation with compression
+            {
+                // Tube-style saturation with soft knee
+                double absVal = std::abs(sample);
+                if (absVal < 0.5)
+                    sample = sample;
+                else if (absVal < 1.0)
+                    sample = sample * (1.0 - (absVal - 0.5) * 0.5);
+                else
+                    sample = sample / absVal * 0.75; // Soft limit
+                sample *= (1.0 + driveAmount * 0.8);
+            }
+            break;
+
+        case 3: // Hard - Hard clipping for aggressive sound
+            {
+                double threshold = 0.8;
+                if (sample > threshold)
+                    sample = threshold;
+                else if (sample < -threshold)
+                    sample = -threshold;
+                sample *= (1.0 + driveAmount * 1.0);
+            }
+            break;
+
+        case 4: // Acid - Asymmetric hard clip + bit crushing effect
+            {
+                // Hard asymmetric clipping
+                if (sample > 0.7)
+                    sample = 0.7;
+                else if (sample < -0.9)
+                    sample = -0.9;
+                // Add slight bit crushing for digital grit
+                double bits = 12.0; // 12-bit depth
+                double step = 2.0 / std::pow(2.0, bits);
+                sample = std::round(sample / step) * step;
+                sample *= (1.0 + driveAmount * 1.2);
+            }
+            break;
     }
 }
 
@@ -401,20 +451,42 @@ void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double reso
     // State-variable filter implementation
     // Apply dedicated resonance LFO modulation
     // Note: Negate LFO value because resonance gets inverted later (1.0 - modulatedResonance)
-    double modulatedResonance = filterResonance - resonanceLFOValue * resonanceLFO.depth * 0.3;
-    modulatedResonance = juce::jlimit(0.0, 0.99, modulatedResonance);
+    double modulatedResonance = filterResonance - resonanceLFOValue * resonanceLFO.depth * 0.5;
+    modulatedResonance = juce::jlimit(0.0, 1.5, modulatedResonance); // Allow up to 1.5 for self-oscillation
+
+    // Apply filter feedback for analog-style resonance
+    // Feedback adds saturation at the resonant peak, creating that "smack"
+    double feedbackAmount = filterFeedback * modulatedResonance;
+    if (feedbackAmount > 0.01)
+    {
+        // Saturate the feedback signal for analog character
+        double feedbackSample = filter2 * feedbackAmount;
+        feedbackSample = std::tanh(feedbackSample * 2.0); // Saturate feedback path
+        sample += feedbackSample;
+    }
 
     // Invert resonance: higher filterResonance = less damping = more resonance
-    // Clamp damping to minimum value to prevent total instability
-    double damping = juce::jlimit(0.05, 1.0, 1.0 - modulatedResonance);
+    // For very high resonance (> 1.0), use negative damping for self-oscillation
+    double damping;
+    if (modulatedResonance > 1.0)
+    {
+        // Self-oscillation range - negative damping
+        damping = juce::jlimit(-0.2, 0.0, 1.0 - modulatedResonance);
+    }
+    else
+    {
+        // Normal range
+        damping = juce::jlimit(0.01, 1.0, 1.0 - modulatedResonance);
+    }
 
     double lowpass = filter2 + f * filter1;
     double highpass = sample - lowpass - damping * filter1;
     double bandpass = f * highpass + filter1;
 
     // Clamp filter states to prevent runaway values
-    filter1 = juce::jlimit(-10.0, 10.0, bandpass);
-    filter2 = juce::jlimit(-10.0, 10.0, lowpass);
+    // Higher limits for self-oscillation
+    filter1 = juce::jlimit(-15.0, 15.0, bandpass);
+    filter2 = juce::jlimit(-15.0, 15.0, lowpass);
 
     // Output low-pass filtered signal
     sample = lowpass;

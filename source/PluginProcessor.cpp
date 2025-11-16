@@ -582,6 +582,8 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
     float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
     float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
+    float filterFeedback = parameters.getRawParameterValue(FILTER_FEEDBACK_ID)->load();
+    int saturationType = static_cast<int>(parameters.getRawParameterValue(SATURATION_TYPE_ID)->load());
 
     // Dedicated LFO parameters (3 per parameter: rate, waveform, depth)
     int cutoffLFORate = static_cast<int>(parameters.getRawParameterValue(CUTOFF_LFO_RATE_ID)->load());
@@ -640,6 +642,8 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setDrive(drive);
             voice->setVolume(volume);
             voice->setBPM(currentBPM);
+            voice->setFilterFeedback(filterFeedback);
+            voice->setSaturationType(saturationType);
 
             // Set all 10 dedicated LFOs
             voice->setCutoffLFO(cutoffLFORate, cutoffLFOWave, cutoffLFODepth);

@@ -30,6 +30,8 @@ private:
     juce::Slider subOscSlider;
     juce::Slider driveSlider;
     juce::Slider volumeSlider;
+    juce::Slider filterFeedbackSlider;
+    juce::ComboBox saturationTypeSelector;
     juce::Slider delayFeedbackSlider;
     juce::Slider delayMixSlider;
     juce::ComboBox delayTimeSelector;
@@ -45,6 +47,8 @@ private:
     juce::Label subOscLabel;
     juce::Label driveLabel;
     juce::Label volumeLabel;
+    juce::Label filterFeedbackLabel;
+    juce::Label saturationTypeLabel;
     juce::Label delayTimeLabel;
     juce::Label delayFeedbackLabel;
     juce::Label delayMixLabel;
@@ -60,6 +64,8 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOscAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterFeedbackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> saturationTypeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayMixAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> delayTimeAttachment;
