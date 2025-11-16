@@ -57,20 +57,29 @@ set GENERATOR=
 if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
-) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022" (
+    goto :generator_found
+)
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022" (
     set GENERATOR=Visual Studio 17 2022
     echo Found Visual Studio 2022
-) else if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
-    set GENERATOR=Visual Studio 16 2019
-    echo Found Visual Studio 2019
-) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019" (
-    set GENERATOR=Visual Studio 16 2019
-    echo Found Visual Studio 2019
-) else (
-    echo WARNING: Could not detect Visual Studio installation
-    echo Trying auto-detection...
-    set GENERATOR=
+    goto :generator_found
 )
+if exist "%ProgramFiles%\Microsoft Visual Studio\2019" (
+    set GENERATOR=Visual Studio 16 2019
+    echo Found Visual Studio 2019
+    goto :generator_found
+)
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019" (
+    set GENERATOR=Visual Studio 16 2019
+    echo Found Visual Studio 2019
+    goto :generator_found
+)
+
+echo WARNING: Could not detect Visual Studio installation
+echo Trying auto-detection...
+set GENERATOR=
+
+:generator_found
 
 REM Configure with CMake
 echo.
