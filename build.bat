@@ -21,15 +21,25 @@ echo CMake found:
 cmake --version
 echo.
 
-REM Clean previous build
-if exist build (
-    echo Cleaning previous build...
-    rmdir /s /q build
+REM Check if we should do a clean build
+set CLEAN_BUILD=0
+if "%1"=="clean" set CLEAN_BUILD=1
+
+if %CLEAN_BUILD%==1 (
+    if exist build (
+        echo Performing clean build (deleting build directory)...
+        rmdir /s /q build
+    )
 )
 
-REM Create build directory
-echo Creating build directory...
-mkdir build
+REM Create build directory if it doesn't exist
+if not exist build (
+    echo Creating build directory...
+    mkdir build
+) else (
+    echo Using existing build directory (incremental build)...
+)
+
 cd build
 
 REM Detect Visual Studio version
@@ -105,9 +115,9 @@ if %ERRORLEVEL% NEQ 0 (
 REM Build the project
 echo.
 echo Building Acid Synth VST (Release)...
-echo This may take several minutes...
+echo Using parallel compilation (all CPU cores)...
 echo.
-cmake --build . --config Release
+cmake --build . --config Release --parallel
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
