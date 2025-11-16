@@ -123,7 +123,7 @@ private:
     // Helper functions
     double generateOscillator();
     double generateSubOscillator();
-    void processFilter(double& sample, double cutoffLFOValue, double resonanceLFOValue, float modulatedEnvMod);
+    void processFilter(double& sample, double cutoffLFOValue, double resonanceLFOValue, float modulatedEnvMod, float filterEnvValue);
     void applySaturation(double& sample);
     void updateAngleDelta();
     double getLFOValue(LFO& lfo);

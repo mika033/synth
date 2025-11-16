@@ -2,12 +2,19 @@
 
 AcidVoice::AcidVoice()
 {
-    // Setup ADSR for amplitude envelope
-    adsrParams.attack = 0.003f;   // Fast attack (3ms to prevent clicks)
-    adsrParams.decay = 0.3f;       // Medium decay
-    adsrParams.sustain = 0.0f;     // No sustain (classic 303 behavior)
-    adsrParams.release = 0.1f;     // Short release
-    adsr.setParameters(adsrParams);
+    // Setup ADSR for amplitude envelope (default values)
+    ampADSRParams.attack = 0.003f;   // Fast attack (3ms to prevent clicks)
+    ampADSRParams.decay = 0.3f;       // Medium decay
+    ampADSRParams.sustain = 0.0f;     // No sustain (classic 303 behavior)
+    ampADSRParams.release = 0.1f;     // Short release
+    ampADSR.setParameters(ampADSRParams);
+
+    // Setup ADSR for filter envelope (default values)
+    filterADSRParams.attack = 0.003f;
+    filterADSRParams.decay = 0.3f;
+    filterADSRParams.sustain = 0.0f;
+    filterADSRParams.release = 0.1f;
+    filterADSR.setParameters(filterADSRParams);
 }
 
 bool AcidVoice::canPlaySound(juce::SynthesiserSound* sound)
@@ -21,13 +28,6 @@ void AcidVoice::startNote(int midiNoteNumber, float velocity,
     currentMidiNote = midiNoteNumber;
     currentVelocity = velocity;
 
-    // Use Accent parameter to scale how much velocity affects filter envelope
-    // accentAmount (0-1) controls the intensity of velocity sensitivity
-    // velocity affects the filter envelope start value
-    float velocityModulation = (velocity - 0.5f) * 2.0f * accentAmount; // -1 to +1 scaled by accent
-    envValue = 1.0f + velocityModulation;
-    envValue = juce::jlimit(0.1f, 2.0f, envValue); // Clamp to reasonable range
-
     // Reset filter states to prevent instability and volume fluctuations
     filter1 = 0.0;
     filter2 = 0.0;
@@ -35,15 +35,17 @@ void AcidVoice::startNote(int midiNoteNumber, float velocity,
     // Update frequency
     updateAngleDelta();
 
-    // Start amplitude ADSR
-    adsr.noteOn();
+    // Start both ADSRs
+    ampADSR.noteOn();
+    filterADSR.noteOn();
 }
 
 void AcidVoice::stopNote(float /*velocity*/, bool allowTailOff)
 {
-    adsr.noteOff();
+    ampADSR.noteOff();
+    filterADSR.noteOff();
 
-    if (!allowTailOff || !adsr.isActive())
+    if (!allowTailOff || !ampADSR.isActive())
         clearCurrentNote();
 }
 
@@ -58,7 +60,7 @@ void AcidVoice::controllerMoved(int /*controllerNumber*/, int /*newControllerVal
 void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
                                 int startSample, int numSamples)
 {
-    if (!adsr.isActive())
+    if (!ampADSR.isActive())
     {
         clearCurrentNote();
         return;
@@ -100,30 +102,25 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         double subSample = generateSubOscillator();
         sample = sample * (1.0f - modulatedSubOsc) + subSample * modulatedSubOsc;
 
+        // Get filter ADSR envelope value
+        float filterEnvValue = filterADSR.getNextSample();
+
+        // Apply accent LFO modulation to filter envelope for rhythmic filter movement
+        float accentModulation = 1.0f + static_cast<float>(accentLFOValue) * accentLFO.depth * 0.5f;
+        filterEnvValue *= accentModulation;
+
         // Apply envelope mod LFO modulation
         float modulatedEnvMod = envMod + static_cast<float>(envModLFOValue) * envModLFO.depth;
         modulatedEnvMod = juce::jlimit(0.0f, 1.0f, modulatedEnvMod);
 
-        // Apply decay LFO modulation
-        float modulatedDecay = envDecay + static_cast<float>(decayLFOValue) * decayLFO.depth * 0.5f;
-        modulatedDecay = juce::jlimit(0.0f, 1.0f, modulatedDecay);
-
-        // Update filter envelope with modulated decay
-        envValue *= (1.0f - modulatedDecay * 0.01f);
-
-        // Apply accent LFO modulation to envelope value for rhythmic filter movement
-        float accentModulation = 1.0f + static_cast<float>(accentLFOValue) * accentLFO.depth * 0.5f;
-        float modulatedEnvValue = envValue * accentModulation;
-
-        // Store original envValue
-        float originalEnvValue = envValue;
-        envValue = modulatedEnvValue;
+        // Apply decay LFO to modulate filter envelope decay (for compatibility with existing presets)
+        float decayModulation = 1.0f + static_cast<float>(decayLFOValue) * decayLFO.depth;
+        float modulatedFilterEnv = filterEnvValue * decayModulation;
+        modulatedFilterEnv = juce::jlimit(0.0f, 2.0f, modulatedFilterEnv);
 
         // Process through resonant filter (with dedicated cutoff and resonance LFOs)
-        processFilter(sample, cutoffLFOValue, resonanceLFOValue, modulatedEnvMod);
-
-        // Restore original envValue
-        envValue = originalEnvValue;
+        // Pass filter envelope value to processFilter
+        processFilter(sample, cutoffLFOValue, resonanceLFOValue, modulatedEnvMod, modulatedFilterEnv);
 
         // Apply drive LFO modulation
         float modulatedDrive = driveAmount + static_cast<float>(driveLFOValue) * driveLFO.depth;
@@ -140,7 +137,7 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         driveAmount = originalDrive;
 
         // Apply amplitude envelope
-        float amplitude = adsr.getNextSample();
+        float amplitude = ampADSR.getNextSample();
         sample *= amplitude;
 
         // Apply volume LFO modulation
@@ -184,7 +181,8 @@ void AcidVoice::setCurrentPlaybackSampleRate(double newRate)
     if (newRate > 0)
     {
         sampleRate = newRate;
-        adsr.setSampleRate(newRate);
+        ampADSR.setSampleRate(newRate);
+        filterADSR.setSampleRate(newRate);
         updateAngleDelta();
     }
 }
@@ -202,13 +200,6 @@ void AcidVoice::setResonance(float resonance)
 void AcidVoice::setEnvMod(float envModAmount)
 {
     envMod = juce::jlimit(0.0f, 1.0f, envModAmount);
-}
-
-void AcidVoice::setDecay(float decaySeconds)
-{
-    envDecay = juce::jlimit(0.01f, 1.0f, decaySeconds);
-    adsrParams.decay = decaySeconds;
-    adsr.setParameters(adsrParams);
 }
 
 void AcidVoice::setAccent(float accent)
@@ -260,6 +251,25 @@ void AcidVoice::setFilterFeedback(float feedback)
 void AcidVoice::setSaturationType(int type)
 {
     saturationType = juce::jlimit(0, 4, type); // 0=Clean, 1=Warm, 2=Tube, 3=Hard, 4=Acid
+}
+
+// ADSR setters
+void AcidVoice::setFilterADSR(float attack, float decay, float sustain, float release)
+{
+    filterADSRParams.attack = juce::jlimit(0.0f, 10.0f, attack);
+    filterADSRParams.decay = juce::jlimit(0.0f, 10.0f, decay);
+    filterADSRParams.sustain = juce::jlimit(0.0f, 1.0f, sustain);
+    filterADSRParams.release = juce::jlimit(0.0f, 10.0f, release);
+    filterADSR.setParameters(filterADSRParams);
+}
+
+void AcidVoice::setAmpADSR(float attack, float decay, float sustain, float release)
+{
+    ampADSRParams.attack = juce::jlimit(0.0f, 10.0f, attack);
+    ampADSRParams.decay = juce::jlimit(0.0f, 10.0f, decay);
+    ampADSRParams.sustain = juce::jlimit(0.0f, 1.0f, sustain);
+    ampADSRParams.release = juce::jlimit(0.0f, 10.0f, release);
+    ampADSR.setParameters(ampADSRParams);
 }
 
 // Dedicated LFO setters
@@ -431,13 +441,13 @@ void AcidVoice::applySaturation(double& sample)
     }
 }
 
-void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double resonanceLFOValue, float modulatedEnvMod)
+void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double resonanceLFOValue, float modulatedEnvMod, float filterEnvValue)
 {
     // State-variable filter (resonant low-pass)
     // This gives that classic TB-303 sound
 
     // Calculate filter frequency with envelope modulation
-    double modulation = envValue * modulatedEnvMod * 8000.0;
+    double modulation = filterEnvValue * modulatedEnvMod * 8000.0;
 
     // Add dedicated cutoff LFO modulation
     modulation += cutoffLFOValue * cutoffLFO.depth * 3000.0; // LFO can modulate +/- 3kHz
