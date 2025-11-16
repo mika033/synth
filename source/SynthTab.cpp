@@ -161,15 +161,15 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
 
     // Setup all 10 dedicated LFO control sets
     setupLFOControls(cutoffLFO, "cutofflfor", "cutofflfow", "cutofflfod");
-    setupLFOControls(resonanceLFO, "resonancelfor", "resonancelfow", "resonancelfod");
-    setupLFOControls(envModLFO, "envmodlfor", "envmodlfow", "envmodlfod");
-    setupLFOControls(decayLFO, "decaylfor", "decaylfow", "decaylfod");
-    setupLFOControls(accentLFO, "accentlfor", "accentlfow", "accentlfod");
-    setupLFOControls(waveformLFO, "waveformlfor", "waveformlfow", "waveformlfod");
-    setupLFOControls(subOscLFO, "subosclfor", "subosclfow", "subosclfod");
-    setupLFOControls(driveLFO, "drivelfor", "drivelfow", "drivelfod");
-    setupLFOControls(volumeLFO, "volumelfor", "volumelfow", "volumelfod");
-    setupLFOControls(delayMixLFO, "delaymixlfor", "delaymixlfow", "delaymixlfod");
+    setupLFOControls(resonanceLFO, "resonancelforate", "resonancelfowave", "resonancelfodepth");
+    setupLFOControls(envModLFO, "envmodlforate", "envmodlfowave", "envmodlfodepth");
+    setupLFOControls(decayLFO, "decaylforate", "decaylfowave", "decaylfodepth");
+    setupLFOControls(accentLFO, "accentlforate", "accentlfowave", "accentlfodepth");
+    setupLFOControls(waveformLFO, "waveformlforate", "waveformlfowave", "waveformlfodepth");
+    setupLFOControls(subOscLFO, "subosclforate", "subosclfowave", "subosclfodepth");
+    setupLFOControls(driveLFO, "drivelforate", "drivelfowave", "drivelfodepth");
+    setupLFOControls(volumeLFO, "volumelforate", "volumelfowave", "volumelfodepth");
+    setupLFOControls(delayMixLFO, "delaymixlforate", "delaymixlfowave", "delaymixlfodepth");
 }
 
 SynthTab::~SynthTab()
