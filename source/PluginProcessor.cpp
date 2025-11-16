@@ -453,24 +453,64 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
 void AcidSynthAudioProcessor::updateVoiceParameters()
 {
+    // Main parameters
     float cutoff = parameters.getRawParameterValue(CUTOFF_ID)->load();
     float resonance = parameters.getRawParameterValue(RESONANCE_ID)->load();
     float envMod = parameters.getRawParameterValue(ENV_MOD_ID)->load();
     float decay = parameters.getRawParameterValue(DECAY_ID)->load();
     float accent = parameters.getRawParameterValue(ACCENT_ID)->load();
-    int waveform = static_cast<int>(parameters.getRawParameterValue(WAVEFORM_ID)->load());
+    float waveform = parameters.getRawParameterValue(WAVEFORM_ID)->load(); // Now float for morphing
     float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
     float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
     float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
-    int lfoRate = static_cast<int>(parameters.getRawParameterValue(LFO_RATE_ID)->load());
-    int lfoDest = static_cast<int>(parameters.getRawParameterValue(LFO_DEST_ID)->load());
-    float lfoDepth = parameters.getRawParameterValue(LFO_DEPTH_ID)->load();
+
+    // Dedicated LFO parameters (3 per parameter: rate, waveform, depth)
+    int cutoffLFORate = static_cast<int>(parameters.getRawParameterValue(CUTOFF_LFO_RATE_ID)->load());
+    int cutoffLFOWave = static_cast<int>(parameters.getRawParameterValue(CUTOFF_LFO_WAVE_ID)->load());
+    float cutoffLFODepth = parameters.getRawParameterValue(CUTOFF_LFO_DEPTH_ID)->load();
+
+    int resonanceLFORate = static_cast<int>(parameters.getRawParameterValue(RESONANCE_LFO_RATE_ID)->load());
+    int resonanceLFOWave = static_cast<int>(parameters.getRawParameterValue(RESONANCE_LFO_WAVE_ID)->load());
+    float resonanceLFODepth = parameters.getRawParameterValue(RESONANCE_LFO_DEPTH_ID)->load();
+
+    int envModLFORate = static_cast<int>(parameters.getRawParameterValue(ENVMOD_LFO_RATE_ID)->load());
+    int envModLFOWave = static_cast<int>(parameters.getRawParameterValue(ENVMOD_LFO_WAVE_ID)->load());
+    float envModLFODepth = parameters.getRawParameterValue(ENVMOD_LFO_DEPTH_ID)->load();
+
+    int decayLFORate = static_cast<int>(parameters.getRawParameterValue(DECAY_LFO_RATE_ID)->load());
+    int decayLFOWave = static_cast<int>(parameters.getRawParameterValue(DECAY_LFO_WAVE_ID)->load());
+    float decayLFODepth = parameters.getRawParameterValue(DECAY_LFO_DEPTH_ID)->load();
+
+    int accentLFORate = static_cast<int>(parameters.getRawParameterValue(ACCENT_LFO_RATE_ID)->load());
+    int accentLFOWave = static_cast<int>(parameters.getRawParameterValue(ACCENT_LFO_WAVE_ID)->load());
+    float accentLFODepth = parameters.getRawParameterValue(ACCENT_LFO_DEPTH_ID)->load();
+
+    int waveformLFORate = static_cast<int>(parameters.getRawParameterValue(WAVEFORM_LFO_RATE_ID)->load());
+    int waveformLFOWave = static_cast<int>(parameters.getRawParameterValue(WAVEFORM_LFO_WAVE_ID)->load());
+    float waveformLFODepth = parameters.getRawParameterValue(WAVEFORM_LFO_DEPTH_ID)->load();
+
+    int subOscLFORate = static_cast<int>(parameters.getRawParameterValue(SUBOSC_LFO_RATE_ID)->load());
+    int subOscLFOWave = static_cast<int>(parameters.getRawParameterValue(SUBOSC_LFO_WAVE_ID)->load());
+    float subOscLFODepth = parameters.getRawParameterValue(SUBOSC_LFO_DEPTH_ID)->load();
+
+    int driveLFORate = static_cast<int>(parameters.getRawParameterValue(DRIVE_LFO_RATE_ID)->load());
+    int driveLFOWave = static_cast<int>(parameters.getRawParameterValue(DRIVE_LFO_WAVE_ID)->load());
+    float driveLFODepth = parameters.getRawParameterValue(DRIVE_LFO_DEPTH_ID)->load();
+
+    int volumeLFORate = static_cast<int>(parameters.getRawParameterValue(VOLUME_LFO_RATE_ID)->load());
+    int volumeLFOWave = static_cast<int>(parameters.getRawParameterValue(VOLUME_LFO_WAVE_ID)->load());
+    float volumeLFODepth = parameters.getRawParameterValue(VOLUME_LFO_DEPTH_ID)->load();
+
+    int delayMixLFORate = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_RATE_ID)->load());
+    int delayMixLFOWave = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_WAVE_ID)->load());
+    float delayMixLFODepth = parameters.getRawParameterValue(DELAYMIX_LFO_DEPTH_ID)->load();
 
     // Update all voices
     for (int i = 0; i < synth.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<AcidVoice*>(synth.getVoice(i)))
         {
+            // Set main parameters
             voice->setCutoff(cutoff);
             voice->setResonance(resonance);
             voice->setEnvMod(envMod);
@@ -480,10 +520,19 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setSubOscMix(subOsc);
             voice->setDrive(drive);
             voice->setVolume(volume);
-            voice->setLFORate(lfoRate);
-            voice->setLFODestination(lfoDest);
-            voice->setLFODepth(lfoDepth);
             voice->setBPM(currentBPM);
+
+            // Set all 10 dedicated LFOs
+            voice->setCutoffLFO(cutoffLFORate, cutoffLFOWave, cutoffLFODepth);
+            voice->setResonanceLFO(resonanceLFORate, resonanceLFOWave, resonanceLFODepth);
+            voice->setEnvModLFO(envModLFORate, envModLFOWave, envModLFODepth);
+            voice->setDecayLFO(decayLFORate, decayLFOWave, decayLFODepth);
+            voice->setAccentLFO(accentLFORate, accentLFOWave, accentLFODepth);
+            voice->setWaveformLFO(waveformLFORate, waveformLFOWave, waveformLFODepth);
+            voice->setSubOscLFO(subOscLFORate, subOscLFOWave, subOscLFODepth);
+            voice->setDriveLFO(driveLFORate, driveLFOWave, driveLFODepth);
+            voice->setVolumeLFO(volumeLFORate, volumeLFOWave, volumeLFODepth);
+            voice->setDelayMixLFO(delayMixLFORate, delayMixLFOWave, delayMixLFODepth);
         }
     }
 }

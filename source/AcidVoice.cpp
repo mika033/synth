@@ -66,37 +66,77 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
 
     while (--numSamples >= 0)
     {
-        // Get LFO modulation value (-1 to +1)
-        double lfoValue = getLFOValue();
+        // Get all 10 LFO modulation values (-1 to +1)
+        double cutoffLFOValue = getLFOValue(cutoffLFO);
+        double resonanceLFOValue = getLFOValue(resonanceLFO);
+        double envModLFOValue = getLFOValue(envModLFO);
+        double decayLFOValue = getLFOValue(decayLFO);
+        double accentLFOValue = getLFOValue(accentLFO);
+        double waveformLFOValue = getLFOValue(waveformLFO);
+        double subOscLFOValue = getLFOValue(subOscLFO);
+        double driveLFOValue = getLFOValue(driveLFO);
+        double volumeLFOValue = getLFOValue(volumeLFO);
+        // delayMixLFO is used in the processor's delay effect, not here
+
+        // Apply waveform LFO modulation
+        float modulatedWaveform = waveformMorph + static_cast<float>(waveformLFOValue) * waveformLFO.depth;
+        modulatedWaveform = juce::jlimit(0.0f, 1.0f, modulatedWaveform);
+
+        // Temporarily set the waveform for this sample
+        float originalWaveform = waveformMorph;
+        waveformMorph = modulatedWaveform;
 
         // Generate main oscillator sample
         double sample = generateOscillator();
 
+        // Restore original waveform
+        waveformMorph = originalWaveform;
+
+        // Apply sub-oscillator LFO modulation
+        float modulatedSubOsc = subOscMix + static_cast<float>(subOscLFOValue) * subOscLFO.depth;
+        modulatedSubOsc = juce::jlimit(0.0f, 1.0f, modulatedSubOsc);
+
         // Add sub-oscillator (one octave down)
         double subSample = generateSubOscillator();
-        sample = sample * (1.0f - subOscMix) + subSample * subOscMix;
+        sample = sample * (1.0f - modulatedSubOsc) + subSample * modulatedSubOsc;
 
-        // Update filter envelope
-        envValue *= (1.0f - envDecay * 0.01f);
+        // Apply envelope mod LFO modulation
+        float modulatedEnvMod = envMod + static_cast<float>(envModLFOValue) * envModLFO.depth;
+        modulatedEnvMod = juce::jlimit(0.0f, 1.0f, modulatedEnvMod);
 
-        // Process through resonant filter (with LFO if assigned to cutoff)
-        processFilter(sample);
+        // Apply decay LFO modulation
+        float modulatedDecay = envDecay + static_cast<float>(decayLFOValue) * decayLFO.depth * 0.5f;
+        modulatedDecay = juce::jlimit(0.0f, 1.0f, modulatedDecay);
+
+        // Update filter envelope with modulated decay
+        envValue *= (1.0f - modulatedDecay * 0.01f);
+
+        // Process through resonant filter (with dedicated cutoff and resonance LFOs)
+        processFilter(sample, cutoffLFOValue, resonanceLFOValue, modulatedEnvMod);
+
+        // Apply drive LFO modulation
+        float modulatedDrive = driveAmount + static_cast<float>(driveLFOValue) * driveLFO.depth;
+        modulatedDrive = juce::jlimit(0.0f, 1.0f, modulatedDrive);
+
+        // Temporarily set the drive for this sample
+        float originalDrive = driveAmount;
+        driveAmount = modulatedDrive;
 
         // Apply saturation/drive
         applySaturation(sample);
+
+        // Restore original drive
+        driveAmount = originalDrive;
 
         // Apply amplitude envelope
         float amplitude = adsr.getNextSample();
         sample *= amplitude;
 
-        // Apply volume control (with LFO if assigned to volume)
-        float volumeModulation = 1.0f;
-        if (lfoDestination == 3) // Volume
-        {
-            volumeModulation = 1.0f + static_cast<float>(lfoValue) * lfoDepth * 0.5f;
-            volumeModulation = juce::jlimit(0.5f, 1.5f, volumeModulation);
-        }
-        sample *= volumeLevel * volumeModulation;
+        // Apply volume LFO modulation
+        float modulatedVolume = volumeLevel + static_cast<float>(volumeLFOValue) * volumeLFO.depth * 0.5f;
+        modulatedVolume = juce::jlimit(0.0f, 1.5f, modulatedVolume);
+
+        sample *= modulatedVolume;
 
         // Write to both channels
         for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
@@ -114,10 +154,17 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         if (subAngle > juce::MathConstants<double>::twoPi)
             subAngle -= juce::MathConstants<double>::twoPi;
 
-        // Advance LFO phase
-        lfoPhase += juce::MathConstants<double>::twoPi * lfoFrequency / sampleRate;
-        if (lfoPhase > juce::MathConstants<double>::twoPi)
-            lfoPhase -= juce::MathConstants<double>::twoPi;
+        // Advance all 10 LFO phases
+        advanceLFO(cutoffLFO);
+        advanceLFO(resonanceLFO);
+        advanceLFO(envModLFO);
+        advanceLFO(decayLFO);
+        advanceLFO(accentLFO);
+        advanceLFO(waveformLFO);
+        advanceLFO(subOscLFO);
+        advanceLFO(driveLFO);
+        advanceLFO(volumeLFO);
+        advanceLFO(delayMixLFO);
     }
 }
 
@@ -313,22 +360,16 @@ void AcidVoice::applySaturation(double& sample)
     }
 }
 
-void AcidVoice::processFilter(double& sample)
+void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double resonanceLFOValue, float modulatedEnvMod)
 {
     // State-variable filter (resonant low-pass)
     // This gives that classic TB-303 sound
 
-    // Get LFO value for filter modulation
-    double lfoValue = getLFOValue();
-
     // Calculate filter frequency with envelope modulation
-    double modulation = envValue * envMod * 8000.0;
+    double modulation = envValue * modulatedEnvMod * 8000.0;
 
-    // Add LFO modulation to cutoff if assigned
-    if (lfoDestination == 1) // Cutoff
-    {
-        modulation += lfoValue * lfoDepth * 3000.0; // LFO can modulate +/- 3kHz
-    }
+    // Add dedicated cutoff LFO modulation
+    modulation += cutoffLFOValue * cutoffLFO.depth * 3000.0; // LFO can modulate +/- 3kHz
 
     double modulatedCutoff = juce::jlimit(20.0, 20000.0, filterCutoff + modulation);
 
@@ -337,17 +378,12 @@ void AcidVoice::processFilter(double& sample)
     f = juce::jlimit(0.0, 1.0, f);
 
     // State-variable filter implementation
+    // Apply dedicated resonance LFO modulation
+    double modulatedResonance = filterResonance + resonanceLFOValue * resonanceLFO.depth * 0.3;
+    modulatedResonance = juce::jlimit(0.0, 0.99, modulatedResonance);
+
     // Invert resonance: higher filterResonance = less damping = more resonance
     // Clamp damping to minimum value to prevent total instability
-    double modulatedResonance = filterResonance;
-
-    // Add LFO modulation to resonance if assigned
-    if (lfoDestination == 2) // Resonance
-    {
-        modulatedResonance += lfoValue * lfoDepth * 0.3; // LFO can modulate +/- 0.3
-        modulatedResonance = juce::jlimit(0.0, 0.99, modulatedResonance);
-    }
-
     double damping = juce::jlimit(0.05, 1.0, 1.0 - modulatedResonance);
 
     double lowpass = filter2 + f * filter1;
