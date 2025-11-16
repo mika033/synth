@@ -18,6 +18,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     presetSelector.addItem("Warm Bass", 10);
     presetSelector.addItem("Evolving Pad", 11);
     presetSelector.addItem("Init", 12);
+    presetSelector.setSelectedId(12); // Select Init preset by default
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();
@@ -195,15 +196,15 @@ void SynthTab::paint(juce::Graphics& g)
 
     // Draw section backgrounds
     g.setColour(juce::Colour(0xff3a3a3a));
-    g.fillRoundedRectangle(20, 60, getWidth() - 40, 280, 10); // Filter/Envelope section
-    g.fillRoundedRectangle(20, 360, getWidth() - 40, 180, 10); // Oscillator section
+    g.fillRoundedRectangle(20, 60, getWidth() - 40, 180, 10); // Oscillator section
+    g.fillRoundedRectangle(20, 260, getWidth() - 40, 280, 10); // Filter/Envelope section
     g.fillRoundedRectangle(20, 560, getWidth() - 40, 180, 10); // Delay section
 
     // Draw section labels
     g.setColour(juce::Colours::lightgrey);
     g.setFont(14.0f);
-    g.drawText("FILTER & ENVELOPE", 30, 65, 200, 20, juce::Justification::left);
-    g.drawText("OSCILLATOR", 30, 365, 200, 20, juce::Justification::left);
+    g.drawText("OSCILLATOR", 30, 65, 200, 20, juce::Justification::left);
+    g.drawText("FILTER & ENVELOPE", 30, 265, 200, 20, juce::Justification::left);
     g.drawText("DELAY", 30, 565, 200, 20, juce::Justification::left);
 }
 
@@ -217,8 +218,22 @@ void SynthTab::resized()
     presetLabel.setBounds(getWidth() - 220, 15, 60, 20);
     presetSelector.setBounds(getWidth() - 150, 15, 130, 25);
 
-    // Filter & Envelope section
-    int filterY = 100;
+    // Oscillator section (now first)
+    int oscY = 100;
+    waveformLabel.setBounds(50, oscY + knobSize, knobSize, labelHeight);
+    waveformSlider.setBounds(50, oscY, knobSize, knobSize);
+
+    subOscLabel.setBounds(50 + spacing, oscY + knobSize, knobSize, labelHeight);
+    subOscSlider.setBounds(50 + spacing, oscY, knobSize, knobSize);
+
+    driveLabel.setBounds(50 + spacing * 2, oscY + knobSize, knobSize, labelHeight);
+    driveSlider.setBounds(50 + spacing * 2, oscY, knobSize, knobSize);
+
+    volumeLabel.setBounds(50 + spacing * 3, oscY + knobSize, knobSize, labelHeight);
+    volumeSlider.setBounds(50 + spacing * 3, oscY, knobSize, knobSize);
+
+    // Filter & Envelope section (now second)
+    int filterY = 300;
     cutoffLabel.setBounds(50, filterY + knobSize, knobSize, labelHeight);
     cutoffSlider.setBounds(50, filterY, knobSize, knobSize);
 
@@ -241,20 +256,6 @@ void SynthTab::resized()
 
     saturationTypeLabel.setBounds(50 + spacing, filterY2 + knobSize, knobSize, labelHeight);
     saturationTypeSelector.setBounds(50 + spacing + 10, filterY2 + 30, 60, 25);
-
-    // Oscillator section
-    int oscY = 400;
-    waveformLabel.setBounds(50, oscY + knobSize, knobSize, labelHeight);
-    waveformSlider.setBounds(50, oscY, knobSize, knobSize);
-
-    subOscLabel.setBounds(50 + spacing, oscY + knobSize, knobSize, labelHeight);
-    subOscSlider.setBounds(50 + spacing, oscY, knobSize, knobSize);
-
-    driveLabel.setBounds(50 + spacing * 2, oscY + knobSize, knobSize, labelHeight);
-    driveSlider.setBounds(50 + spacing * 2, oscY, knobSize, knobSize);
-
-    volumeLabel.setBounds(50 + spacing * 3, oscY + knobSize, knobSize, labelHeight);
-    volumeSlider.setBounds(50 + spacing * 3, oscY, knobSize, knobSize);
 
     // Delay section
     int delayY = 600;

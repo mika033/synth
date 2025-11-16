@@ -381,6 +381,9 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
     // Add sound
     synth.addSound(new AcidSound());
+
+    // Load Init preset by default (index 11)
+    loadPreset(11);
 }
 
 AcidSynthAudioProcessor::~AcidSynthAudioProcessor()
@@ -743,11 +746,13 @@ void AcidSynthAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 
 void AcidSynthAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    // Disabled: Always start with fresh Init preset, don't restore previous state
+    // This ensures the plugin/standalone always starts with known default values
 
-    if (xmlState.get() != nullptr)
-        if (xmlState->hasTagName(parameters.state.getType()))
-            parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+    // std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    // if (xmlState.get() != nullptr)
+    //     if (xmlState->hasTagName(parameters.state.getType()))
+    //         parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
 }
 
 //==============================================================================
