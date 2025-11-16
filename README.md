@@ -64,6 +64,20 @@ A minimal VST synthesizer plugin for creating classic Acid bass sounds, inspired
   - At 0.5: Equal mix of dry and delayed signal
   - At 1.0: Only delayed signal
 
+## Factory Presets
+
+The plugin includes 9 factory presets demonstrating various acid bass sounds:
+
+1. **Classic 303 Bass** - Fat, punchy bass with moderate resonance
+2. **Squelchy Lead** - Maximum filter expression with LFO cutoff modulation
+3. **Deep Rumble** - Sub-heavy bass with long decay
+4. **Aggressive Lead** - Distorted, resonant lead with high drive
+5. **Pulsing Bass** - Rhythmic bass with strong LFO cutoff modulation
+6. **Dub Delay Bass** - Classic dub sound with dotted quarter delay
+7. **Wobble Bass** - Fast LFO resonance modulation for dubstep-style wobbles
+8. **Soft Pad** - Gentle square wave pad with delay and volume LFO
+9. **Init** - Clean starting point for your own sounds
+
 ## Build Instructions
 
 ### Windows (Easiest Method)
@@ -186,18 +200,30 @@ Want to customize the plugin name, company, or settings? All configuration is ce
 
 ### CMakeLists.txt (Build Configuration)
 
-Edit lines 7-18 to customize:
+Edit lines 7-17 to customize plugin identity and build:
 
 ```cmake
+# Plugin Identity
 set(PLUGIN_NAME "AcidSynth")              # Internal name (no spaces)
 set(PLUGIN_VERSION "1.0.0")                # Version number
 set(PLUGIN_DISPLAY_NAME "Acid Synth")     # Name shown in DAW
 set(COMPANY_NAME "AcidLab")                # Your company name
 set(PLUGIN_MANUFACTURER_CODE "Acdl")       # 4-char manufacturer ID
 set(PLUGIN_CODE "Acd1")                    # 4-char plugin ID
+
+# Build Configuration
 set(PLUGIN_FORMATS "VST3" "Standalone")    # Build formats
 set(INSTALL_TO_SYSTEM TRUE)                # Auto-install to VST folder
 ```
+
+**Output Files:**
+- VST3: `Acid Synth.vst3`
+- Standalone: `Acid Synth.exe` (Windows) or `Acid Synth.app` (Mac)
+
+**VST Installation Directories:**
+- Windows: `C:\Program Files\Common Files\VST3\`
+- macOS: `~/Library/Audio/Plug-Ins/VST3/`
+- Linux: `~/.vst3/`
 
 **Important:** PLUGIN_MANUFACTURER_CODE and PLUGIN_CODE must be unique 4-character codes if you distribute your plugin!
 

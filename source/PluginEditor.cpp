@@ -103,7 +103,11 @@ AcidSynthAudioProcessorEditor::AcidSynthAudioProcessorEditor(AcidSynthAudioProce
     presetSelector.addItem("Squelchy Lead", 2);
     presetSelector.addItem("Deep Rumble", 3);
     presetSelector.addItem("Aggressive Lead", 4);
-    presetSelector.addItem("Init", 5);
+    presetSelector.addItem("Pulsing Bass", 5);
+    presetSelector.addItem("Dub Delay Bass", 6);
+    presetSelector.addItem("Wobble Bass", 7);
+    presetSelector.addItem("Soft Pad", 8);
+    presetSelector.addItem("Init", 9);
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();

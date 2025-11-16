@@ -50,6 +50,18 @@ static const Preset kPresets[] = {
     // Aggressive Distorted Lead
     { "Aggressive Lead", 1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1, 0.1f, 0.85f, 0.6f, 1, 2, 0.6f, 7, 0.5f, 0.3f },
 
+    // Pulsing Bass (LFO Cutoff)
+    { "Pulsing Bass", 600.0f, 0.75f, 0.7f, 0.4f, 0.6f, 0, 0.6f, 0.2f, 0.65f, 2, 1, 0.8f, 6, 0.3f, 0.1f },
+
+    // Dub Delay Bass
+    { "Dub Delay Bass", 500.0f, 0.7f, 0.5f, 0.35f, 0.5f, 0, 0.7f, 0.1f, 0.6f, 2, 0, 0.3f, 7, 0.6f, 0.4f },
+
+    // Wobble Bass (LFO Resonance)
+    { "Wobble Bass", 800.0f, 0.85f, 0.8f, 0.3f, 0.7f, 0, 0.4f, 0.3f, 0.7f, 1, 2, 0.75f, 3, 0.2f, 0.0f },
+
+    // Soft Pad (Square + Delay)
+    { "Soft Pad", 1200.0f, 0.5f, 0.3f, 0.8f, 0.2f, 1, 0.3f, 0.0f, 0.5f, 3, 3, 0.4f, 10, 0.7f, 0.5f },
+
     // Init (default clean sound)
     { "Init", 1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0, 0.5f, 0.0f, 0.7f, 2, 0, 0.5f, 6, 0.3f, 0.0f }
 };

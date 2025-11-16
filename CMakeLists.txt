@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 # PLUGIN CONFIGURATION - Edit these to customize your plugin
 #===============================================================================
 
+# Plugin Identity
 set(PLUGIN_NAME "AcidSynth")              # Internal project name (no spaces)
 set(PLUGIN_VERSION "1.0.0")                # Plugin version
 set(PLUGIN_DISPLAY_NAME "Acid Synth")     # Name shown in DAW
@@ -11,11 +12,19 @@ set(COMPANY_NAME "AcidLab")                # Your company/developer name
 set(PLUGIN_MANUFACTURER_CODE "Acdl")       # 4-char manufacturer ID (must be unique!)
 set(PLUGIN_CODE "Acd1")                    # 4-char plugin ID (must be unique!)
 
-# Build formats (change as needed)
+# Build Configuration
 set(PLUGIN_FORMATS "VST3" "Standalone")    # Available: VST3, AU, AAX, Standalone
-
-# Installation (COPY_PLUGIN_AFTER_BUILD will install to system VST folder)
 set(INSTALL_TO_SYSTEM TRUE)                # TRUE = auto-install, FALSE = manual
+
+# Output File Names (automatically generated)
+# VST3: ${PLUGIN_DISPLAY_NAME}.vst3
+# Standalone: ${PLUGIN_DISPLAY_NAME}.exe (Windows) or ${PLUGIN_DISPLAY_NAME}.app (Mac)
+
+# Default VST Installation Directories:
+# Windows: C:\Program Files\Common Files\VST3\
+# macOS:   ~/Library/Audio/Plug-Ins/VST3/
+# Linux:   ~/.vst3/
+# (JUCE handles installation automatically when INSTALL_TO_SYSTEM is TRUE)
 
 #===============================================================================
 project(${PLUGIN_NAME} VERSION ${PLUGIN_VERSION})
