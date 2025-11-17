@@ -262,16 +262,16 @@ void SynthTab::paint(juce::Graphics& g)
 
     // Draw section backgrounds
     g.setColour(juce::Colour(0xff3a3a3a));
-    g.fillRoundedRectangle(20, 60, getWidth() - 40, 180, 10); // Oscillator & Amp ADSR section
-    g.fillRoundedRectangle(20, 255, getWidth() - 40, 280, 10); // Filter & Filter ADSR section
-    g.fillRoundedRectangle(20, 550, getWidth() - 40, 100, 10); // Delay section
+    g.fillRoundedRectangle(20, 60, getWidth() - 40, 210, 10); // Oscillator & Amp ADSR section
+    g.fillRoundedRectangle(20, 280, getWidth() - 40, 280, 10); // Filter & Filter ADSR section
+    g.fillRoundedRectangle(20, 570, getWidth() - 40, 100, 10); // Delay section
 
     // Draw section labels
     g.setColour(juce::Colours::lightgrey);
     g.setFont(14.0f);
     g.drawText("OSCILLATOR & AMP ENVELOPE", 30, 65, 250, 20, juce::Justification::left);
-    g.drawText("FILTER & FILTER ENVELOPE", 30, 260, 250, 20, juce::Justification::left);
-    g.drawText("DELAY", 30, 555, 200, 20, juce::Justification::left);
+    g.drawText("FILTER & FILTER ENVELOPE", 30, 285, 250, 20, juce::Justification::left);
+    g.drawText("DELAY", 30, 575, 200, 20, juce::Justification::left);
 }
 
 void SynthTab::resized()
@@ -313,7 +313,7 @@ void SynthTab::resized()
     ampReleaseSlider.setBounds(50 + spacing * 3, oscY2, knobSize, knobSize);
 
     // Filter & Filter Envelope section (now second)
-    int filterY = 285;
+    int filterY = 310;
     cutoffLabel.setBounds(50, filterY + knobSize, knobSize, labelHeight);
     cutoffSlider.setBounds(50, filterY, knobSize, knobSize);
 
@@ -349,7 +349,7 @@ void SynthTab::resized()
     filterReleaseSlider.setBounds(50 + spacing * 3, filterY3, knobSize, knobSize);
 
     // Delay section
-    int delayY = 580;
+    int delayY = 600;
     delayTimeLabel.setBounds(50, delayY + knobSize, knobSize, labelHeight);
     delayTimeSelector.setBounds(50 + 10, delayY + 25, 60, 25);
 
