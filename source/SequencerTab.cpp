@@ -107,10 +107,10 @@ void SequencerTab::paint(juce::Graphics& g)
 
 void SequencerTab::resized()
 {
-    const int knobSize = 80;
+    const int knobSize = 60;
     const int labelHeight = 20;
     const int controlY = 150;
-    const int spacing = 150;
+    const int spacing = 120;
     const int startX = 80;
 
     // Title
