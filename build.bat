@@ -134,4 +134,14 @@ echo Or check: build\AcidSynth_artefacts\Release\VST3\
 echo.
 echo Rescan plugins in your DAW to use it!
 echo ========================================
+echo.
+
+REM Start standalone executable if it exists
+if exist "AcidSynth_artefacts\Release\Standalone\Acid Synth.exe" (
+    echo Starting Acid Synth standalone...
+    start "" "AcidSynth_artefacts\Release\Standalone\Acid Synth.exe"
+) else (
+    echo Note: Standalone executable not found at expected location
+)
+
 cd ..

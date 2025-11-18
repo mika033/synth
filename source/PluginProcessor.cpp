@@ -395,10 +395,10 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         juce::StringArray{"Up", "Down", "Up-Down", "Random", "As Played"}, 0),
                     std::make_unique<juce::AudioParameterChoice>(
                         ARP_RATE_ID, "Arp Rate",
-                        juce::StringArray{"1/32", "1/16", "1/16T", "1/8", "1/8T", "1/4", "1/4T"}, 3), // Default to 1/8
+                        juce::StringArray{"1/32", "1/32.", "1/16", "1/16.", "1/16T", "1/8", "1/8.", "1/8T", "1/4", "1/4.", "1/4T", "1/2", "1/2.", "1/1"}, 5), // Default to 1/8
                     std::make_unique<juce::AudioParameterInt>(
                         ARP_OCTAVES_ID, "Arp Octaves",
-                        1, 4, 1), // 1-4 octaves
+                        1, 4, 2), // 1-4 octaves, default 2
                     std::make_unique<juce::AudioParameterFloat>(
                         ARP_GATE_ID, "Arp Gate",
                         juce::NormalisableRange<float>(0.1f, 1.0f, 0.01f),
@@ -409,7 +409,52 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         ARP_SWING_ID, "Arp Swing",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.0f) // Default 0% swing (straight timing)
+                        0.0f), // Default 0% swing (straight timing)
+
+                    // Sequencer parameters
+                    std::make_unique<juce::AudioParameterBool>(
+                        SEQ_ENABLED_ID, "Seq Enabled", false), // Default: disabled
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SEQ_ROOT_ID, "Seq Root",
+                        juce::StringArray{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}, 0), // Default to C
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SEQ_SCALE_ID, "Seq Scale",
+                        juce::StringArray{"Major", "Minor", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian", "Harmonic Minor", "Melodic Minor", "Pentatonic Major", "Pentatonic Minor", "Blues"}, 1), // Default to Minor
+
+                    // Progression parameters
+                    std::make_unique<juce::AudioParameterBool>(
+                        PROG_ENABLED_ID, "Progression Enabled", true), // Default: enabled
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEPS_ID, "Progression Steps", 1, 8, 8), // Default: 8 steps
+                    std::make_unique<juce::AudioParameterChoice>(
+                        PROG_LENGTH_ID, "Progression Length",
+                        juce::StringArray{"1/2", "1", "2", "3", "4"}, 1), // Default: 1 bar
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP1_ID, "Progression Step 1", 1, 8, 1), // Default to scale degree 1
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP2_ID, "Progression Step 2", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP3_ID, "Progression Step 3", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP4_ID, "Progression Step 4", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP5_ID, "Progression Step 5", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP6_ID, "Progression Step 6", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP7_ID, "Progression Step 7", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP8_ID, "Progression Step 8", 1, 8, 1),
+
+                    // Global parameters
+                    std::make_unique<juce::AudioParameterFloat>(
+                        GLOBAL_BPM_ID, "BPM",
+                        juce::NormalisableRange<float>(60.0f, 200.0f, 1.0f),
+                        120.0f), // Default 120 BPM
+                    std::make_unique<juce::AudioParameterFloat>(
+                        MASTER_VOLUME_ID, "Master Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.7f) // Default 70%
                 })
 {
     // Add voices to the synthesizer
@@ -418,6 +463,12 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
     // Add sound
     synth.addSound(new AcidSound());
+
+    // Initialize sequencer pattern with a default melody (C major scale pattern)
+    // Pattern: 1-3-5-7-5-3-1-1 (repeated twice)
+    const int defaultPattern[] = {0, 2, 4, 6, 4, 2, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0};
+    for (int i = 0; i < NUM_SEQ_STEPS; ++i)
+        sequencerPattern[i] = defaultPattern[i];
 
     // Load Init preset by default (index 11)
     loadPreset(11);
@@ -532,27 +583,32 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         }
     }
 
-    // Use default BPM if no host BPM available
+    // Use global BPM parameter if no host BPM available
     if (!bpmFromHost)
     {
-        currentBPM = DEFAULT_BPM;
-    }
-
-    // Handle internal playback (for standalone mode)
-    if (isInternalPlaybackActive)
-    {
-        // Inject C3 note-on message at the start of the buffer
-        midiMessages.addEvent(juce::MidiMessage::noteOn(1, INTERNAL_PLAYBACK_NOTE, (juce::uint8)100), 0);
+        currentBPM = parameters.getRawParameterValue(GLOBAL_BPM_ID)->load();
     }
 
     // Clear output buffer
     buffer.clear();
 
+    // Track total playback time for bar synchronization
+    if (isPlaybackActive)
+    {
+        totalPlaybackTime += buffer.getNumSamples();
+    }
+
     // Update voice parameters
     updateVoiceParameters();
 
+    // Update progression step (must be before arp/sequencer)
+    updateProgressionStep(buffer.getNumSamples());
+
     // Process arpeggiator (modifies MIDI messages)
     processArpeggiator(midiMessages, buffer.getNumSamples());
+
+    // Process sequencer (modifies MIDI messages)
+    processSequencer(midiMessages, buffer.getNumSamples());
 
     // Render synthesizer
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
@@ -623,6 +679,10 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             }
         }
     }
+
+    // Apply master volume to final output
+    float masterVolume = parameters.getRawParameterValue(MASTER_VOLUME_ID)->load();
+    buffer.applyGain(masterVolume);
 }
 
 void AcidSynthAudioProcessor::updateVoiceParameters()
@@ -830,13 +890,14 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
 {
     bool arpEnabled = parameters.getRawParameterValue(ARP_ONOFF_ID)->load() > 0.5f;
 
+    // If arpeggiator is disabled, clear state and pass through MIDI
     if (!arpEnabled)
     {
-        // Arpeggiator is off, clear state and pass through MIDI
         heldNotes.clear();
         currentArpNote = 0;
         arpStepTime = 0.0;
         arpStepCounter = 0;
+        lastNoteOffTime = 0.0;
         if (isNoteCurrentlyOn && lastPlayedNote >= 0)
         {
             midiMessages.addEvent(juce::MidiMessage::noteOff(1, lastPlayedNote), 0);
@@ -894,8 +955,54 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
         // Don't pass through original note messages when arp is on
     }
 
-    // Generate arpeggiated notes
-    if (!heldNotes.empty())
+    // If progression is enabled and no manual keys are pressed, generate chord notes automatically
+    bool progEnabled = parameters.getRawParameterValue(PROG_ENABLED_ID)->load() > 0.5f;
+    bool hasManualNotes = false;
+
+    // Check if there are any manually held notes (from MIDI input)
+    if (!heldNotes.empty() && !progEnabled)
+        hasManualNotes = true;
+
+    if (progEnabled && isPlaybackActive)
+    {
+        // Check if progression step changed
+        if (currentProgressionStep != lastProgressionStepForArp || heldNotes.empty())
+        {
+            lastProgressionStepForArp = currentProgressionStep;
+
+            // Get current progression value (1-8 representing scale degrees)
+            int progressionOffset = getCurrentProgressionOffset();
+
+            // Convert to MIDI note (using sequencer scale and root)
+            int rootNote = static_cast<int>(parameters.getRawParameterValue(SEQ_ROOT_ID)->load());
+            int scaleType = static_cast<int>(parameters.getRawParameterValue(SEQ_SCALE_ID)->load());
+
+            // Generate a triad (root, 3rd, 5th) based on the progression value
+            int baseNote = scaleDegreesToMidiNote(progressionOffset, rootNote, scaleType);
+            int third = scaleDegreesToMidiNote((progressionOffset + 2) % 8, rootNote, scaleType);
+            int fifth = scaleDegreesToMidiNote((progressionOffset + 4) % 8, rootNote, scaleType);
+
+            // Clear and regenerate chord notes for arpeggiator
+            heldNotes.clear();
+            heldNotes.push_back(baseNote);
+            heldNotes.push_back(third);
+            heldNotes.push_back(fifth);
+            std::sort(heldNotes.begin(), heldNotes.end());
+
+            // Reset arp to start from beginning with new chord
+            currentArpNote = 0;
+            arpStepTime = 999999.0; // Trigger immediately
+            arpStepCounter = 0;
+        }
+    }
+    else if (!progEnabled)
+    {
+        // Reset tracking when progression is disabled
+        lastProgressionStepForArp = -1;
+    }
+
+    // Generate arpeggiated notes only if playback is active
+    if (!heldNotes.empty() && isPlaybackActive)
     {
         double baseStepLength = getArpStepLengthInSamples();
         float gateLength = parameters.getRawParameterValue(ARP_GATE_ID)->load();
@@ -969,18 +1076,25 @@ double AcidSynthAudioProcessor::getArpStepLengthInSamples() const
 {
     int rateIndex = static_cast<int>(parameters.getRawParameterValue(ARP_RATE_ID)->load());
 
-    // Rate divisions: 1/32, 1/16, 1/16T, 1/8, 1/8T, 1/4, 1/4T
+    // Rate divisions: 1/32, 1/32., 1/16, 1/16., 1/16T, 1/8, 1/8., 1/8T, 1/4, 1/4., 1/4T, 1/2, 1/2., 1/1
     const double divisions[] = {
         8.0,        // 1/32
+        5.333,      // 1/32. (dotted)
         4.0,        // 1/16
+        2.667,      // 1/16. (dotted)
         6.0,        // 1/16T (triplet)
         2.0,        // 1/8
+        1.333,      // 1/8. (dotted)
         3.0,        // 1/8T (triplet)
         1.0,        // 1/4
-        1.5         // 1/4T (triplet)
+        0.667,      // 1/4. (dotted)
+        1.5,        // 1/4T (triplet)
+        0.5,        // 1/2
+        0.333,      // 1/2. (dotted)
+        0.25        // 1/1 (whole note)
     };
 
-    rateIndex = juce::jlimit(0, 6, rateIndex);
+    rateIndex = juce::jlimit(0, 13, rateIndex);
 
     double beatsPerSecond = currentBPM / 60.0;
     double notesPerBeat = divisions[rateIndex];
@@ -1039,6 +1153,140 @@ int AcidSynthAudioProcessor::getNextArpNote()
     int midiNote = heldNotes[baseNoteIndex] + (octaveOffset * 12);
 
     currentArpNote++;
+
+    return juce::jlimit(0, 127, midiNote);
+}
+
+//==============================================================================
+// Sequencer Implementation
+
+void AcidSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages, int numSamples)
+{
+    bool seqEnabled = parameters.getRawParameterValue(SEQ_ENABLED_ID)->load() > 0.5f;
+
+    // Check if playback is active and sequencer is enabled
+    if (!seqEnabled || !isPlaybackActive)
+    {
+        // Reset sequencer state when disabled
+        currentSeqStep = 0;
+        seqStepTime = 0.0;
+        if (isSeqNoteCurrentlyOn && lastSeqPlayedNote >= 0)
+        {
+            midiMessages.addEvent(juce::MidiMessage::noteOff(1, lastSeqPlayedNote, (juce::uint8)64), 0);
+            isSeqNoteCurrentlyOn = false;
+            lastSeqPlayedNote = -1;
+        }
+        return;
+    }
+
+    // Get step length in samples
+    double stepLength = getSeqStepLengthInSamples();
+    float gateLength = 0.8f; // 80% gate like arp
+
+    juce::MidiBuffer processedMidi;
+
+    // Handle note-off for previous note
+    if (isSeqNoteCurrentlyOn && lastSeqNoteOffTime >= 0.0)
+    {
+        lastSeqNoteOffTime -= numSamples;
+        if (lastSeqNoteOffTime <= 0.0 && lastSeqPlayedNote >= 0)
+        {
+            processedMidi.addEvent(juce::MidiMessage::noteOff(1, lastSeqPlayedNote, (juce::uint8)64), 0);
+            isSeqNoteCurrentlyOn = false;
+            lastSeqNoteOffTime = -1.0;
+        }
+    }
+
+    // Advance step time
+    seqStepTime += numSamples;
+
+    // Trigger new step
+    while (seqStepTime >= stepLength)
+    {
+        seqStepTime -= stepLength;
+
+        // Get note for current step
+        int midiNote = getSequencerNote(currentSeqStep);
+
+        if (midiNote >= 0)
+        {
+            // Trigger note-on
+            processedMidi.addEvent(juce::MidiMessage::noteOn(1, midiNote, (juce::uint8)100), 0);
+            lastSeqPlayedNote = midiNote;
+            isSeqNoteCurrentlyOn = true;
+
+            // Schedule note-off
+            lastSeqNoteOffTime = stepLength * gateLength;
+        }
+
+        // Advance to next step
+        currentSeqStep = (currentSeqStep + 1) % NUM_SEQ_STEPS;
+    }
+
+    // Add processed MIDI to output
+    for (const auto metadata : processedMidi)
+        midiMessages.addEvent(metadata.getMessage(), metadata.samplePosition);
+
+    if (lastSeqNoteOffTime >= 0.0)
+        lastSeqNoteOffTime -= numSamples;
+}
+
+double AcidSynthAudioProcessor::getSeqStepLengthInSamples() const
+{
+    // Use same timing as arpeggiator 1/16 notes
+    double beatsPerSecond = currentBPM / 60.0;
+    double notesPerBeat = 4.0; // 1/16 note
+    double stepFrequency = beatsPerSecond * notesPerBeat;
+
+    return currentSampleRate / stepFrequency;
+}
+
+int AcidSynthAudioProcessor::getSequencerNote(int step)
+{
+    if (step < 0 || step >= NUM_SEQ_STEPS)
+        return -1;
+
+    int scaleDegree = sequencerPattern[step];
+    if (scaleDegree < 0)
+        return -1; // No note at this step
+
+    // Apply progression offset to stay in key
+    int progressionOffset = getCurrentProgressionOffset();
+    scaleDegree = (scaleDegree + progressionOffset) % 8; // Keep within 0-7 range
+
+    int rootNote = static_cast<int>(parameters.getRawParameterValue(SEQ_ROOT_ID)->load());
+    int scaleType = static_cast<int>(parameters.getRawParameterValue(SEQ_SCALE_ID)->load());
+
+    return scaleDegreesToMidiNote(scaleDegree, rootNote, scaleType);
+}
+
+int AcidSynthAudioProcessor::scaleDegreesToMidiNote(int scaleDegree, int rootNote, int scaleType)
+{
+    // Base octave (C3 = MIDI 60)
+    const int baseOctave = 60;
+
+    // Scale intervals (semitones from root)
+    // scaleDegree: 0-7 where 0=1st, 1=2nd, ..., 6=7th, 7=octave
+    static const int scaleIntervals[][8] = {
+        {0, 2, 4, 5, 7, 9, 11, 12},  // Major
+        {0, 2, 3, 5, 7, 8, 10, 12},  // Minor (Natural)
+        {0, 2, 3, 5, 7, 9, 10, 12},  // Dorian
+        {0, 1, 3, 5, 7, 8, 10, 12},  // Phrygian
+        {0, 2, 4, 6, 7, 9, 11, 12},  // Lydian
+        {0, 2, 4, 5, 7, 9, 10, 12},  // Mixolydian
+        {0, 2, 3, 5, 7, 8, 10, 12},  // Aeolian (same as Natural Minor)
+        {0, 1, 3, 5, 6, 8, 10, 12},  // Locrian
+        {0, 2, 3, 5, 7, 8, 11, 12},  // Harmonic Minor
+        {0, 2, 3, 5, 7, 9, 11, 12},  // Melodic Minor
+        {0, 2, 4, 7, 9, 12, 12, 12}, // Pentatonic Major
+        {0, 3, 5, 7, 10, 12, 12, 12},// Pentatonic Minor
+        {0, 3, 5, 6, 7, 10, 12, 12}  // Blues
+    };
+
+    scaleType = juce::jlimit(0, 12, scaleType);
+    scaleDegree = juce::jlimit(0, 7, scaleDegree);
+
+    int midiNote = baseOctave + rootNote + scaleIntervals[scaleType][scaleDegree];
 
     return juce::jlimit(0, 127, midiNote);
 }
@@ -1103,30 +1351,131 @@ void AcidSynthAudioProcessor::advanceDelayMixLFO()
 }
 
 //==============================================================================
-// Internal playback control (for standalone mode)
-void AcidSynthAudioProcessor::startInternalPlayback()
+// Progression Implementation
+
+void AcidSynthAudioProcessor::updateProgressionStep(int numSamples)
 {
-    isInternalPlaybackActive = true;
+    bool progEnabled = parameters.getRawParameterValue(PROG_ENABLED_ID)->load() > 0.5f;
+
+    if (!progEnabled || !isPlaybackActive)
+    {
+        progressionBarTime = 0.0;
+        currentProgressionStep = 0;
+        progressionWasEnabled = false;
+        progressionSyncedToBar = false;
+        return;
+    }
+
+    // Calculate samples per bar (4 beats)
+    double samplesPerBar = (currentSampleRate * 60.0 / currentBPM) * 4.0;
+
+    // If progression was just enabled, wait for next bar boundary
+    if (!progressionWasEnabled)
+    {
+        progressionWasEnabled = true;
+        progressionSyncedToBar = false;
+        progressionBarTime = 0.0;
+        currentProgressionStep = 0;
+    }
+
+    // Wait for bar boundary before starting
+    if (!progressionSyncedToBar)
+    {
+        // Calculate position within current bar
+        double positionInBar = fmod(totalPlaybackTime, samplesPerBar);
+
+        // Check if we're close to a bar boundary (within this buffer)
+        if (positionInBar < numSamples || (samplesPerBar - positionInBar) < numSamples)
+        {
+            progressionSyncedToBar = true;
+            progressionBarTime = 0.0;
+            currentProgressionStep = 0;
+        }
+        return; // Don't advance progression until synced
+    }
+
+    // Get progression parameters
+    int numSteps = static_cast<int>(parameters.getRawParameterValue(PROG_STEPS_ID)->load());
+    int lengthIndex = static_cast<int>(parameters.getRawParameterValue(PROG_LENGTH_ID)->load());
+
+    // Convert length index to bar multiplier (0=0.5, 1=1, 2=2, 3=3, 4=4)
+    double barMultiplier[] = {0.5, 1.0, 2.0, 3.0, 4.0};
+    double stepLengthBars = barMultiplier[lengthIndex];
+
+    // Calculate samples per step
+    double samplesPerStep = samplesPerBar * stepLengthBars;
+
+    progressionBarTime += numSamples;
+
+    // Check if we need to advance to next progression step
+    if (progressionBarTime >= samplesPerStep)
+    {
+        progressionBarTime -= samplesPerStep;
+        currentProgressionStep = (currentProgressionStep + 1) % numSteps; // Cycle through active steps
+    }
 }
 
-void AcidSynthAudioProcessor::stopInternalPlayback()
+int AcidSynthAudioProcessor::getCurrentProgressionOffset() const
 {
-    isInternalPlaybackActive = false;
+    bool progEnabled = parameters.getRawParameterValue(PROG_ENABLED_ID)->load() > 0.5f;
 
-    // Send note-off for the internal playback note to stop any held notes
-    juce::MidiBuffer stopMessages;
-    stopMessages.addEvent(juce::MidiMessage::noteOff(1, INTERNAL_PLAYBACK_NOTE), 0);
+    if (!progEnabled)
+        return 0;
 
-    // Clear the held notes in arpeggiator
-    heldNotes.clear();
-    currentArpNote = 0;
-    arpStepTime = 0.0;
+    // Get the progression value for the current step (1-8)
+    const char* progStepIds[] = {
+        PROG_STEP1_ID, PROG_STEP2_ID, PROG_STEP3_ID, PROG_STEP4_ID,
+        PROG_STEP5_ID, PROG_STEP6_ID, PROG_STEP7_ID, PROG_STEP8_ID
+    };
+
+    int stepValue = static_cast<int>(parameters.getRawParameterValue(progStepIds[currentProgressionStep])->load());
+
+    // Convert to offset (step 1 = 0 offset, step 2 = 1 offset, etc.)
+    return stepValue - 1;
+}
+
+//==============================================================================
+// Internal playback control (for standalone mode)
+void AcidSynthAudioProcessor::startPlayback()
+{
+    isPlaybackActive = true;
+}
+
+void AcidSynthAudioProcessor::stopPlayback()
+{
+    isPlaybackActive = false;
+    totalPlaybackTime = 0.0; // Reset playback timer
+
+    // Stop any currently playing arpeggiator notes
     if (isNoteCurrentlyOn && lastPlayedNote >= 0)
     {
         synth.noteOff(1, lastPlayedNote, 0.0f, true);
     }
     lastPlayedNote = -1;
     isNoteCurrentlyOn = false;
+    heldNotes.clear();
+    currentArpNote = 0;
+    arpStepTime = 0.0;
+    arpStepCounter = 0;
+    lastNoteOffTime = 0.0;
+    lastProgressionStepForArp = -1;
+
+    // Stop any currently playing sequencer notes
+    if (isSeqNoteCurrentlyOn && lastSeqPlayedNote >= 0)
+    {
+        synth.noteOff(1, lastSeqPlayedNote, 0.0f, true);
+    }
+    lastSeqPlayedNote = -1;
+    isSeqNoteCurrentlyOn = false;
+    currentSeqStep = 0;
+    seqStepTime = 0.0;
+    lastSeqNoteOffTime = 0.0;
+
+    // Reset progression state
+    progressionBarTime = 0.0;
+    currentProgressionStep = 0;
+    progressionWasEnabled = false;
+    progressionSyncedToBar = false;
 }
 
 //==============================================================================

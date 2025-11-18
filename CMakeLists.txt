@@ -64,6 +64,8 @@ target_sources(${PLUGIN_NAME} PRIVATE
     source/SynthTab.cpp
     source/SequencerTab.cpp
     source/ModulationTab.cpp
+    source/MelodySequencerTab.cpp
+    source/ProgressionTab.cpp
 )
 
 # Header files

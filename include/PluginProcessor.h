@@ -53,9 +53,10 @@ public:
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
 
     //==============================================================================
-    // Internal playback control (for standalone mode)
-    void startInternalPlayback();
-    void stopInternalPlayback();
+    // Playback control (starts/stops arp and sequencer)
+    void startPlayback();
+    void stopPlayback();
+    bool isPlaying() const { return isPlaybackActive; }
 
 private:
     //==============================================================================
@@ -141,6 +142,40 @@ private:
     static constexpr const char* ARP_OCTAVE_SHIFT_ID = "arpoctaveshift";
     static constexpr const char* ARP_SWING_ID = "arpswing";
 
+    // Sequencer Parameter IDs
+    static constexpr const char* SEQ_ENABLED_ID = "seqenabled";
+    static constexpr const char* SEQ_ROOT_ID = "seqroot";
+    static constexpr const char* SEQ_SCALE_ID = "seqscale";
+
+    // Progression Parameter IDs
+    static constexpr const char* PROG_ENABLED_ID = "progenabled";
+    static constexpr const char* PROG_STEPS_ID = "progsteps";
+    static constexpr const char* PROG_LENGTH_ID = "proglength";
+    static constexpr const char* PROG_STEP1_ID = "progstep1";
+    static constexpr const char* PROG_STEP2_ID = "progstep2";
+    static constexpr const char* PROG_STEP3_ID = "progstep3";
+    static constexpr const char* PROG_STEP4_ID = "progstep4";
+    static constexpr const char* PROG_STEP5_ID = "progstep5";
+    static constexpr const char* PROG_STEP6_ID = "progstep6";
+    static constexpr const char* PROG_STEP7_ID = "progstep7";
+    static constexpr const char* PROG_STEP8_ID = "progstep8";
+
+    // Global Parameters
+    static constexpr const char* GLOBAL_BPM_ID = "globalbpm";
+    static constexpr const char* MASTER_VOLUME_ID = "mastervolume";
+
+public:
+    // Sequencer state (public for UI access)
+    static constexpr int NUM_SEQ_STEPS = 16;
+    static constexpr int NUM_SCALE_DEGREES = 8;
+    int sequencerPattern[NUM_SEQ_STEPS]; // Stores scale degree for each step (-1 = no note)
+    int currentSeqStep = 0;
+
+    // Progression state (public for UI access)
+    static constexpr int NUM_PROGRESSION_STEPS = 8;
+    int currentProgressionStep = 0;
+
+private:
     // Parameter update
     void updateVoiceParameters();
 
@@ -172,16 +207,35 @@ private:
     int lastPlayedNote = -1;     // Last arpeggio note that was triggered
     bool isNoteCurrentlyOn = false; // Track if we're in note-on phase
     int arpStepCounter = 0;      // Counter for swing (even/odd steps)
+    int lastProgressionStepForArp = -1; // Track progression step to detect changes
 
-    // Internal playback state (for standalone mode)
-    bool isInternalPlaybackActive = false;
-    static constexpr int INTERNAL_PLAYBACK_NOTE = 60; // C3 (MIDI note 60)
-    static constexpr double DEFAULT_BPM = 120.0;
+    // Playback state - controls whether arp/sequencer are active
+    bool isPlaybackActive = false;
+    double totalPlaybackTime = 0.0; // Track total time for bar synchronization
 
     // Arpeggiator helper functions
     void processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples);
     double getArpStepLengthInSamples() const;
     int getNextArpNote();
+
+    // Sequencer state (private timing/control variables)
+    double seqStepTime = 0.0;
+    double lastSeqNoteOffTime = 0.0;
+    int lastSeqPlayedNote = -1;
+    bool isSeqNoteCurrentlyOn = false;
+
+    // Sequencer helper functions
+    void processSequencer(juce::MidiBuffer& midiMessages, int numSamples);
+    double getSeqStepLengthInSamples() const;
+    int getSequencerNote(int step);
+    int scaleDegreesToMidiNote(int scaleDegree, int rootNote, int scaleType);
+
+    // Progression state and helpers
+    double progressionBarTime = 0.0;
+    bool progressionWasEnabled = false;
+    bool progressionSyncedToBar = false;
+    void updateProgressionStep(int numSamples);
+    int getCurrentProgressionOffset() const;
 
     // Delay Mix LFO helper functions
     void updateDelayMixLFO();

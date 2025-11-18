@@ -179,7 +179,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     filterAttackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     filterAttackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterAttackSlider);
-    filterAttackLabel.setText("F Attack", juce::dontSendNotification);
+    filterAttackLabel.setText("Attack", juce::dontSendNotification);
     filterAttackLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(filterAttackLabel);
     filterAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -188,7 +188,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     filterDecaySlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     filterDecaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterDecaySlider);
-    filterDecayLabel.setText("F Decay", juce::dontSendNotification);
+    filterDecayLabel.setText("Decay", juce::dontSendNotification);
     filterDecayLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(filterDecayLabel);
     filterDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -197,7 +197,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     filterSustainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     filterSustainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterSustainSlider);
-    filterSustainLabel.setText("F Sustain", juce::dontSendNotification);
+    filterSustainLabel.setText("Sustain", juce::dontSendNotification);
     filterSustainLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(filterSustainLabel);
     filterSustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -206,7 +206,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     filterReleaseSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     filterReleaseSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(filterReleaseSlider);
-    filterReleaseLabel.setText("F Release", juce::dontSendNotification);
+    filterReleaseLabel.setText("Release", juce::dontSendNotification);
     filterReleaseLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(filterReleaseLabel);
     filterReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -216,7 +216,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     ampAttackSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ampAttackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(ampAttackSlider);
-    ampAttackLabel.setText("A Attack", juce::dontSendNotification);
+    ampAttackLabel.setText("Attack", juce::dontSendNotification);
     ampAttackLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(ampAttackLabel);
     ampAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -225,7 +225,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     ampDecaySlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ampDecaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(ampDecaySlider);
-    ampDecayLabel.setText("A Decay", juce::dontSendNotification);
+    ampDecayLabel.setText("Decay", juce::dontSendNotification);
     ampDecayLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(ampDecayLabel);
     ampDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -234,7 +234,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     ampSustainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ampSustainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(ampSustainSlider);
-    ampSustainLabel.setText("A Sustain", juce::dontSendNotification);
+    ampSustainLabel.setText("Sustain", juce::dontSendNotification);
     ampSustainLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(ampSustainLabel);
     ampSustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -243,7 +243,7 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     ampReleaseSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ampReleaseSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(ampReleaseSlider);
-    ampReleaseLabel.setText("A Release", juce::dontSendNotification);
+    ampReleaseLabel.setText("Release", juce::dontSendNotification);
     ampReleaseLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(ampReleaseLabel);
     ampReleaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -260,102 +260,115 @@ void SynthTab::paint(juce::Graphics& g)
     // Draw panel background
     g.fillAll(juce::Colour(0xff2a2a2a));
 
+    const int boxGap = 10; // Gap between boxes
+    const int box1Y = 60;
+    const int box1Height = 200;
+    const int box2Y = box1Y + box1Height + boxGap;
+    const int box2Height = 200;
+    const int box3Y = box2Y + box2Height + boxGap;
+    const int box3Height = 110;
+
     // Draw section backgrounds
     g.setColour(juce::Colour(0xff3a3a3a));
-    g.fillRoundedRectangle(20, 60, getWidth() - 40, 210, 10); // Oscillator & Amp ADSR section
-    g.fillRoundedRectangle(20, 280, getWidth() - 40, 280, 10); // Filter & Filter ADSR section
-    g.fillRoundedRectangle(20, 570, getWidth() - 40, 100, 10); // Delay section
+    g.fillRoundedRectangle(20, box1Y, getWidth() - 40, box1Height, 10); // Oscillator & Amp ADSR section
+    g.fillRoundedRectangle(20, box2Y, getWidth() - 40, box2Height, 10); // Filter & Filter ADSR section
+    g.fillRoundedRectangle(20, box3Y, getWidth() - 40, box3Height, 10); // Delay section
 
     // Draw section labels
     g.setColour(juce::Colours::lightgrey);
     g.setFont(14.0f);
-    g.drawText("OSCILLATOR & AMP ENVELOPE", 30, 65, 250, 20, juce::Justification::left);
-    g.drawText("FILTER & FILTER ENVELOPE", 30, 285, 250, 20, juce::Justification::left);
-    g.drawText("DELAY", 30, 575, 200, 20, juce::Justification::left);
+    g.drawText("OSCILLATOR & AMP ENVELOPE", 30, box1Y + 5, 250, 20, juce::Justification::left);
+    g.drawText("FILTER & FILTER ENVELOPE", 30, box2Y + 5, 250, 20, juce::Justification::left);
+    g.drawText("DELAY", 30, box3Y + 5, 200, 20, juce::Justification::left);
 }
 
 void SynthTab::resized()
 {
     const int knobSize = 60;
     const int labelHeight = 20;
-    const int spacing = 100;
+    const int columnSpacing = 130;  // Uniform column spacing across all boxes
+    const int startX = 50;
+
+    // Column position calculator
+    auto getColumnX = [&](int col) { return startX + col * columnSpacing; };
 
     // Preset selector at the top
     presetLabel.setBounds(getWidth() - 220, 15, 60, 20);
     presetSelector.setBounds(getWidth() - 150, 15, 130, 25);
 
-    // Oscillator section (now first)
-    int oscY = 90;
-    waveformLabel.setBounds(50, oscY + knobSize, knobSize, labelHeight);
-    waveformSlider.setBounds(50, oscY, knobSize, knobSize);
+    // BOX 1: OSCILLATOR & AMP ENVELOPE
+    // Row 1: Waveform, SubOsc, Drive, Volume (columns 0-3)
+    int box1Row1Y = 90;
+    waveformLabel.setBounds(getColumnX(0), box1Row1Y + knobSize, knobSize, labelHeight);
+    waveformSlider.setBounds(getColumnX(0), box1Row1Y, knobSize, knobSize);
 
-    subOscLabel.setBounds(50 + spacing, oscY + knobSize, knobSize, labelHeight);
-    subOscSlider.setBounds(50 + spacing, oscY, knobSize, knobSize);
+    subOscLabel.setBounds(getColumnX(1), box1Row1Y + knobSize, knobSize, labelHeight);
+    subOscSlider.setBounds(getColumnX(1), box1Row1Y, knobSize, knobSize);
 
-    driveLabel.setBounds(50 + spacing * 2, oscY + knobSize, knobSize, labelHeight);
-    driveSlider.setBounds(50 + spacing * 2, oscY, knobSize, knobSize);
+    driveLabel.setBounds(getColumnX(2), box1Row1Y + knobSize, knobSize, labelHeight);
+    driveSlider.setBounds(getColumnX(2), box1Row1Y, knobSize, knobSize);
 
-    volumeLabel.setBounds(50 + spacing * 3, oscY + knobSize, knobSize, labelHeight);
-    volumeSlider.setBounds(50 + spacing * 3, oscY, knobSize, knobSize);
+    volumeLabel.setBounds(getColumnX(3), box1Row1Y + knobSize, knobSize, labelHeight);
+    volumeSlider.setBounds(getColumnX(3), box1Row1Y, knobSize, knobSize);
 
-    // Second row of Oscillator section - Amplitude ADSR
-    int oscY2 = oscY + 90;
-    ampAttackLabel.setBounds(50, oscY2 + knobSize, knobSize, labelHeight);
-    ampAttackSlider.setBounds(50, oscY2, knobSize, knobSize);
+    // Row 2: Attack, Decay, Sustain, Release (Amp ADSR - columns 0-3)
+    int box1Row2Y = box1Row1Y + 90;
+    ampAttackLabel.setBounds(getColumnX(0), box1Row2Y + knobSize, knobSize, labelHeight);
+    ampAttackSlider.setBounds(getColumnX(0), box1Row2Y, knobSize, knobSize);
 
-    ampDecayLabel.setBounds(50 + spacing, oscY2 + knobSize, knobSize, labelHeight);
-    ampDecaySlider.setBounds(50 + spacing, oscY2, knobSize, knobSize);
+    ampDecayLabel.setBounds(getColumnX(1), box1Row2Y + knobSize, knobSize, labelHeight);
+    ampDecaySlider.setBounds(getColumnX(1), box1Row2Y, knobSize, knobSize);
 
-    ampSustainLabel.setBounds(50 + spacing * 2, oscY2 + knobSize, knobSize, labelHeight);
-    ampSustainSlider.setBounds(50 + spacing * 2, oscY2, knobSize, knobSize);
+    ampSustainLabel.setBounds(getColumnX(2), box1Row2Y + knobSize, knobSize, labelHeight);
+    ampSustainSlider.setBounds(getColumnX(2), box1Row2Y, knobSize, knobSize);
 
-    ampReleaseLabel.setBounds(50 + spacing * 3, oscY2 + knobSize, knobSize, labelHeight);
-    ampReleaseSlider.setBounds(50 + spacing * 3, oscY2, knobSize, knobSize);
+    ampReleaseLabel.setBounds(getColumnX(3), box1Row2Y + knobSize, knobSize, labelHeight);
+    ampReleaseSlider.setBounds(getColumnX(3), box1Row2Y, knobSize, knobSize);
 
-    // Filter & Filter Envelope section (now second)
-    int filterY = 310;
-    cutoffLabel.setBounds(50, filterY + knobSize, knobSize, labelHeight);
-    cutoffSlider.setBounds(50, filterY, knobSize, knobSize);
+    // BOX 2: FILTER & FILTER ENVELOPE
+    // Row 1: Cutoff, Resonance, EnvMod, Accent, Filter FB, Saturation (columns 0-5)
+    int box2Row1Y = 300;
+    cutoffLabel.setBounds(getColumnX(0), box2Row1Y + knobSize, knobSize, labelHeight);
+    cutoffSlider.setBounds(getColumnX(0), box2Row1Y, knobSize, knobSize);
 
-    resonanceLabel.setBounds(50 + spacing, filterY + knobSize, knobSize, labelHeight);
-    resonanceSlider.setBounds(50 + spacing, filterY, knobSize, knobSize);
+    resonanceLabel.setBounds(getColumnX(1), box2Row1Y + knobSize, knobSize, labelHeight);
+    resonanceSlider.setBounds(getColumnX(1), box2Row1Y, knobSize, knobSize);
 
-    envModLabel.setBounds(50 + spacing * 2, filterY + knobSize, knobSize, labelHeight);
-    envModSlider.setBounds(50 + spacing * 2, filterY, knobSize, knobSize);
+    envModLabel.setBounds(getColumnX(2), box2Row1Y + knobSize, knobSize, labelHeight);
+    envModSlider.setBounds(getColumnX(2), box2Row1Y, knobSize, knobSize);
 
-    accentLabel.setBounds(50 + spacing * 3, filterY + knobSize, knobSize, labelHeight);
-    accentSlider.setBounds(50 + spacing * 3, filterY, knobSize, knobSize);
+    accentLabel.setBounds(getColumnX(3), box2Row1Y + knobSize, knobSize, labelHeight);
+    accentSlider.setBounds(getColumnX(3), box2Row1Y, knobSize, knobSize);
 
-    // Second row of Filter section - Feedback & Saturation
-    int filterY2 = filterY + 90;
-    filterFeedbackLabel.setBounds(50, filterY2 + knobSize, knobSize, labelHeight);
-    filterFeedbackSlider.setBounds(50, filterY2, knobSize, knobSize);
+    filterFeedbackLabel.setBounds(getColumnX(4), box2Row1Y + knobSize, knobSize, labelHeight);
+    filterFeedbackSlider.setBounds(getColumnX(4), box2Row1Y, knobSize, knobSize);
 
-    saturationTypeLabel.setBounds(50 + spacing, filterY2 + knobSize, knobSize, labelHeight);
-    saturationTypeSelector.setBounds(50 + spacing + 10, filterY2 + 25, 60, 25);
+    saturationTypeLabel.setBounds(getColumnX(5), box2Row1Y + knobSize, knobSize, labelHeight);
+    saturationTypeSelector.setBounds(getColumnX(5) + 10, box2Row1Y + 25, 60, 25);
 
-    // Third row of Filter section - Filter ADSR
-    int filterY3 = filterY2 + 90;
-    filterAttackLabel.setBounds(50, filterY3 + knobSize, knobSize, labelHeight);
-    filterAttackSlider.setBounds(50, filterY3, knobSize, knobSize);
+    // Row 2: Attack, Decay, Sustain, Release (Filter ADSR - columns 0-3)
+    int box2Row2Y = box2Row1Y + 90;
+    filterAttackLabel.setBounds(getColumnX(0), box2Row2Y + knobSize, knobSize, labelHeight);
+    filterAttackSlider.setBounds(getColumnX(0), box2Row2Y, knobSize, knobSize);
 
-    filterDecayLabel.setBounds(50 + spacing, filterY3 + knobSize, knobSize, labelHeight);
-    filterDecaySlider.setBounds(50 + spacing, filterY3, knobSize, knobSize);
+    filterDecayLabel.setBounds(getColumnX(1), box2Row2Y + knobSize, knobSize, labelHeight);
+    filterDecaySlider.setBounds(getColumnX(1), box2Row2Y, knobSize, knobSize);
 
-    filterSustainLabel.setBounds(50 + spacing * 2, filterY3 + knobSize, knobSize, labelHeight);
-    filterSustainSlider.setBounds(50 + spacing * 2, filterY3, knobSize, knobSize);
+    filterSustainLabel.setBounds(getColumnX(2), box2Row2Y + knobSize, knobSize, labelHeight);
+    filterSustainSlider.setBounds(getColumnX(2), box2Row2Y, knobSize, knobSize);
 
-    filterReleaseLabel.setBounds(50 + spacing * 3, filterY3 + knobSize, knobSize, labelHeight);
-    filterReleaseSlider.setBounds(50 + spacing * 3, filterY3, knobSize, knobSize);
+    filterReleaseLabel.setBounds(getColumnX(3), box2Row2Y + knobSize, knobSize, labelHeight);
+    filterReleaseSlider.setBounds(getColumnX(3), box2Row2Y, knobSize, knobSize);
 
-    // Delay section
-    int delayY = 600;
-    delayTimeLabel.setBounds(50, delayY + knobSize, knobSize, labelHeight);
-    delayTimeSelector.setBounds(50 + 10, delayY + 25, 60, 25);
+    // BOX 3: DELAY
+    // Row 1: Delay Time, Delay FB, Delay Mix (columns 0-2)
+    int box3Row1Y = 510;
+    delayTimeLabel.setBounds(getColumnX(0), box3Row1Y + knobSize, knobSize, labelHeight);
+    delayTimeSelector.setBounds(getColumnX(0) + 10, box3Row1Y + 25, 60, 25);
 
-    delayFeedbackLabel.setBounds(50 + spacing, delayY + knobSize, knobSize, labelHeight);
-    delayFeedbackSlider.setBounds(50 + spacing, delayY, knobSize, knobSize);
+    delayFeedbackLabel.setBounds(getColumnX(1), box3Row1Y + knobSize, knobSize, labelHeight);
+    delayFeedbackSlider.setBounds(getColumnX(1), box3Row1Y, knobSize, knobSize);
 
-    delayMixLabel.setBounds(50 + spacing * 2, delayY + knobSize, knobSize, labelHeight);
-    delayMixSlider.setBounds(50 + spacing * 2, delayY, knobSize, knobSize);
+    delayMixLabel.setBounds(getColumnX(2), box3Row1Y + knobSize, knobSize, labelHeight);
+    delayMixSlider.setBounds(getColumnX(2), box3Row1Y, knobSize, knobSize);
 }

@@ -21,6 +21,18 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
     arpOnOffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "arponoff", arpOnOffToggle);
 
+    // When arp is enabled, disable sequencer
+    arpOnOffToggle.onClick = [this]()
+    {
+        if (arpOnOffToggle.getToggleState())
+        {
+            // Disable sequencer when arp is enabled
+            auto* seqParam = audioProcessor.getValueTreeState().getParameter("seqenabled");
+            if (seqParam != nullptr)
+                seqParam->setValueNotifyingHost(0.0f);
+        }
+    };
+
     // Arpeggiator Mode selector (IDs must start at 1, not 0 - JUCE requirement)
     arpModeSelector.addItem("Up", 1);
     arpModeSelector.addItem("Down", 2);
@@ -36,12 +48,19 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
 
     // Arpeggiator Rate selector (IDs must start at 1, not 0 - JUCE requirement)
     arpRateSelector.addItem("1/32", 1);
-    arpRateSelector.addItem("1/16", 2);
-    arpRateSelector.addItem("1/16T", 3);
-    arpRateSelector.addItem("1/8", 4);
-    arpRateSelector.addItem("1/8T", 5);
-    arpRateSelector.addItem("1/4", 6);
-    arpRateSelector.addItem("1/4T", 7);
+    arpRateSelector.addItem("1/32.", 2);
+    arpRateSelector.addItem("1/16", 3);
+    arpRateSelector.addItem("1/16.", 4);
+    arpRateSelector.addItem("1/16T", 5);
+    arpRateSelector.addItem("1/8", 6);
+    arpRateSelector.addItem("1/8.", 7);
+    arpRateSelector.addItem("1/8T", 8);
+    arpRateSelector.addItem("1/4", 9);
+    arpRateSelector.addItem("1/4.", 10);
+    arpRateSelector.addItem("1/4T", 11);
+    arpRateSelector.addItem("1/2", 12);
+    arpRateSelector.addItem("1/2.", 13);
+    arpRateSelector.addItem("1/1", 14);
     addAndMakeVisible(arpRateSelector);
     arpRateLabel.setText("Rate", juce::dontSendNotification);
     arpRateLabel.setJustificationType(juce::Justification::centredLeft);
