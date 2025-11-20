@@ -32,8 +32,8 @@ public:
             g.fillRoundedRectangle((float)x, fillY, (float)width, fillHeight, 5.0f);
         }
 
-        // Draw border
-        g.setColour(juce::Colours::black.withAlpha(0.5f));
+        // Draw border (white like step buttons)
+        g.setColour(juce::Colours::white.withAlpha(0.3f));
         g.drawRoundedRectangle(x, y, width, height, 5.0f, 1.0f);
     }
 };
