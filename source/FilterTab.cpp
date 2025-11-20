@@ -110,6 +110,16 @@ FilterTab::FilterTab(SnorkelSynthAudioProcessor& p)
     filterFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "filterfeedback", filterFeedbackSlider);
 
+    // Configure Drive slider
+    driveSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    driveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(driveSlider);
+    driveLabel.setText("Drive", juce::dontSendNotification);
+    driveLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(driveLabel);
+    driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "drive", driveSlider);
+
     // Configure Saturation Type selector
     saturationTypeSelector.addItem("Clean", 1);
     saturationTypeSelector.addItem("Warm", 2);
@@ -244,7 +254,7 @@ void FilterTab::resized()
     savePresetButton.setBounds(getWidth() - 85, 15, 50, 25);
 
     // BOX 1: FILTER & FILTER ENVELOPE
-    // Row 1: Cutoff, Resonance, EnvMod, Accent, Filter FB, Saturation
+    // Row 1: Cutoff, Resonance, Accent, Filter FB, Drive, Saturation
     int box1Row1Y = 90;
     cutoffLabel.setBounds(getColumnX(0), box1Row1Y + knobSize, knobSize, labelHeight);
     cutoffSlider.setBounds(getColumnX(0), box1Row1Y, knobSize, knobSize);
@@ -252,31 +262,34 @@ void FilterTab::resized()
     resonanceLabel.setBounds(getColumnX(1), box1Row1Y + knobSize, knobSize, labelHeight);
     resonanceSlider.setBounds(getColumnX(1), box1Row1Y, knobSize, knobSize);
 
-    envModLabel.setBounds(getColumnX(2), box1Row1Y + knobSize, knobSize, labelHeight);
-    envModSlider.setBounds(getColumnX(2), box1Row1Y, knobSize, knobSize);
+    accentLabel.setBounds(getColumnX(2), box1Row1Y + knobSize, knobSize, labelHeight);
+    accentSlider.setBounds(getColumnX(2), box1Row1Y, knobSize, knobSize);
 
-    accentLabel.setBounds(getColumnX(3), box1Row1Y + knobSize, knobSize, labelHeight);
-    accentSlider.setBounds(getColumnX(3), box1Row1Y, knobSize, knobSize);
+    filterFeedbackLabel.setBounds(getColumnX(3), box1Row1Y + knobSize, knobSize, labelHeight);
+    filterFeedbackSlider.setBounds(getColumnX(3), box1Row1Y, knobSize, knobSize);
 
-    filterFeedbackLabel.setBounds(getColumnX(4), box1Row1Y + knobSize, knobSize, labelHeight);
-    filterFeedbackSlider.setBounds(getColumnX(4), box1Row1Y, knobSize, knobSize);
+    driveLabel.setBounds(getColumnX(4), box1Row1Y + knobSize, knobSize, labelHeight);
+    driveSlider.setBounds(getColumnX(4), box1Row1Y, knobSize, knobSize);
 
     saturationTypeLabel.setBounds(getColumnX(5), box1Row1Y + knobSize, knobSize, labelHeight);
     saturationTypeSelector.setBounds(getColumnX(5) + 10, box1Row1Y + 25, 60, 25);
 
-    // Row 2: Filter ADSR
+    // Row 2: Env Mod, Filter ADSR (A, D, S, R)
     int box1Row2Y = box1Row1Y + 90;
-    filterAttackLabel.setBounds(getColumnX(0), box1Row2Y + knobSize, knobSize, labelHeight);
-    filterAttackSlider.setBounds(getColumnX(0), box1Row2Y, knobSize, knobSize);
+    envModLabel.setBounds(getColumnX(0), box1Row2Y + knobSize, knobSize, labelHeight);
+    envModSlider.setBounds(getColumnX(0), box1Row2Y, knobSize, knobSize);
 
-    filterDecayLabel.setBounds(getColumnX(1), box1Row2Y + knobSize, knobSize, labelHeight);
-    filterDecaySlider.setBounds(getColumnX(1), box1Row2Y, knobSize, knobSize);
+    filterAttackLabel.setBounds(getColumnX(1), box1Row2Y + knobSize, knobSize, labelHeight);
+    filterAttackSlider.setBounds(getColumnX(1), box1Row2Y, knobSize, knobSize);
 
-    filterSustainLabel.setBounds(getColumnX(2), box1Row2Y + knobSize, knobSize, labelHeight);
-    filterSustainSlider.setBounds(getColumnX(2), box1Row2Y, knobSize, knobSize);
+    filterDecayLabel.setBounds(getColumnX(2), box1Row2Y + knobSize, knobSize, labelHeight);
+    filterDecaySlider.setBounds(getColumnX(2), box1Row2Y, knobSize, knobSize);
 
-    filterReleaseLabel.setBounds(getColumnX(3), box1Row2Y + knobSize, knobSize, labelHeight);
-    filterReleaseSlider.setBounds(getColumnX(3), box1Row2Y, knobSize, knobSize);
+    filterSustainLabel.setBounds(getColumnX(3), box1Row2Y + knobSize, knobSize, labelHeight);
+    filterSustainSlider.setBounds(getColumnX(3), box1Row2Y, knobSize, knobSize);
+
+    filterReleaseLabel.setBounds(getColumnX(4), box1Row2Y + knobSize, knobSize, labelHeight);
+    filterReleaseSlider.setBounds(getColumnX(4), box1Row2Y, knobSize, knobSize);
 
     // BOX 2: DELAY
     int box2Row1Y = 300;

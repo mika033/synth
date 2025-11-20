@@ -186,15 +186,6 @@ OscTab::OscTab(SnorkelSynthAudioProcessor& p, SnorkelSynthAudioProcessorEditor& 
     osc3MixSlider.onValueChange = [this]() { updateFeedback("OSC 3 Mix", osc3MixSlider.getValue()); };
 
     // ========== GLOBAL CONTROLS ==========
-    configureRotary(driveSlider);
-    driveSlider.setDoubleClickReturnValue(true, 0.0); // Default: 0.0
-    addAndMakeVisible(driveSlider);
-    configureLabel(driveLabel, "Drive");
-    addAndMakeVisible(driveLabel);
-    driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "drive", driveSlider);
-    driveSlider.onValueChange = [this]() { updateFeedback("Drive", driveSlider.getValue()); };
-
     configureRotary(volumeSlider);
     volumeSlider.setDoubleClickReturnValue(true, 0.7); // Default: 0.7
     addAndMakeVisible(volumeSlider);
@@ -521,14 +512,11 @@ void OscTab::resized()
     const int box3Height = 120; // Increased for more bottom padding
     const int box3Row1Y = box3Y + 30; // Position inside box
 
-    driveSlider.setBounds(ampStartX, box3Row1Y, knobSize, knobSize);
-    driveLabel.setBounds(ampStartX, box3Row1Y + knobSize, knobSize, labelHeight);
+    volumeSlider.setBounds(ampStartX, box3Row1Y, knobSize, knobSize);
+    volumeLabel.setBounds(ampStartX, box3Row1Y + knobSize, knobSize, labelHeight);
 
-    volumeSlider.setBounds(ampStartX + columnSpacing, box3Row1Y, knobSize, knobSize);
-    volumeLabel.setBounds(ampStartX + columnSpacing, box3Row1Y + knobSize, knobSize, labelHeight);
-
-    globalOctaveSlider.setBounds(ampStartX + columnSpacing * 2, box3Row1Y, knobSize, knobSize);
-    globalOctaveLabel.setBounds(ampStartX + columnSpacing * 2, box3Row1Y + knobSize, knobSize, labelHeight);
+    globalOctaveSlider.setBounds(ampStartX + columnSpacing, box3Row1Y, knobSize, knobSize);
+    globalOctaveLabel.setBounds(ampStartX + columnSpacing, box3Row1Y + knobSize, knobSize, labelHeight);
 
     // ANALOG CHARACTER CONTROLS (right side, spans full height)
     const int analogBoxX = tabsX + oscSectionWidth + analogBoxMargin;

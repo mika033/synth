@@ -26,6 +26,7 @@ private:
     juce::Slider envModSlider;
     juce::Slider accentSlider;
     juce::Slider filterFeedbackSlider;
+    juce::Slider driveSlider;
     juce::ComboBox saturationTypeSelector;
 
     // Filter ADSR sliders
@@ -50,6 +51,7 @@ private:
     juce::Label envModLabel;
     juce::Label accentLabel;
     juce::Label filterFeedbackLabel;
+    juce::Label driveLabel;
     juce::Label saturationTypeLabel;
 
     // Filter ADSR labels
@@ -69,6 +71,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> envModAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterFeedbackAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> saturationTypeAttachment;
 
     // Filter ADSR attachments
