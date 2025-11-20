@@ -1504,13 +1504,60 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     userPresetsArray.add(preset);
     logMessage += "Total user presets after add: " + juce::String(userPresetsArray.size()) + "\n";
 
+    // Debug: Check if preset has properties
+    if (preset.isObject() && preset.getDynamicObject() != nullptr)
+    {
+        auto* debugPresetObj = preset.getDynamicObject();
+        logMessage += "Preset is valid object\n";
+        logMessage += "Preset has name property: " + juce::String(debugPresetObj->hasProperty("name") ? "yes" : "no") + "\n";
+        logMessage += "Preset has cutoff property: " + juce::String(debugPresetObj->hasProperty("cutoff") ? "yes" : "no") + "\n";
+        if (debugPresetObj->hasProperty("name"))
+        {
+            logMessage += "Preset name value: " + debugPresetObj->getProperty("name").toString() + "\n";
+        }
+        auto& props = debugPresetObj->getProperties();
+        logMessage += "Total properties in preset: " + juce::String(props.size()) + "\n";
+    }
+    else
+    {
+        logMessage += "ERROR: Preset is not a valid object!\n";
+    }
+
+    // Debug: Check what's in the array
+    if (userPresetsArray.size() > 0)
+    {
+        const auto& firstItem = userPresetsArray[0];
+        logMessage += "First item in array is object: " + juce::String(firstItem.isObject() ? "yes" : "no") + "\n";
+        if (firstItem.isObject() && firstItem.getDynamicObject() != nullptr)
+        {
+            logMessage += "First item has properties: " + juce::String(firstItem.getDynamicObject()->getProperties().size()) + "\n";
+        }
+    }
+
     // Build user presets JSON structure
     juce::var userPresetsRoot = new juce::DynamicObject();
     userPresetsRoot.getDynamicObject()->setProperty("presets", userPresetsArray);
 
+    // Debug: Check the root structure
+    if (userPresetsRoot.isObject() && userPresetsRoot.getDynamicObject() != nullptr)
+    {
+        auto* rootObj = userPresetsRoot.getDynamicObject();
+        logMessage += "Root has presets property: " + juce::String(rootObj->hasProperty("presets") ? "yes" : "no") + "\n";
+        if (rootObj->hasProperty("presets"))
+        {
+            auto presetsVar = rootObj->getProperty("presets");
+            logMessage += "Presets property is array: " + juce::String(presetsVar.isArray() ? "yes" : "no") + "\n";
+            if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
+            {
+                logMessage += "Presets array size in root: " + juce::String(presetsVar.getArray()->size()) + "\n";
+            }
+        }
+    }
+
     // THIRD: Write to user presets file
     juce::String jsonOutput = formatJSON(userPresetsRoot);
     logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
+    logMessage += "First 200 chars of JSON: " + jsonOutput.substring(0, 200) + "\n";
 
     bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
     logMessage += "Write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
