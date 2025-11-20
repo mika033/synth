@@ -1556,22 +1556,36 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
         }
     }
 
-    // THIRD: Write to user presets file
-    juce::String jsonOutput = formatJSON(userPresetsRoot);
-    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
-    logMessage += "First 200 chars of JSON: " + jsonOutput.substring(0, 200) + "\n";
-
-    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
-    logMessage += "Write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
-
-    if (writeSuccess && userPresetFile.existsAsFile())
+    // Debug: Check what happens when we retrieve the property
+    auto retrievedPresetsVar = userPresetsRoot.getDynamicObject()->getProperty("presets");
+    logMessage += "Retrieved presets var is array: " + juce::String(retrievedPresetsVar.isArray() ? "yes" : "no") + "\n";
+    logMessage += "Retrieved presets var is object: " + juce::String(retrievedPresetsVar.isObject() ? "yes" : "no") + "\n";
+    if (retrievedPresetsVar.isArray() && retrievedPresetsVar.getArray() != nullptr)
     {
-        logMessage += "File verified to exist after write\n";
-        logMessage += "File size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
+        logMessage += "Retrieved array size: " + juce::String(retrievedPresetsVar.getArray()->size()) + "\n";
     }
-    else
+
+    // THIRD: Write to user presets file using JUCE's built-in JSON serialization
+    juce::String jsonOutput = juce::JSON::toString(userPresetsRoot, true);
+    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
+    logMessage += "First 500 chars of JSON: " + jsonOutput.substring(0, 500) + "\n";
+
+    // Write to debug file first to verify what we're actually writing
+    juce::File debugFile = dataDir.getChildFile("synth_presets_user_DEBUG.json");
+    bool debugWriteSuccess = debugFile.replaceWithText(jsonOutput);
+    logMessage += "Debug file write success: " + juce::String(debugWriteSuccess ? "yes" : "no") + "\n";
+    if (debugWriteSuccess)
     {
-        logMessage += "ERROR: File does not exist after write attempt!\n";
+        logMessage += "Debug file size: " + juce::String(debugFile.getSize()) + " bytes\n";
+        logMessage += "Debug file path: " + debugFile.getFullPathName() + "\n";
+    }
+
+    // Now write to actual user file
+    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
+    logMessage += "User file write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
+    if (writeSuccess)
+    {
+        logMessage += "User file size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
     }
 
     logMessage += "\n";
