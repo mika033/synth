@@ -1456,10 +1456,25 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
         }
     }
 
-    // SECOND: Load existing user presets from file
+    // SECOND: Load existing user presets from file and write the new one
+    // IMPORTANT: Use the exact same directory where system presets were found
     juce::File dataDir = getDataDirectory();
-    dataDir.createDirectory(); // Ensure directory exists
     juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
+
+    // Debug logging to see where we're trying to write
+    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
+    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
+    logMessage += "Saving synth preset: " + presetName + "\n";
+    logMessage += "Data directory: " + dataDir.getFullPathName() + "\n";
+    logMessage += "User preset file path: " + userPresetFile.getFullPathName() + "\n";
+    logMessage += "Directory exists: " + juce::String(dataDir.exists() ? "yes" : "no") + "\n";
+
+    // Ensure directory exists - but only if it doesn't already exist
+    if (!dataDir.exists())
+    {
+        dataDir.createDirectory();
+        logMessage += "Created directory: " + dataDir.getFullPathName() + "\n";
+    }
 
     juce::Array<juce::var> userPresetsArray;
     if (userPresetFile.existsAsFile())
@@ -1475,13 +1490,19 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
                 if (arr != nullptr)
                 {
                     userPresetsArray = *arr;
+                    logMessage += "Loaded " + juce::String(arr->size()) + " existing user presets\n";
                 }
             }
         }
     }
+    else
+    {
+        logMessage += "User preset file does not exist yet, creating new\n";
+    }
 
     // Add new preset to user file array
     userPresetsArray.add(preset);
+    logMessage += "Total user presets after add: " + juce::String(userPresetsArray.size()) + "\n";
 
     // Build user presets JSON structure
     juce::var userPresetsRoot = new juce::DynamicObject();
@@ -1489,7 +1510,23 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
 
     // THIRD: Write to user presets file
     juce::String jsonOutput = formatJSON(userPresetsRoot);
-    userPresetFile.replaceWithText(jsonOutput);
+    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
+
+    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
+    logMessage += "Write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
+
+    if (writeSuccess && userPresetFile.existsAsFile())
+    {
+        logMessage += "File verified to exist after write\n";
+        logMessage += "File size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
+    }
+    else
+    {
+        logMessage += "ERROR: File does not exist after write attempt!\n";
+    }
+
+    logMessage += "\n";
+    logFile.appendText(logMessage);
 
     // No need to reload - we already updated the combined list in memory
 }
