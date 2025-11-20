@@ -512,11 +512,11 @@ void OscTab::resized()
     const int box3Height = 120; // Increased for more bottom padding
     const int box3Row1Y = box3Y + 30; // Position inside box
 
-    volumeSlider.setBounds(ampStartX, box3Row1Y, knobSize, knobSize);
-    volumeLabel.setBounds(ampStartX, box3Row1Y + knobSize, knobSize, labelHeight);
+    globalOctaveSlider.setBounds(ampStartX, box3Row1Y, knobSize, knobSize);
+    globalOctaveLabel.setBounds(ampStartX, box3Row1Y + knobSize, knobSize, labelHeight);
 
-    globalOctaveSlider.setBounds(ampStartX + columnSpacing, box3Row1Y, knobSize, knobSize);
-    globalOctaveLabel.setBounds(ampStartX + columnSpacing, box3Row1Y + knobSize, knobSize, labelHeight);
+    volumeSlider.setBounds(ampStartX + columnSpacing * 3, box3Row1Y, knobSize, knobSize);
+    volumeLabel.setBounds(ampStartX + columnSpacing * 3, box3Row1Y + knobSize, knobSize, labelHeight);
 
     // ANALOG CHARACTER CONTROLS (right side, spans full height)
     const int analogBoxX = tabsX + oscSectionWidth + analogBoxMargin;

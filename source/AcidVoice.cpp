@@ -669,7 +669,7 @@ void AcidVoice::applySaturation(double& sample)
         return;
 
     // Pre-gain based on drive amount
-    double gain = 1.0 + driveAmount * 4.0; // Up to 5x gain
+    double gain = 1.0 + driveAmount * 9.0; // Up to 10x gain
     sample *= gain;
 
     // Apply different saturation algorithms based on type
