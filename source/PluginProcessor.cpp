@@ -1556,10 +1556,19 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
         }
     }
 
-    // THIRD: Write to user presets file
-    juce::String jsonOutput = formatJSON(userPresetsRoot);
+    // Debug: Check what happens when we retrieve the property
+    auto retrievedPresetsVar = userPresetsRoot.getDynamicObject()->getProperty("presets");
+    logMessage += "Retrieved presets var is array: " + juce::String(retrievedPresetsVar.isArray() ? "yes" : "no") + "\n";
+    logMessage += "Retrieved presets var is object: " + juce::String(retrievedPresetsVar.isObject() ? "yes" : "no") + "\n";
+    if (retrievedPresetsVar.isArray() && retrievedPresetsVar.getArray() != nullptr)
+    {
+        logMessage += "Retrieved array size: " + juce::String(retrievedPresetsVar.getArray()->size()) + "\n";
+    }
+
+    // THIRD: Write to user presets file using JUCE's built-in JSON serialization
+    juce::String jsonOutput = juce::JSON::toString(userPresetsRoot, true);
     logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
-    logMessage += "First 200 chars of JSON: " + jsonOutput.substring(0, 200) + "\n";
+    logMessage += "First 500 chars of JSON: " + jsonOutput.substring(0, 500) + "\n";
 
     bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
     logMessage += "Write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
