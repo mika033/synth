@@ -1535,8 +1535,10 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     }
 
     // Build user presets JSON structure
+    // IMPORTANT: Wrap the array in a var first, otherwise JUCE treats it as an object
+    juce::var presetsArrayVar(userPresetsArray);
     juce::var userPresetsRoot = new juce::DynamicObject();
-    userPresetsRoot.getDynamicObject()->setProperty("presets", userPresetsArray);
+    userPresetsRoot.getDynamicObject()->setProperty("presets", presetsArrayVar);
 
     // Debug: Check the root structure
     if (userPresetsRoot.isObject() && userPresetsRoot.getDynamicObject() != nullptr)
