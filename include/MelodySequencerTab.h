@@ -6,6 +6,40 @@
 
 //==============================================================================
 /**
+ * Custom LookAndFeel for vertical fill bar sliders
+ */
+class VerticalFillBarLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                         float sliderPos, float minSliderPos, float maxSliderPos,
+                         const juce::Slider::SliderStyle style, juce::Slider& slider) override
+    {
+        // Draw background (dark gray rounded rectangle, like step buttons)
+        g.setColour(juce::Colour(0xff404040));
+        g.fillRoundedRectangle(x, y, width, height, 5.0f);
+
+        // Calculate fill height based on slider value (-1.0 to 1.0 range)
+        float value = (float)slider.getValue();
+        float normalizedValue = (value + 1.0f) / 2.0f; // Convert -1..1 to 0..1
+        float fillHeight = height * normalizedValue;
+
+        // Draw green fill from bottom
+        if (fillHeight > 0)
+        {
+            g.setColour(juce::Colour(0xff00aa00)); // Same green as step buttons
+            float fillY = y + (height - fillHeight);
+            g.fillRoundedRectangle((float)x, fillY, (float)width, fillHeight, 5.0f);
+        }
+
+        // Draw border
+        g.setColour(juce::Colours::black.withAlpha(0.5f));
+        g.drawRoundedRectangle(x, y, width, height, 5.0f, 1.0f);
+    }
+};
+
+//==============================================================================
+/**
  * Melody Sequencer Tab - Contains 16-step melodic sequencer
  */
 class MelodySequencerTab : public juce::Component, private juce::Timer
@@ -59,6 +93,9 @@ private:
 
     // Current step indicator
     int currentStep = 0;
+
+    // Custom LookAndFeel for cutoff fill bars
+    VerticalFillBarLookAndFeel fillBarLookAndFeel;
 
     // Attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;

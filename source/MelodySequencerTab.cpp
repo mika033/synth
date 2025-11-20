@@ -208,10 +208,11 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
 
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        cutoffSliders[step].setSliderStyle(juce::Slider::RotaryVerticalDrag);
+        cutoffSliders[step].setSliderStyle(juce::Slider::LinearBarVertical);
         cutoffSliders[step].setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         cutoffSliders[step].setRange(-1.0, 1.0, 0.01);
         cutoffSliders[step].setValue(0.0);
+        cutoffSliders[step].setLookAndFeel(&fillBarLookAndFeel);
         addAndMakeVisible(cutoffSliders[step]);
 
         cutoffAttachments[step] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -237,6 +238,12 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
 MelodySequencerTab::~MelodySequencerTab()
 {
     stopTimer();
+
+    // Clean up custom LookAndFeel from all cutoff sliders
+    for (int step = 0; step < NUM_STEPS; ++step)
+    {
+        cutoffSliders[step].setLookAndFeel(nullptr);
+    }
 }
 
 //==============================================================================
@@ -260,14 +267,11 @@ void MelodySequencerTab::paint(juce::Graphics& g)
     {
         g.setColour(juce::Colours::orange.withAlpha(0.3f));
         int x = 70 + currentStep * 50;
-        // Extend height to cover: grid (400) + octave row (35) + cutoff row (55) = 490
-        g.fillRect(x, 80, 40, 490);
+        // Extend height to cover: grid (400) + octave row (33) + cutoff fill bar row (65) = 498
+        g.fillRect(x, 80, 40, 498);
     }
 
-    // Draw label for cutoff row
-    g.setColour(juce::Colours::lightgrey);
-    g.setFont(11.0f);
-    g.drawText("Cutoff", 10, 80 + 8*50 + 50, 60, 20, juce::Justification::centredRight);
+    // (Cutoff label removed - now using visual fill bars instead)
 }
 
 void MelodySequencerTab::resized()
@@ -348,17 +352,18 @@ void MelodySequencerTab::resized()
         octaveUpButtons[step].setBounds(x + octaveButtonSize + octaveButtonSpacing, octaveRowY, octaveButtonSize, octaveButtonSize);
     }
 
-    // Cutoff modulation dial row (below octave row)
+    // Cutoff modulation fill bar row (below octave row)
     const int cutoffRowY = octaveRowY + octaveButtonSize + 15;
-    const int dialSize = 40;
+    const int fillBarWidth = 40;  // Same as step buttons
+    const int fillBarHeight = 50; // Taller to show vertical fill better
 
     for (int step = 0; step < NUM_STEPS; ++step)
     {
         cutoffSliders[step].setBounds(
             startX + step * horizontalSpacing,
             cutoffRowY,
-            dialSize,
-            dialSize
+            fillBarWidth,
+            fillBarHeight
         );
     }
 }
