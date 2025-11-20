@@ -267,8 +267,8 @@ void MelodySequencerTab::paint(juce::Graphics& g)
     {
         g.setColour(juce::Colours::orange.withAlpha(0.3f));
         int x = 70 + currentStep * 50;
-        // Extend height to cover: grid (400) + octave row (33) + cutoff fill bar row (65) = 498
-        g.fillRect(x, 80, 40, 498);
+        // Extend height to cover: grid (400) + octave row (33) + cutoff fill bar row (55) = 488
+        g.fillRect(x, 80, 40, 488);
     }
 
     // (Cutoff label removed - now using visual fill bars instead)
@@ -355,7 +355,7 @@ void MelodySequencerTab::resized()
     // Cutoff modulation fill bar row (below octave row)
     const int cutoffRowY = octaveRowY + octaveButtonSize + 15;
     const int fillBarWidth = 40;  // Same as step buttons
-    const int fillBarHeight = 50; // Taller to show vertical fill better
+    const int fillBarHeight = 40; // Same height as step buttons
 
     for (int step = 0; step < NUM_STEPS; ++step)
     {
