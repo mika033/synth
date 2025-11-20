@@ -38,7 +38,6 @@ private:
     juce::Slider noiseMixSlider;
 
     // Global controls
-    juce::Slider driveSlider;
     juce::Slider volumeSlider;
     juce::Slider globalOctaveSlider;
 
@@ -68,7 +67,6 @@ private:
     juce::Label noiseMixLabel;
 
     // Global control labels
-    juce::Label driveLabel;
     juce::Label volumeLabel;
     juce::Label globalOctaveLabel;
 
@@ -95,7 +93,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noiseMixAttachment;
 
     // Global control attachments
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> globalOctaveAttachment;
 
