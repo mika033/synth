@@ -42,7 +42,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
                 juce::String presetName = w->getTextEditorContents("presetName");
                 if (presetName.isNotEmpty())
                 {
-                    // Save the preset
+                    // Save the preset (this updates the in-memory list immediately)
                     audioProcessor.saveSequencerPresetToJSON(presetName);
 
                     // Refresh preset selector
@@ -51,8 +51,10 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
                     for (int i = 0; i < presetNames.size(); ++i)
                         presetSelector.addItem(presetNames[i], i + 1);
 
-                    // Select the newly saved preset
-                    presetSelector.setSelectedId(presetNames.size());
+                    // Select and load the newly saved preset (last one in the list)
+                    int newPresetIndex = presetNames.size() - 1;  // Index in names array
+                    presetSelector.setSelectedId(presetNames.size(), juce::dontSendNotification);
+                    loadPreset(newPresetIndex);  // Load it explicitly
                 }
             }
             delete w;
