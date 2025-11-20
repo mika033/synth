@@ -58,7 +58,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
             delete w;
         }), true);
     };
-    // addAndMakeVisible(savePresetButton); // Disabled for now
+    addAndMakeVisible(savePresetButton);
 
     // Configure Algorithm selector - dynamically load configs from JSON
     algoSelector.addItem("True Rand", 1);
@@ -426,6 +426,23 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (presetIndex < 0 || presetIndex >= presetNames.size())
         return;
 
+    // Account for the "** User presets **" divider in the preset list
+    int actualPresetIndex = presetIndex;
+
+    if (audioProcessor.numSystemSequencerPresets > 0)
+    {
+        if (presetIndex == audioProcessor.numSystemSequencerPresets)
+        {
+            // User selected the divider itself - don't load anything
+            return;
+        }
+        else if (presetIndex > audioProcessor.numSystemSequencerPresets)
+        {
+            // User selected a user preset - adjust index to skip divider
+            actualPresetIndex = presetIndex - 1;
+        }
+    }
+
     // Get the preset data from JSON
     auto obj = audioProcessor.sequencerPresetsJSON.getDynamicObject();
     if (obj == nullptr)
@@ -435,7 +452,7 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (presetsArray == nullptr)
         return;
 
-    auto* presetObj = (*presetsArray)[presetIndex].getDynamicObject();
+    auto* presetObj = (*presetsArray)[actualPresetIndex].getDynamicObject();
     if (presetObj == nullptr)
         return;
 

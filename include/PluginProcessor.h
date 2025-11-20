@@ -68,6 +68,7 @@ public:
     juce::var sequencerPresetsJSON;
     juce::var randomizationConfigJSON;
     int numSystemSynthPresets = 0;  // Track count of system presets for divider
+    int numSystemSequencerPresets = 0;  // Track count of system sequencer presets for divider
 
     //==============================================================================
     // Playback control (starts/stops arp and sequencer)
