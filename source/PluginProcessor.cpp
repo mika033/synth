@@ -1570,17 +1570,22 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
     logMessage += "First 500 chars of JSON: " + jsonOutput.substring(0, 500) + "\n";
 
-    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
-    logMessage += "Write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
-
-    if (writeSuccess && userPresetFile.existsAsFile())
+    // Write to debug file first to verify what we're actually writing
+    juce::File debugFile = dataDir.getChildFile("synth_presets_user_DEBUG.json");
+    bool debugWriteSuccess = debugFile.replaceWithText(jsonOutput);
+    logMessage += "Debug file write success: " + juce::String(debugWriteSuccess ? "yes" : "no") + "\n";
+    if (debugWriteSuccess)
     {
-        logMessage += "File verified to exist after write\n";
-        logMessage += "File size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
+        logMessage += "Debug file size: " + juce::String(debugFile.getSize()) + " bytes\n";
+        logMessage += "Debug file path: " + debugFile.getFullPathName() + "\n";
     }
-    else
+
+    // Now write to actual user file
+    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
+    logMessage += "User file write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
+    if (writeSuccess)
     {
-        logMessage += "ERROR: File does not exist after write attempt!\n";
+        logMessage += "User file size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
     }
 
     logMessage += "\n";
