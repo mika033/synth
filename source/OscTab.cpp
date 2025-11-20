@@ -21,7 +21,7 @@ OscTab::OscTab(SnorkelSynthAudioProcessor& p, SnorkelSynthAudioProcessorEditor& 
             audioProcessor.setCurrentProgram(selectedIndex);
     };
     addAndMakeVisible(presetSelector);
-    presetLabel.setText("Preset", juce::dontSendNotification);
+    presetLabel.setText("Synth presets", juce::dontSendNotification);
     presetLabel.setJustificationType(juce::Justification::centredRight);
     addAndMakeVisible(presetLabel);
 
