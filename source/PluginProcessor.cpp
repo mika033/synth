@@ -1441,7 +1441,22 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     presetObj->setProperty("delayFeedback", parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load());
     presetObj->setProperty("delayMix", parameters.getRawParameterValue(DELAY_MIX_ID)->load());
 
-    // Load existing user presets
+    // FIRST: Update the in-memory combined preset list immediately
+    // This ensures the UI can see the new preset right away
+    if (synthPresetsJSON.isObject())
+    {
+        auto* combinedObj = synthPresetsJSON.getDynamicObject();
+        if (combinedObj != nullptr)
+        {
+            juce::Array<juce::var>* combinedArray = combinedObj->getProperty("presets").getArray();
+            if (combinedArray != nullptr)
+            {
+                combinedArray->add(preset);
+            }
+        }
+    }
+
+    // SECOND: Load existing user presets from file
     juce::File dataDir = getDataDirectory();
     dataDir.createDirectory(); // Ensure directory exists
     juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
@@ -1465,19 +1480,18 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
         }
     }
 
-    // Add new preset
+    // Add new preset to user file array
     userPresetsArray.add(preset);
 
     // Build user presets JSON structure
     juce::var userPresetsRoot = new juce::DynamicObject();
     userPresetsRoot.getDynamicObject()->setProperty("presets", userPresetsArray);
 
-    // Write to user presets file
+    // THIRD: Write to user presets file
     juce::String jsonOutput = formatJSON(userPresetsRoot);
     userPresetFile.replaceWithText(jsonOutput);
 
-    // Reload all presets to update combined view
-    loadPresetsFromJSON();
+    // No need to reload - we already updated the combined list in memory
 }
 
 void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& presetName)

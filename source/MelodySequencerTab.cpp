@@ -295,9 +295,9 @@ void MelodySequencerTab::resized()
     x += 65 + gap + 10; // Extra spacing before steps/rate
 
     // Steps slider (same style as Progression - text box with +/- buttons)
-    stepsLabel.setBounds(x, topRowY, 35, elementHeight);
-    x += 40;
-    stepsSlider.setBounds(x, topRowY, 60, elementHeight);
+    stepsLabel.setBounds(x, topRowY, 60, elementHeight);
+    x += 65;
+    stepsSlider.setBounds(x, topRowY, 60, 30);  // Height 30 like Progression
     x += 60 + gap + 5;
 
     // Rate selector
