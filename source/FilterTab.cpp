@@ -24,6 +24,40 @@ FilterTab::FilterTab(SnorkelSynthAudioProcessor& p)
     presetLabel.setJustificationType(juce::Justification::centredRight);
     addAndMakeVisible(presetLabel);
 
+    // Configure save preset button
+    savePresetButton.setButtonText("Save");
+    savePresetButton.onClick = [this]
+    {
+        juce::AlertWindow* w = new juce::AlertWindow("Save Preset", "Enter preset name:", juce::MessageBoxIconType::NoIcon);
+        w->addTextEditor("presetName", "", "Preset name:");
+        w->addButton("OK", 1);
+        w->addButton("Cancel", 0);
+
+        w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int result)
+        {
+            if (result == 1)
+            {
+                juce::String presetName = w->getTextEditorContents("presetName");
+                if (presetName.isNotEmpty())
+                {
+                    // Save the preset
+                    audioProcessor.saveSynthPresetToJSON(presetName);
+
+                    // Refresh preset selector
+                    presetSelector.clear();
+                    juce::StringArray presetNames = audioProcessor.getSynthPresetNames();
+                    for (int i = 0; i < presetNames.size(); ++i)
+                        presetSelector.addItem(presetNames[i], i + 1);
+
+                    // Select the newly saved preset (last one in the list)
+                    presetSelector.setSelectedId(presetNames.size());
+                }
+            }
+            delete w;
+        }), true);
+    };
+    addAndMakeVisible(savePresetButton);
+
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     cutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -202,7 +236,8 @@ void FilterTab::resized()
 
     auto getColumnX = [&](int col) { return startX + col * columnSpacing; };
 
-    // Preset selector and label at the top
+    // Preset controls at the top
+    savePresetButton.setBounds(getWidth() - 330, 15, 45, 25);
     presetLabel.setBounds(getWidth() - 280, 15, 100, 20);
     presetSelector.setBounds(getWidth() - 170, 15, 130, 25);
 

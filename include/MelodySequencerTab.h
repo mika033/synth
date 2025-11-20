@@ -44,6 +44,12 @@ private:
     juce::Label scaleLabel;
     juce::Label rootNoteLabel;
 
+    // Steps and Rate controls
+    juce::Slider stepsSlider;
+    juce::Label stepsLabel;
+    juce::ComboBox rateSelector;
+    juce::Label rateLabel;
+
     // 16 steps x 8 buttons (scale degrees)
     static constexpr int NUM_STEPS = 16;
     static constexpr int NUM_SCALE_DEGREES = 8;
@@ -64,6 +70,8 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> scaleAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rootNoteAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> stepsAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rateAttachment;
 
     // Button click handlers
     void onStepButtonClicked(int step, int degree);

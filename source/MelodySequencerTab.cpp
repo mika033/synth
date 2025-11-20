@@ -160,6 +160,39 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     scaleLabel.setJustificationType(juce::Justification::centredRight);
     addAndMakeVisible(scaleLabel);
 
+    // Configure Steps slider
+    stepsSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    stepsSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    stepsSlider.setRange(1, 16, 1);
+    stepsSlider.setValue(16);
+    addAndMakeVisible(stepsSlider);
+
+    stepsLabel.setText("Steps", juce::dontSendNotification);
+    stepsLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(stepsLabel);
+
+    // Configure Rate selector
+    rateSelector.addItem("1/32", 1);
+    rateSelector.addItem("1/32.", 2);
+    rateSelector.addItem("1/16", 3);
+    rateSelector.addItem("1/16.", 4);
+    rateSelector.addItem("1/16T", 5);
+    rateSelector.addItem("1/8", 6);
+    rateSelector.addItem("1/8.", 7);
+    rateSelector.addItem("1/8T", 8);
+    rateSelector.addItem("1/4", 9);
+    rateSelector.addItem("1/4.", 10);
+    rateSelector.addItem("1/4T", 11);
+    rateSelector.addItem("1/2", 12);
+    rateSelector.addItem("1/2.", 13);
+    rateSelector.addItem("1/1", 14);
+    rateSelector.setSelectedId(3); // Default to 1/16
+    addAndMakeVisible(rateSelector);
+
+    rateLabel.setText("Rate", juce::dontSendNotification);
+    rateLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(rateLabel);
+
     // Create 16x8 button grid
     for (int step = 0; step < NUM_STEPS; ++step)
     {
@@ -230,6 +263,10 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
         audioProcessor.getValueTreeState(), "seqscale", scaleSelector);
     rootNoteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "seqroot", rootNoteSelector);
+    stepsAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqsteps", stepsSlider);
+    rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "seqrate", rateSelector);
 
     // Load initial button states from processor
     updateButtonStates();
@@ -311,6 +348,17 @@ void MelodySequencerTab::resized()
     randomButton.setBounds(x, topRowY, 65, elementHeight);
     x += 65 + gap;
     mutateButton.setBounds(x, topRowY, 65, elementHeight);
+    x += 65 + gap + 10; // Extra spacing before steps/rate
+
+    // Steps slider (show value below knob)
+    stepsSlider.setBounds(x, topRowY - 10, 50, 50); // Slightly taller for text box
+    stepsLabel.setBounds(x, topRowY - 30, 50, elementHeight);
+    x += 50 + gap + 5;
+
+    // Rate selector
+    rateLabel.setBounds(x, topRowY, 30, elementHeight);
+    x += 30 + gap;
+    rateSelector.setBounds(x, topRowY, 60, elementHeight);
 
     // Preset selector and save button at the far right
     presetLabel.setBounds(getWidth() - 280, topRowY, 60, elementHeight);

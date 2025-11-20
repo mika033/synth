@@ -402,6 +402,12 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterChoice>(
                         SEQ_SCALE_ID, "Seq Scale",
                         juce::StringArray{"Major", "Minor", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian", "Harmonic Minor", "Melodic Minor", "Pentatonic Major", "Pentatonic Minor", "Blues"}, 1), // Default to Minor
+                    std::make_unique<juce::AudioParameterInt>(
+                        SEQ_STEPS_ID, "Seq Steps",
+                        1, 16, 16), // Range 1-16, default 16
+                    std::make_unique<juce::AudioParameterChoice>(
+                        SEQ_RATE_ID, "Seq Rate",
+                        juce::StringArray{"1/32", "1/32.", "1/16", "1/16.", "1/16T", "1/8", "1/8.", "1/8T", "1/4", "1/4.", "1/4T", "1/2", "1/2.", "1/1"}, 2), // Default to 1/16
 
                     // Sequencer per-step octave (16 steps, range -2 to +2, default 0)
                     std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE1_ID, "Seq Octave 1", -2, 2, 0),
@@ -554,7 +560,26 @@ int SnorkelSynthAudioProcessor::getCurrentProgram()
 
 void SnorkelSynthAudioProcessor::setCurrentProgram(int index)
 {
-    loadPresetFromJSON(index);
+    // Account for the "** User presets **" divider in the preset list
+    // The divider appears at position numSystemSynthPresets in the names list
+    int actualPresetIndex = index;
+
+    // If divider exists and index is at or past it
+    if (numSystemSynthPresets > 0)
+    {
+        if (index == numSystemSynthPresets)
+        {
+            // User selected the divider itself - don't load anything
+            return;
+        }
+        else if (index > numSystemSynthPresets)
+        {
+            // User selected a user preset - adjust index to skip divider
+            actualPresetIndex = index - 1;
+        }
+    }
+
+    loadPresetFromJSON(actualPresetIndex);
 }
 
 const juce::String SnorkelSynthAudioProcessor::getProgramName(int index)
@@ -1232,39 +1257,72 @@ void SnorkelSynthAudioProcessor::loadPresetsFromJSON()
     juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
     logMessage += "Loading presets from: " + dataDir.getFullPathName() + "\n";
 
-    // Load synth presets - always load if file exists, don't skip on empty
-    juce::File synthPresetFile = dataDir.getChildFile("synth_presets.json");
-    logMessage += "Synth preset file exists: " + juce::String(synthPresetFile.existsAsFile() ? "yes" : "no") + "\n";
-    logMessage += "Synth preset file path: " + synthPresetFile.getFullPathName() + "\n";
+    // Load system synth presets (read-only)
+    juce::Array<juce::var> combinedPresets;
+    numSystemSynthPresets = 0;
 
-    if (synthPresetFile.existsAsFile())
+    juce::File systemPresetFile = dataDir.getChildFile("synth_presets_system.json");
+    logMessage += "System preset file exists: " + juce::String(systemPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+    logMessage += "System preset file path: " + systemPresetFile.getFullPathName() + "\n";
+
+    if (systemPresetFile.existsAsFile())
     {
-        juce::String jsonText = synthPresetFile.loadFileAsString();
-        logMessage += "Synth JSON length: " + juce::String(jsonText.length()) + "\n";
+        juce::String jsonText = systemPresetFile.loadFileAsString();
+        logMessage += "System JSON length: " + juce::String(jsonText.length()) + "\n";
         auto result = juce::JSON::parse(jsonText);
         if (result.isObject())
         {
-            synthPresetsJSON = result;
-            auto* obj = synthPresetsJSON.getDynamicObject();
+            auto* obj = result.getDynamicObject();
             if (obj != nullptr)
             {
-                auto* arr = obj->getProperty("presets").getArray();
-                logMessage += "Synth presets loaded: " + juce::String(arr != nullptr ? arr->size() : 0) + "\n";
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    combinedPresets.addArray(*arr);
+                    numSystemSynthPresets = arr->size();
+                    logMessage += "System presets loaded: " + juce::String(numSystemSynthPresets) + "\n";
+                }
             }
         }
         else
         {
-            logMessage += "Synth JSON parse failed\n";
+            logMessage += "System JSON parse failed\n";
         }
     }
 
-    // If no valid JSON loaded, create empty structure
-    if (!synthPresetsJSON.isObject())
+    // Load user synth presets (writable)
+    juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
+    logMessage += "User preset file exists: " + juce::String(userPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+    logMessage += "User preset file path: " + userPresetFile.getFullPathName() + "\n";
+
+    if (userPresetFile.existsAsFile())
     {
-        synthPresetsJSON = juce::var(new juce::DynamicObject());
-        synthPresetsJSON.getDynamicObject()->setProperty("presets", juce::Array<juce::var>());
-        logMessage += "Created empty synth preset structure\n";
+        juce::String jsonText = userPresetFile.loadFileAsString();
+        logMessage += "User JSON length: " + juce::String(jsonText.length()) + "\n";
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            auto* obj = result.getDynamicObject();
+            if (obj != nullptr)
+            {
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    combinedPresets.addArray(*arr);
+                    logMessage += "User presets loaded: " + juce::String(arr->size()) + "\n";
+                }
+            }
+        }
+        else
+        {
+            logMessage += "User JSON parse failed\n";
+        }
     }
+
+    // Create combined JSON structure
+    synthPresetsJSON = juce::var(new juce::DynamicObject());
+    synthPresetsJSON.getDynamicObject()->setProperty("presets", combinedPresets);
+    logMessage += "Total combined presets: " + juce::String(combinedPresets.size()) + "\n";
 
     // Load sequencer presets - always load if file exists
     juce::File seqPresetFile = dataDir.getChildFile("sequencer_presets.json");
@@ -1321,16 +1379,20 @@ void SnorkelSynthAudioProcessor::loadPresetsFromJSON()
 
 void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& presetName)
 {
-    // Create preset object as var (so var owns it from the start)
+    // Create preset object with ALL Osc and Filter tab parameters
     juce::var preset = new juce::DynamicObject();
     auto* presetObj = preset.getDynamicObject();
     presetObj->setProperty("name", presetName);
+
+    // Filter parameters
     presetObj->setProperty("cutoff", parameters.getRawParameterValue(CUTOFF_ID)->load());
     presetObj->setProperty("resonance", parameters.getRawParameterValue(RESONANCE_ID)->load());
     presetObj->setProperty("envMod", parameters.getRawParameterValue(ENV_MOD_ID)->load());
     presetObj->setProperty("accent", parameters.getRawParameterValue(ACCENT_ID)->load());
+    presetObj->setProperty("filterFeedback", parameters.getRawParameterValue(FILTER_FEEDBACK_ID)->load());
+    presetObj->setProperty("saturationType", static_cast<int>(parameters.getRawParameterValue(SATURATION_TYPE_ID)->load()));
 
-    // Save new oscillator parameters (12 parameters for 3 oscillators)
+    // Oscillator 1-3 parameters
     presetObj->setProperty("osc1Wave", parameters.getRawParameterValue(OSC1_WAVE_ID)->load());
     presetObj->setProperty("osc1Coarse", static_cast<int>(parameters.getRawParameterValue(OSC1_COARSE_ID)->load()));
     presetObj->setProperty("osc1Fine", parameters.getRawParameterValue(OSC1_FINE_ID)->load());
@@ -1346,54 +1408,75 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     presetObj->setProperty("osc3Fine", parameters.getRawParameterValue(OSC3_FINE_ID)->load());
     presetObj->setProperty("osc3Mix", parameters.getRawParameterValue(OSC3_MIX_ID)->load());
 
+    // Noise oscillator
+    presetObj->setProperty("noiseType", static_cast<int>(parameters.getRawParameterValue(NOISE_TYPE_ID)->load()));
+    presetObj->setProperty("noiseDecay", parameters.getRawParameterValue(NOISE_DECAY_ID)->load());
+    presetObj->setProperty("noiseMix", parameters.getRawParameterValue(NOISE_MIX_ID)->load());
+
+    // Global controls
     presetObj->setProperty("drive", parameters.getRawParameterValue(DRIVE_ID)->load());
     presetObj->setProperty("volume", parameters.getRawParameterValue(VOLUME_ID)->load());
+    presetObj->setProperty("globalOctave", static_cast<int>(parameters.getRawParameterValue(GLOBAL_OCTAVE_ID)->load()));
+
+    // Analog character
+    presetObj->setProperty("drift", parameters.getRawParameterValue(DRIFT_ID)->load());
+    presetObj->setProperty("phaseRandom", parameters.getRawParameterValue(PHASE_RANDOM_ID)->load());
+    presetObj->setProperty("unison", parameters.getRawParameterValue(UNISON_ID)->load());
+
+    // Amp ADSR
+    presetObj->setProperty("ampAttack", parameters.getRawParameterValue(AMP_ATTACK_ID)->load());
+    presetObj->setProperty("ampDecay", parameters.getRawParameterValue(AMP_DECAY_ID)->load());
+    presetObj->setProperty("ampSustain", parameters.getRawParameterValue(AMP_SUSTAIN_ID)->load());
+    presetObj->setProperty("ampRelease", parameters.getRawParameterValue(AMP_RELEASE_ID)->load());
+
+    // Filter ADSR
+    presetObj->setProperty("filterAttack", parameters.getRawParameterValue(FILTER_ATTACK_ID)->load());
+    presetObj->setProperty("filterDecay", parameters.getRawParameterValue(FILTER_DECAY_ID)->load());
+    presetObj->setProperty("filterSustain", parameters.getRawParameterValue(FILTER_SUSTAIN_ID)->load());
+    presetObj->setProperty("filterRelease", parameters.getRawParameterValue(FILTER_RELEASE_ID)->load());
+
+    // Delay
     presetObj->setProperty("delayTime", static_cast<int>(parameters.getRawParameterValue(DELAY_TIME_ID)->load()));
     presetObj->setProperty("delayFeedback", parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load());
     presetObj->setProperty("delayMix", parameters.getRawParameterValue(DELAY_MIX_ID)->load());
 
-    // Rebuild the entire JSON structure to avoid reference issues
-    juce::var newRoot = new juce::DynamicObject();
-    juce::Array<juce::var> presetsArray;
+    // Load existing user presets
+    juce::File dataDir = getDataDirectory();
+    juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
 
-    // Copy existing presets
-    auto* obj = synthPresetsJSON.getDynamicObject();
-    if (obj != nullptr)
+    juce::Array<juce::var> userPresetsArray;
+    if (userPresetFile.existsAsFile())
     {
-        juce::var presetsVar = obj->getProperty("presets");
-        if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
+        juce::String jsonText = userPresetFile.loadFileAsString();
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
         {
-            presetsArray = *presetsVar.getArray();
+            auto* obj = result.getDynamicObject();
+            if (obj != nullptr)
+            {
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    userPresetsArray = *arr;
+                }
+            }
         }
     }
 
-    // Add new preset (var already owns the DynamicObject)
-    presetsArray.add(preset);
+    // Add new preset
+    userPresetsArray.add(preset);
 
-    // Build new structure
-    newRoot.getDynamicObject()->setProperty("presets", presetsArray);
-    synthPresetsJSON = newRoot;
+    // Build user presets JSON structure
+    juce::var userPresetsRoot = new juce::DynamicObject();
+    userPresetsRoot.getDynamicObject()->setProperty("presets", userPresetsArray);
 
-    // Format and write to file
-    juce::String jsonOutput = formatJSON(synthPresetsJSON);
+    // Write to user presets file
+    juce::String jsonOutput = formatJSON(userPresetsRoot);
+    dataDir.createDirectory();
+    userPresetFile.replaceWithText(jsonOutput);
 
-    // Always write if we have valid JSON structure
-    juce::File dataDir = getDataDirectory();
-    dataDir.createDirectory(); // Ensure data directory exists
-    juce::File synthPresetFile = dataDir.getChildFile("synth_presets.json");
-
-    // Write debug log
-    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
-    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
-    logMessage += "Saving synth preset: " + presetName + "\n";
-    logMessage += "File path: " + synthPresetFile.getFullPathName() + "\n";
-    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
-    logMessage += "Contains name: " + juce::String(jsonOutput.contains("\"name\"") ? "yes" : "no") + "\n";
-    logMessage += "Contains cutoff: " + juce::String(jsonOutput.contains("\"cutoff\"") ? "yes" : "no") + "\n";
-    logMessage += "Presets count: " + juce::String(presetsArray.size()) + "\n\n";
-    logFile.appendText(logMessage);
-
-    synthPresetFile.replaceWithText(jsonOutput);
+    // Reload all presets to update combined view
+    loadPresetsFromJSON();
 }
 
 void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& presetName)
@@ -1479,9 +1562,15 @@ juce::StringArray SnorkelSynthAudioProcessor::getSynthPresetNames() const
             const juce::Array<juce::var>* presetsArray = obj->getProperty("presets").getArray();
             if (presetsArray != nullptr)
             {
-                for (const auto& presetVar : *presetsArray)
+                for (int i = 0; i < presetsArray->size(); ++i)
                 {
-                    if (auto* presetObj = presetVar.getDynamicObject())
+                    // Add divider before user presets
+                    if (i == numSystemSynthPresets && numSystemSynthPresets > 0 && i < presetsArray->size())
+                    {
+                        names.add("** User presets **");
+                    }
+
+                    if (auto* presetObj = (*presetsArray)[i].getDynamicObject())
                         names.add(presetObj->getProperty("name").toString());
                 }
             }
@@ -1881,8 +1970,9 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
             lastSeqNoteOffTime = stepLength * gateLength;
         }
 
-        // Advance to next step
-        currentSeqStep = (currentSeqStep + 1) % NUM_SEQ_STEPS;
+        // Advance to next step (wrap around based on user-defined step count)
+        int numSteps = static_cast<int>(parameters.getRawParameterValue(SEQ_STEPS_ID)->load());
+        currentSeqStep = (currentSeqStep + 1) % numSteps;
     }
 
     // Add processed MIDI to output
@@ -1895,9 +1985,28 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
 
 double SnorkelSynthAudioProcessor::getSeqStepLengthInSamples() const
 {
-    // Use same timing as arpeggiator 1/16 notes
+    int rateIndex = static_cast<int>(parameters.getRawParameterValue(SEQ_RATE_ID)->load());
+
+    // Rate divisions: 1/32, 1/32., 1/16, 1/16., 1/16T, 1/8, 1/8., 1/8T, 1/4, 1/4., 1/4T, 1/2, 1/2., 1/1
+    const double divisions[] = {
+        8.0,        // 1/32
+        5.333,      // 1/32. (dotted)
+        4.0,        // 1/16
+        2.667,      // 1/16. (dotted)
+        6.0,        // 1/16T (triplet)
+        2.0,        // 1/8
+        1.333,      // 1/8. (dotted)
+        3.0,        // 1/8T (triplet)
+        1.0,        // 1/4
+        0.667,      // 1/4. (dotted)
+        1.5,        // 1/4T (triplet)
+        0.5,        // 1/2
+        0.333,      // 1/2. (dotted)
+        0.25        // 1/1 (whole note)
+    };
+
     double beatsPerSecond = currentBPM / 60.0;
-    double notesPerBeat = 4.0; // 1/16 note
+    double notesPerBeat = divisions[rateIndex];
     double stepFrequency = beatsPerSecond * notesPerBeat;
 
     return currentSampleRate / stepFrequency;
