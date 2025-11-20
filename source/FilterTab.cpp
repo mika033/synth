@@ -5,6 +5,25 @@
 FilterTab::FilterTab(SnorkelSynthAudioProcessor& p)
     : audioProcessor(p)
 {
+    // Configure preset selector - load from JSON
+    juce::StringArray presetNames = audioProcessor.getSynthPresetNames();
+    for (int i = 0; i < presetNames.size(); ++i)
+        presetSelector.addItem(presetNames[i], i + 1);
+
+    if (presetNames.size() > 0)
+        presetSelector.setSelectedId(1); // Select first preset by default
+
+    presetSelector.onChange = [this]
+    {
+        int selectedIndex = presetSelector.getSelectedItemIndex();
+        if (selectedIndex >= 0)
+            audioProcessor.setCurrentProgram(selectedIndex);
+    };
+    addAndMakeVisible(presetSelector);
+    presetLabel.setText("Synth presets", juce::dontSendNotification);
+    presetLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(presetLabel);
+
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     cutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -182,6 +201,10 @@ void FilterTab::resized()
     const int startX = 50;
 
     auto getColumnX = [&](int col) { return startX + col * columnSpacing; };
+
+    // Preset selector and label at the top
+    presetLabel.setBounds(getWidth() - 280, 15, 100, 20);
+    presetSelector.setBounds(getWidth() - 170, 15, 130, 25);
 
     // BOX 1: FILTER & FILTER ENVELOPE
     // Row 1: Cutoff, Resonance, EnvMod, Accent, Filter FB, Saturation

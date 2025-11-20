@@ -39,6 +39,10 @@ private:
     juce::Slider delayFeedbackSlider;
     juce::Slider delayMixSlider;
 
+    // Preset controls
+    juce::ComboBox presetSelector;
+    juce::Label presetLabel;
+
     // Filter parameter labels
     juce::Label cutoffLabel;
     juce::Label resonanceLabel;
