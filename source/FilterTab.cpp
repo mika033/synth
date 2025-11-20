@@ -259,7 +259,7 @@ void FilterTab::resized()
     driveSlider.setBounds(getColumnX(3), box1Row1Y, knobSize, knobSize);
 
     saturationTypeLabel.setBounds(getColumnX(4), box1Row1Y + knobSize, knobSize, labelHeight);
-    saturationTypeSelector.setBounds(getColumnX(4) + 10, box1Row1Y + 25, 60, 25);
+    saturationTypeSelector.setBounds(getColumnX(4) + 10, box1Row1Y + 25, 85, 25);
 
     // Row 2: Env Mod, Filter ADSR (A, D, S, R)
     int box1Row2Y = box1Row1Y + 90;
