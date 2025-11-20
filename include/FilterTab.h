@@ -41,6 +41,7 @@ private:
 
     // Preset controls
     juce::ComboBox presetSelector;
+    juce::TextButton savePresetButton;
     juce::Label presetLabel;
 
     // Filter parameter labels

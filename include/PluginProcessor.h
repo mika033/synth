@@ -64,9 +64,10 @@ public:
     juce::StringArray getSequencerPresetNames() const;
 
     // Public access to JSON data for UI components
-    juce::var synthPresetsJSON;
+    juce::var synthPresetsJSON;  // Combined system + user presets for UI
     juce::var sequencerPresetsJSON;
     juce::var randomizationConfigJSON;
+    int numSystemSynthPresets = 0;  // Track count of system presets for divider
 
     //==============================================================================
     // Playback control (starts/stops arp and sequencer)
@@ -194,6 +195,8 @@ private:
     static constexpr const char* SEQ_ENABLED_ID = "seqenabled";
     static constexpr const char* SEQ_ROOT_ID = "seqroot";
     static constexpr const char* SEQ_SCALE_ID = "seqscale";
+    static constexpr const char* SEQ_STEPS_ID = "seqsteps";
+    static constexpr const char* SEQ_RATE_ID = "seqrate";
 
     // Sequencer per-step octave (16 steps)
     static constexpr const char* SEQ_OCTAVE1_ID = "seqoctave1";
