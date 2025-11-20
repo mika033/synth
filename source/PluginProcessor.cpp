@@ -1383,6 +1383,7 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     juce::var preset = new juce::DynamicObject();
     auto* presetObj = preset.getDynamicObject();
     presetObj->setProperty("name", presetName);
+    presetObj->setProperty("description", "User preset"); // Add description for consistency
 
     // Filter parameters
     presetObj->setProperty("cutoff", parameters.getRawParameterValue(CUTOFF_ID)->load());
@@ -1442,6 +1443,7 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
 
     // Load existing user presets
     juce::File dataDir = getDataDirectory();
+    dataDir.createDirectory(); // Ensure directory exists
     juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
 
     juce::Array<juce::var> userPresetsArray;
@@ -1472,7 +1474,6 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
 
     // Write to user presets file
     juce::String jsonOutput = formatJSON(userPresetsRoot);
-    dataDir.createDirectory();
     userPresetFile.replaceWithText(jsonOutput);
 
     // Reload all presets to update combined view

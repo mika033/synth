@@ -38,12 +38,6 @@ private:
     juce::ComboBox algoSelector;
     juce::Label algoLabel;
 
-    // Scale and root selection
-    juce::ComboBox scaleSelector;
-    juce::ComboBox rootNoteSelector;
-    juce::Label scaleLabel;
-    juce::Label rootNoteLabel;
-
     // Steps and Rate controls
     juce::Slider stepsSlider;
     juce::Label stepsLabel;
@@ -68,8 +62,6 @@ private:
 
     // Attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> scaleAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rootNoteAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> stepsAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rateAttachment;
 

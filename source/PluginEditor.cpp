@@ -92,11 +92,58 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
     messageLabel.setFont(juce::Font(14.0f, juce::Font::bold));
     addAndMakeVisible(messageLabel);
 
+    // Configure Root Note selector
+    rootNoteSelector.addItem("C", 1);
+    rootNoteSelector.addItem("C#", 2);
+    rootNoteSelector.addItem("D", 3);
+    rootNoteSelector.addItem("D#", 4);
+    rootNoteSelector.addItem("E", 5);
+    rootNoteSelector.addItem("F", 6);
+    rootNoteSelector.addItem("F#", 7);
+    rootNoteSelector.addItem("G", 8);
+    rootNoteSelector.addItem("G#", 9);
+    rootNoteSelector.addItem("A", 10);
+    rootNoteSelector.addItem("A#", 11);
+    rootNoteSelector.addItem("B", 12);
+    rootNoteSelector.setSelectedId(1); // Default to C
+    addAndMakeVisible(rootNoteSelector);
+
+    rootNoteLabel.setText("Root", juce::dontSendNotification);
+    rootNoteLabel.setJustificationType(juce::Justification::centredRight);
+    rootNoteLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(rootNoteLabel);
+
+    // Configure Scale selector
+    scaleSelector.addItem("Major", 1);
+    scaleSelector.addItem("Minor", 2);
+    scaleSelector.addItem("Dorian", 3);
+    scaleSelector.addItem("Phrygian", 4);
+    scaleSelector.addItem("Lydian", 5);
+    scaleSelector.addItem("Mixolydian", 6);
+    scaleSelector.addItem("Aeolian", 7);
+    scaleSelector.addItem("Locrian", 8);
+    scaleSelector.addItem("Harmonic Minor", 9);
+    scaleSelector.addItem("Melodic Minor", 10);
+    scaleSelector.addItem("Pentatonic Major", 11);
+    scaleSelector.addItem("Pentatonic Minor", 12);
+    scaleSelector.addItem("Blues", 13);
+    scaleSelector.setSelectedId(2); // Default to Minor
+    addAndMakeVisible(scaleSelector);
+
+    scaleLabel.setText("Scale", juce::dontSendNotification);
+    scaleLabel.setJustificationType(juce::Justification::centredRight);
+    scaleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(scaleLabel);
+
     // Attach to parameters
     bpmAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "globalbpm", bpmSlider);
     masterVolumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "mastervolume", masterVolumeSlider);
+    rootNoteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "seqroot", rootNoteSelector);
+    scaleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), "seqscale", scaleSelector);
 }
 
 SnorkelSynthAudioProcessorEditor::~SnorkelSynthAudioProcessorEditor()
@@ -135,6 +182,17 @@ void SnorkelSynthAudioProcessorEditor::resized()
     // Play/Stop button at the left
     playStopButton.setBounds(x, topY, 80, topHeight);
     x += 80 + 20;
+
+    // Root and Scale selectors
+    rootNoteLabel.setBounds(x, topY, 35, topHeight);
+    x += 40;
+    rootNoteSelector.setBounds(x, topY, 65, topHeight);
+    x += 65 + 10;
+
+    scaleLabel.setBounds(x, topY, 35, topHeight);
+    x += 40;
+    scaleSelector.setBounds(x, topY, 95, topHeight);
+    x += 95 + 20;
 
     // Volume control
     masterVolumeLabel.setBounds(x, topY, 60, topHeight);

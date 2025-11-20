@@ -236,10 +236,10 @@ void FilterTab::resized()
 
     auto getColumnX = [&](int col) { return startX + col * columnSpacing; };
 
-    // Preset controls at the top
-    savePresetButton.setBounds(getWidth() - 330, 15, 45, 25);
-    presetLabel.setBounds(getWidth() - 280, 15, 100, 20);
-    presetSelector.setBounds(getWidth() - 170, 15, 130, 25);
+    // Preset controls at the top (Label -> Selector -> Save button)
+    presetLabel.setBounds(getWidth() - 330, 15, 100, 20);
+    presetSelector.setBounds(getWidth() - 220, 15, 130, 25);
+    savePresetButton.setBounds(getWidth() - 85, 15, 50, 25);
 
     // BOX 1: FILTER & FILTER ENVELOPE
     // Row 1: Cutoff, Resonance, EnvMod, Accent, Filter FB, Saturation
