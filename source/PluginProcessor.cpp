@@ -1324,39 +1324,61 @@ void SnorkelSynthAudioProcessor::loadPresetsFromJSON()
     synthPresetsJSON.getDynamicObject()->setProperty("presets", combinedPresets);
     logMessage += "Total combined presets: " + juce::String(combinedPresets.size()) + "\n";
 
-    // Load sequencer presets - always load if file exists
-    juce::File seqPresetFile = dataDir.getChildFile("sequencer_presets.json");
-    logMessage += "Sequencer preset file exists: " + juce::String(seqPresetFile.existsAsFile() ? "yes" : "no") + "\n";
-    logMessage += "Sequencer preset file path: " + seqPresetFile.getFullPathName() + "\n";
+    // Load sequencer presets from both system and user files
+    juce::Array<juce::var> combinedSequencerPresets;
+    numSystemSequencerPresets = 0;
 
-    if (seqPresetFile.existsAsFile())
+    // Load system sequencer presets (read-only)
+    juce::File systemSeqPresetFile = dataDir.getChildFile("sequencer_presets_system.json");
+    logMessage += "System sequencer preset file exists: " + juce::String(systemSeqPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+
+    if (systemSeqPresetFile.existsAsFile())
     {
-        juce::String jsonText = seqPresetFile.loadFileAsString();
-        logMessage += "Sequencer JSON length: " + juce::String(jsonText.length()) + "\n";
+        juce::String jsonText = systemSeqPresetFile.loadFileAsString();
         auto result = juce::JSON::parse(jsonText);
         if (result.isObject())
         {
-            sequencerPresetsJSON = result;
-            auto* obj = sequencerPresetsJSON.getDynamicObject();
+            auto* obj = result.getDynamicObject();
             if (obj != nullptr)
             {
-                auto* arr = obj->getProperty("presets").getArray();
-                logMessage += "Sequencer presets loaded: " + juce::String(arr != nullptr ? arr->size() : 0) + "\n";
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    combinedSequencerPresets.addArray(*arr);
+                    numSystemSequencerPresets = arr->size();
+                    logMessage += "System sequencer presets loaded: " + juce::String(arr->size()) + "\n";
+                }
             }
-        }
-        else
-        {
-            logMessage += "Sequencer JSON parse failed\n";
         }
     }
 
-    // If no valid JSON loaded, create empty structure
-    if (!sequencerPresetsJSON.isObject())
+    // Load user sequencer presets (writable)
+    juce::File userSeqPresetFile = dataDir.getChildFile("sequencer_presets_user.json");
+    logMessage += "User sequencer preset file exists: " + juce::String(userSeqPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+
+    if (userSeqPresetFile.existsAsFile())
     {
-        sequencerPresetsJSON = juce::var(new juce::DynamicObject());
-        sequencerPresetsJSON.getDynamicObject()->setProperty("presets", juce::Array<juce::var>());
-        logMessage += "Created empty sequencer preset structure\n";
+        juce::String jsonText = userSeqPresetFile.loadFileAsString();
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            auto* obj = result.getDynamicObject();
+            if (obj != nullptr)
+            {
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    combinedSequencerPresets.addArray(*arr);
+                    logMessage += "User sequencer presets loaded: " + juce::String(arr->size()) + "\n";
+                }
+            }
+        }
     }
+
+    // Create combined sequencer JSON structure
+    sequencerPresetsJSON = juce::var(new juce::DynamicObject());
+    sequencerPresetsJSON.getDynamicObject()->setProperty("presets", combinedSequencerPresets);
+    logMessage += "Total combined sequencer presets: " + juce::String(combinedSequencerPresets.size()) + "\n";
 
     // Load randomization config
     juce::File randomConfigFile = dataDir.getChildFile("randomization_config.json");
@@ -1442,7 +1464,6 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
     presetObj->setProperty("delayMix", parameters.getRawParameterValue(DELAY_MIX_ID)->load());
 
     // FIRST: Update the in-memory combined preset list immediately
-    // This ensures the UI can see the new preset right away
     if (synthPresetsJSON.isObject())
     {
         auto* combinedObj = synthPresetsJSON.getDynamicObject();
@@ -1456,27 +1477,13 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
         }
     }
 
-    // SECOND: Load existing user presets from file and write the new one
-    // IMPORTANT: Use the exact same directory where system presets were found
+    // SECOND: Load existing user presets from file
     juce::File dataDir = getDataDirectory();
+    dataDir.createDirectory();
     juce::File userPresetFile = dataDir.getChildFile("synth_presets_user.json");
 
-    // Debug logging to see where we're trying to write
-    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
-    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
-    logMessage += "Saving synth preset: " + presetName + "\n";
-    logMessage += "Data directory: " + dataDir.getFullPathName() + "\n";
-    logMessage += "User preset file path: " + userPresetFile.getFullPathName() + "\n";
-    logMessage += "Directory exists: " + juce::String(dataDir.exists() ? "yes" : "no") + "\n";
-
-    // Ensure directory exists - but only if it doesn't already exist
-    if (!dataDir.exists())
-    {
-        dataDir.createDirectory();
-        logMessage += "Created directory: " + dataDir.getFullPathName() + "\n";
-    }
-
     juce::Array<juce::var> userPresetsArray;
+
     if (userPresetFile.existsAsFile())
     {
         juce::String jsonText = userPresetFile.loadFileAsString();
@@ -1490,121 +1497,36 @@ void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& prese
                 if (arr != nullptr)
                 {
                     userPresetsArray = *arr;
-                    logMessage += "Loaded " + juce::String(arr->size()) + " existing user presets\n";
                 }
             }
         }
     }
-    else
-    {
-        logMessage += "User preset file does not exist yet, creating new\n";
-    }
 
-    // Add new preset to user file array
+    // Add new preset
     userPresetsArray.add(preset);
-    logMessage += "Total user presets after add: " + juce::String(userPresetsArray.size()) + "\n";
-
-    // Debug: Check if preset has properties
-    if (preset.isObject() && preset.getDynamicObject() != nullptr)
-    {
-        auto* debugPresetObj = preset.getDynamicObject();
-        logMessage += "Preset is valid object\n";
-        logMessage += "Preset has name property: " + juce::String(debugPresetObj->hasProperty("name") ? "yes" : "no") + "\n";
-        logMessage += "Preset has cutoff property: " + juce::String(debugPresetObj->hasProperty("cutoff") ? "yes" : "no") + "\n";
-        if (debugPresetObj->hasProperty("name"))
-        {
-            logMessage += "Preset name value: " + debugPresetObj->getProperty("name").toString() + "\n";
-        }
-        auto& props = debugPresetObj->getProperties();
-        logMessage += "Total properties in preset: " + juce::String(props.size()) + "\n";
-    }
-    else
-    {
-        logMessage += "ERROR: Preset is not a valid object!\n";
-    }
-
-    // Debug: Check what's in the array
-    if (userPresetsArray.size() > 0)
-    {
-        const auto& firstItem = userPresetsArray[0];
-        logMessage += "First item in array is object: " + juce::String(firstItem.isObject() ? "yes" : "no") + "\n";
-        if (firstItem.isObject() && firstItem.getDynamicObject() != nullptr)
-        {
-            logMessage += "First item has properties: " + juce::String(firstItem.getDynamicObject()->getProperties().size()) + "\n";
-        }
-    }
 
     // Build user presets JSON structure
-    // IMPORTANT: Wrap the array in a var first, otherwise JUCE treats it as an object
-    juce::var presetsArrayVar(userPresetsArray);
     juce::var userPresetsRoot = new juce::DynamicObject();
+    juce::var presetsArrayVar(userPresetsArray);
     userPresetsRoot.getDynamicObject()->setProperty("presets", presetsArrayVar);
 
-    // Debug: Check the root structure
-    if (userPresetsRoot.isObject() && userPresetsRoot.getDynamicObject() != nullptr)
-    {
-        auto* rootObj = userPresetsRoot.getDynamicObject();
-        logMessage += "Root has presets property: " + juce::String(rootObj->hasProperty("presets") ? "yes" : "no") + "\n";
-        if (rootObj->hasProperty("presets"))
-        {
-            auto presetsVar = rootObj->getProperty("presets");
-            logMessage += "Presets property is array: " + juce::String(presetsVar.isArray() ? "yes" : "no") + "\n";
-            if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
-            {
-                logMessage += "Presets array size in root: " + juce::String(presetsVar.getArray()->size()) + "\n";
-            }
-        }
-    }
-
-    // Debug: Check what happens when we retrieve the property
-    auto retrievedPresetsVar = userPresetsRoot.getDynamicObject()->getProperty("presets");
-    logMessage += "Retrieved presets var is array: " + juce::String(retrievedPresetsVar.isArray() ? "yes" : "no") + "\n";
-    logMessage += "Retrieved presets var is object: " + juce::String(retrievedPresetsVar.isObject() ? "yes" : "no") + "\n";
-    if (retrievedPresetsVar.isArray() && retrievedPresetsVar.getArray() != nullptr)
-    {
-        logMessage += "Retrieved array size: " + juce::String(retrievedPresetsVar.getArray()->size()) + "\n";
-    }
-
-    // THIRD: Write to user presets file using JUCE's built-in JSON serialization
+    // Use JUCE's built-in JSON serializer
     juce::String jsonOutput = juce::JSON::toString(userPresetsRoot, true);
-    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
-    logMessage += "First 500 chars of JSON: " + jsonOutput.substring(0, 500) + "\n";
-
-    // Write to debug file first to verify what we're actually writing
-    juce::File debugFile = dataDir.getChildFile("synth_presets_user_DEBUG.json");
-    bool debugWriteSuccess = debugFile.replaceWithText(jsonOutput);
-    logMessage += "Debug file write success: " + juce::String(debugWriteSuccess ? "yes" : "no") + "\n";
-    if (debugWriteSuccess)
-    {
-        logMessage += "Debug file size: " + juce::String(debugFile.getSize()) + " bytes\n";
-        logMessage += "Debug file path: " + debugFile.getFullPathName() + "\n";
-    }
-
-    // Now write to actual user file
-    bool writeSuccess = userPresetFile.replaceWithText(jsonOutput);
-    logMessage += "User file write success: " + juce::String(writeSuccess ? "yes" : "no") + "\n";
-    if (writeSuccess)
-    {
-        logMessage += "User file size: " + juce::String(userPresetFile.getSize()) + " bytes\n";
-    }
-
-    logMessage += "\n";
-    logFile.appendText(logMessage);
-
-    // No need to reload - we already updated the combined list in memory
+    userPresetFile.replaceWithText(jsonOutput);
 }
 
 void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& presetName)
 {
-    // Create preset object as var (so var owns it from the start)
+    // Create preset object
     juce::var preset = new juce::DynamicObject();
     auto* presetObj = preset.getDynamicObject();
     presetObj->setProperty("name", presetName);
+    presetObj->setProperty("description", "User preset");
 
+    // Save pattern
     juce::Array<juce::var> pattern;
     for (int i = 0; i < 16; ++i)
         pattern.add(sequencerPattern[i]);
-
     presetObj->setProperty("pattern", pattern);
 
     // Save octave values for each step
@@ -1618,51 +1540,58 @@ void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& p
     juce::Array<juce::var> octaves;
     for (int i = 0; i < 16; ++i)
         octaves.add(static_cast<int>(parameters.getRawParameterValue(octaveParamIds[i])->load()));
-
     presetObj->setProperty("octave", octaves);
 
-    // Rebuild the entire JSON structure to avoid reference issues
-    juce::var newRoot = new juce::DynamicObject();
-    juce::Array<juce::var> presetsArray;
-
-    // Copy existing presets
-    auto* obj = sequencerPresetsJSON.getDynamicObject();
-    if (obj != nullptr)
+    // FIRST: Update the in-memory combined preset list immediately
+    if (sequencerPresetsJSON.isObject())
     {
-        juce::var presetsVar = obj->getProperty("presets");
-        if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
+        auto* combinedObj = sequencerPresetsJSON.getDynamicObject();
+        if (combinedObj != nullptr)
         {
-            presetsArray = *presetsVar.getArray();
+            juce::Array<juce::var>* combinedArray = combinedObj->getProperty("presets").getArray();
+            if (combinedArray != nullptr)
+            {
+                combinedArray->add(preset);
+            }
         }
     }
 
-    // Add new preset (var already owns the DynamicObject)
-    presetsArray.add(preset);
-
-    // Build new structure
-    newRoot.getDynamicObject()->setProperty("presets", presetsArray);
-    sequencerPresetsJSON = newRoot;
-
-    // Format and write to file
-    juce::String jsonOutput = formatJSON(sequencerPresetsJSON);
-
-    // Always write if we have valid JSON structure
+    // SECOND: Load existing user presets from file
     juce::File dataDir = getDataDirectory();
-    dataDir.createDirectory(); // Ensure data directory exists
-    juce::File seqPresetFile = dataDir.getChildFile("sequencer_presets.json");
+    dataDir.createDirectory();
+    juce::File userSeqPresetFile = dataDir.getChildFile("sequencer_presets_user.json");
 
-    // Write debug log
-    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
-    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
-    logMessage += "Saving sequencer preset: " + presetName + "\n";
-    logMessage += "File path: " + seqPresetFile.getFullPathName() + "\n";
-    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
-    logMessage += "Contains pattern: " + juce::String(jsonOutput.contains("\"pattern\"") ? "yes" : "no") + "\n";
-    logMessage += "Contains octave: " + juce::String(jsonOutput.contains("\"octave\"") ? "yes" : "no") + "\n";
-    logMessage += "Presets count: " + juce::String(presetsArray.size()) + "\n\n";
-    logFile.appendText(logMessage);
+    juce::Array<juce::var> userPresetsArray;
 
-    seqPresetFile.replaceWithText(jsonOutput);
+    if (userSeqPresetFile.existsAsFile())
+    {
+        juce::String jsonText = userSeqPresetFile.loadFileAsString();
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            auto* obj = result.getDynamicObject();
+            if (obj != nullptr)
+            {
+                const juce::Array<juce::var>* arr = obj->getProperty("presets").getArray();
+                if (arr != nullptr)
+                {
+                    userPresetsArray = *arr;
+                }
+            }
+        }
+    }
+
+    // Add new preset
+    userPresetsArray.add(preset);
+
+    // Build user presets JSON structure
+    juce::var userPresetsRoot = new juce::DynamicObject();
+    juce::var presetsArrayVar(userPresetsArray);
+    userPresetsRoot.getDynamicObject()->setProperty("presets", presetsArrayVar);
+
+    // Use JUCE's built-in JSON serializer
+    juce::String jsonOutput = juce::JSON::toString(userPresetsRoot, true);
+    userSeqPresetFile.replaceWithText(jsonOutput);
 }
 
 juce::StringArray SnorkelSynthAudioProcessor::getSynthPresetNames() const
@@ -1707,9 +1636,15 @@ juce::StringArray SnorkelSynthAudioProcessor::getSequencerPresetNames() const
             const juce::Array<juce::var>* presetsArray = obj->getProperty("presets").getArray();
             if (presetsArray != nullptr)
             {
-                for (const auto& presetVar : *presetsArray)
+                for (int i = 0; i < presetsArray->size(); ++i)
                 {
-                    if (auto* presetObj = presetVar.getDynamicObject())
+                    // Add divider before user presets
+                    if (i == numSystemSequencerPresets && numSystemSequencerPresets > 0 && i < presetsArray->size())
+                    {
+                        names.add("** User presets **");
+                    }
+
+                    if (auto* presetObj = (*presetsArray)[i].getDynamicObject())
                         names.add(presetObj->getProperty("name").toString());
                 }
             }

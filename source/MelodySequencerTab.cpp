@@ -42,7 +42,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
                 juce::String presetName = w->getTextEditorContents("presetName");
                 if (presetName.isNotEmpty())
                 {
-                    // Save the preset
+                    // Save the preset (this updates the in-memory list immediately)
                     audioProcessor.saveSequencerPresetToJSON(presetName);
 
                     // Refresh preset selector
@@ -51,14 +51,16 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
                     for (int i = 0; i < presetNames.size(); ++i)
                         presetSelector.addItem(presetNames[i], i + 1);
 
-                    // Select the newly saved preset
-                    presetSelector.setSelectedId(presetNames.size());
+                    // Select and load the newly saved preset (last one in the list)
+                    int newPresetIndex = presetNames.size() - 1;  // Index in names array
+                    presetSelector.setSelectedId(presetNames.size(), juce::dontSendNotification);
+                    loadPreset(newPresetIndex);  // Load it explicitly
                 }
             }
             delete w;
         }), true);
     };
-    // addAndMakeVisible(savePresetButton); // Disabled for now
+    addAndMakeVisible(savePresetButton);
 
     // Configure Algorithm selector - dynamically load configs from JSON
     algoSelector.addItem("True Rand", 1);
@@ -426,6 +428,23 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (presetIndex < 0 || presetIndex >= presetNames.size())
         return;
 
+    // Account for the "** User presets **" divider in the preset list
+    int actualPresetIndex = presetIndex;
+
+    if (audioProcessor.numSystemSequencerPresets > 0)
+    {
+        if (presetIndex == audioProcessor.numSystemSequencerPresets)
+        {
+            // User selected the divider itself - don't load anything
+            return;
+        }
+        else if (presetIndex > audioProcessor.numSystemSequencerPresets)
+        {
+            // User selected a user preset - adjust index to skip divider
+            actualPresetIndex = presetIndex - 1;
+        }
+    }
+
     // Get the preset data from JSON
     auto obj = audioProcessor.sequencerPresetsJSON.getDynamicObject();
     if (obj == nullptr)
@@ -435,7 +454,7 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (presetsArray == nullptr)
         return;
 
-    auto* presetObj = (*presetsArray)[presetIndex].getDynamicObject();
+    auto* presetObj = (*presetsArray)[actualPresetIndex].getDynamicObject();
     if (presetObj == nullptr)
         return;
 
