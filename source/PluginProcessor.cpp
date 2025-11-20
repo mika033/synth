@@ -1014,6 +1014,28 @@ void SnorkelSynthAudioProcessor::loadPresetFromJSON(int presetIndex)
             parameters.getParameterRange(GLOBAL_OCTAVE_ID).convertTo0to1(static_cast<float>(globalOctave)));
     }
 
+    // Analog character parameters
+    if (presetObj->hasProperty("drift"))
+    {
+        float drift = static_cast<float>(presetObj->getProperty("drift"));
+        parameters.getParameter(DRIFT_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(DRIFT_ID).convertTo0to1(drift));
+    }
+
+    if (presetObj->hasProperty("phaseRandom"))
+    {
+        float phaseRandom = static_cast<float>(presetObj->getProperty("phaseRandom"));
+        parameters.getParameter(PHASE_RANDOM_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(PHASE_RANDOM_ID).convertTo0to1(phaseRandom));
+    }
+
+    if (presetObj->hasProperty("unison"))
+    {
+        float unison = static_cast<float>(presetObj->getProperty("unison"));
+        parameters.getParameter(UNISON_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(UNISON_ID).convertTo0to1(unison));
+    }
+
     // Amplitude ADSR
     if (presetObj->hasProperty("ampAttack"))
     {
