@@ -281,7 +281,7 @@ void FilterTab::resized()
     // BOX 2: DELAY
     int box2Row1Y = 300;
     delayTimeLabel.setBounds(getColumnX(0), box2Row1Y + knobSize, knobSize, labelHeight);
-    delayTimeSelector.setBounds(getColumnX(0) + 10, box2Row1Y + 25, 60, 25);
+    delayTimeSelector.setBounds(getColumnX(0) + 10, box2Row1Y + 25, 85, 25);
 
     delayFeedbackLabel.setBounds(getColumnX(1), box2Row1Y + knobSize, knobSize, labelHeight);
     delayFeedbackSlider.setBounds(getColumnX(1), box2Row1Y, knobSize, knobSize);
