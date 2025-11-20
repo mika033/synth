@@ -15,6 +15,18 @@ AcidVoice::AcidVoice()
     filterADSRParams.sustain = 0.0f;
     filterADSRParams.release = 0.1f;
     filterADSR.setParameters(filterADSRParams);
+
+    // Setup ADSR for noise decay envelope (default values)
+    noiseADSRParams.attack = 0.001f;  // Very fast attack
+    noiseADSRParams.decay = 0.0f;     // No decay (will be set by noiseDecay parameter)
+    noiseADSRParams.sustain = 0.0f;   // No sustain
+    noiseADSRParams.release = 0.01f;  // Very short release
+    noiseADSR.setParameters(noiseADSRParams);
+
+    // Initialize drift phases with different starting positions for independence
+    driftPhase1 = 0.0;
+    driftPhase2 = juce::MathConstants<double>::twoPi / 3.0;  // 120° offset
+    driftPhase3 = 2.0 * juce::MathConstants<double>::twoPi / 3.0;  // 240° offset
 }
 
 bool AcidVoice::canPlaySound(juce::SynthesiserSound* sound)
@@ -32,18 +44,44 @@ void AcidVoice::startNote(int midiNoteNumber, float velocity,
     filter1 = 0.0;
     filter2 = 0.0;
 
+    // Phase randomization: randomize or reset oscillator starting phases
+    if (phaseRandomAmount > 0.01f)
+    {
+        juce::Random random;
+        osc1.angle = random.nextFloat() * juce::MathConstants<double>::twoPi * phaseRandomAmount;
+        osc2.angle = random.nextFloat() * juce::MathConstants<double>::twoPi * phaseRandomAmount;
+        osc3.angle = random.nextFloat() * juce::MathConstants<double>::twoPi * phaseRandomAmount;
+    }
+    else
+    {
+        // Reset to fully aligned state when phase random is at 0
+        osc1.angle = 0.0;
+        osc2.angle = 0.0;
+        osc3.angle = 0.0;
+    }
+
+    // Initialize unison voice angles with phase offsets
+    for (int v = 0; v < maxUnisonVoices; ++v)
+    {
+        unisonAngles1[v] = osc1.angle + unisonPhaseOffsets[v];
+        unisonAngles2[v] = osc2.angle + unisonPhaseOffsets[v];
+        unisonAngles3[v] = osc3.angle + unisonPhaseOffsets[v];
+    }
+
     // Update frequency
     updateAngleDelta();
 
-    // Start both ADSRs
+    // Start all ADSRs
     ampADSR.noteOn();
     filterADSR.noteOn();
+    noiseADSR.noteOn();
 }
 
 void AcidVoice::stopNote(float /*velocity*/, bool allowTailOff)
 {
     ampADSR.noteOff();
     filterADSR.noteOff();
+    noiseADSR.noteOff();
 
     if (!allowTailOff || !ampADSR.isActive())
         clearCurrentNote();
@@ -80,27 +118,110 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         double volumeLFOValue = getLFOValue(volumeLFO);
         // delayMixLFO is used in the processor's delay effect, not here
 
-        // Apply waveform LFO modulation
-        float modulatedWaveform = waveformMorph + static_cast<float>(waveformLFOValue) * waveformLFO.depth;
+        // Drift: Apply slow random pitch modulation (per-oscillator)
+        if (driftAmount > 0.01f)
+        {
+            // Oscillator 1 drift
+            driftPhase1 += driftFrequency * juce::MathConstants<double>::twoPi / sampleRate;
+            if (driftPhase1 > juce::MathConstants<double>::twoPi)
+                driftPhase1 -= juce::MathConstants<double>::twoPi;
+            double driftSine1 = std::sin(driftPhase1);
+            double driftCents1 = driftSine1 * driftAmount * 3.0; // ±3 cents max
+            driftPitchRatio1 = std::pow(2.0, driftCents1 / 1200.0);
+
+            // Oscillator 2 drift (phase offset for independence)
+            driftPhase2 += driftFrequency * juce::MathConstants<double>::twoPi / sampleRate;
+            if (driftPhase2 > juce::MathConstants<double>::twoPi)
+                driftPhase2 -= juce::MathConstants<double>::twoPi;
+            double driftSine2 = std::sin(driftPhase2);
+            double driftCents2 = driftSine2 * driftAmount * 3.0;
+            driftPitchRatio2 = std::pow(2.0, driftCents2 / 1200.0);
+
+            // Oscillator 3 drift (different phase offset)
+            driftPhase3 += driftFrequency * juce::MathConstants<double>::twoPi / sampleRate;
+            if (driftPhase3 > juce::MathConstants<double>::twoPi)
+                driftPhase3 -= juce::MathConstants<double>::twoPi;
+            double driftSine3 = std::sin(driftPhase3);
+            double driftCents3 = driftSine3 * driftAmount * 3.0;
+            driftPitchRatio3 = std::pow(2.0, driftCents3 / 1200.0);
+        }
+        else
+        {
+            driftPitchRatio1 = 1.0; // No drift
+            driftPitchRatio2 = 1.0;
+            driftPitchRatio3 = 1.0;
+        }
+
+        // Apply waveform LFO modulation to Oscillator 1
+        float modulatedWaveform = osc1.wave + static_cast<float>(waveformLFOValue) * waveformLFO.depth;
         modulatedWaveform = juce::jlimit(0.0f, 1.0f, modulatedWaveform);
 
         // Temporarily set the waveform for this sample
-        float originalWaveform = waveformMorph;
-        waveformMorph = modulatedWaveform;
+        float originalWaveform = osc1.wave;
+        osc1.wave = modulatedWaveform;
 
-        // Generate main oscillator sample
-        double sample = generateOscillator();
-
-        // Restore original waveform
-        waveformMorph = originalWaveform;
-
-        // Apply sub-oscillator LFO modulation
-        float modulatedSubOsc = subOscMix + static_cast<float>(subOscLFOValue) * subOscLFO.depth;
+        // Apply sub-oscillator LFO modulation to Oscillator 3 mix
+        float modulatedSubOsc = osc3.mix + static_cast<float>(subOscLFOValue) * subOscLFO.depth;
         modulatedSubOsc = juce::jlimit(0.0f, 1.0f, modulatedSubOsc);
 
-        // Add sub-oscillator (one octave down)
-        double subSample = generateSubOscillator();
-        sample = sample * (1.0f - modulatedSubOsc) + subSample * modulatedSubOsc;
+        float originalSubOscMix = osc3.mix;
+        osc3.mix = modulatedSubOsc;
+
+        // Get noise envelope value
+        float noiseEnvValue = noiseADSR.getNextSample();
+
+        // Generate mixed oscillator sample (all three oscillators + noise with envelope)
+        double sample = generateOscillator();
+
+        // Apply noise envelope to the noise portion
+        // We need to separate this, so let's generate noise separately
+        double noiseSample = 0.0;
+        if (noiseMix > 0.01f)
+        {
+            // Generate white noise (-1 to +1)
+            double whiteNoise = noiseRandom.nextFloat() * 2.0f - 1.0f;
+
+            // Generate pink noise using simple one-pole filter
+            pinkNoiseB0 = 0.99765 * pinkNoiseB0 + whiteNoise * 0.0990460;
+            pinkNoiseB1 = 0.96300 * pinkNoiseB1 + whiteNoise * 0.2965164;
+            pinkNoiseB2 = 0.57000 * pinkNoiseB2 + whiteNoise * 1.0526913;
+            double pinkNoise = pinkNoiseB0 + pinkNoiseB1 + pinkNoiseB2 + whiteNoise * 0.1848;
+            pinkNoise *= 0.11; // Normalize
+
+            // Generate filtered noise (bandpass ~500Hz-2kHz for percussive sound)
+            static double filteredB1 = 0.0, filteredB2 = 0.0;
+            double f = 0.15; // Filter frequency coefficient
+            double q = 0.5;  // Resonance
+            double lowpass = filteredB2 + f * filteredB1;
+            double highpass = whiteNoise - lowpass - q * filteredB1;
+            double bandpass = f * highpass + filteredB1;
+            filteredB1 = bandpass;
+            filteredB2 = lowpass;
+            double filteredNoise = bandpass * 3.0; // Amplify bandpass output
+
+            // Morph between noise types
+            double morphedNoise;
+            if (noiseType < 0.5f)
+            {
+                float blend = noiseType * 2.0f;
+                morphedNoise = whiteNoise * (1.0 - blend) + pinkNoise * blend;
+            }
+            else
+            {
+                float blend = (noiseType - 0.5f) * 2.0f;
+                morphedNoise = pinkNoise * (1.0 - blend) + filteredNoise * blend;
+            }
+
+            // Apply noise envelope and mix
+            noiseSample = morphedNoise * noiseMix * noiseEnvValue;
+        }
+
+        // Add noise to the sample
+        sample += noiseSample;
+
+        // Restore original values
+        osc1.wave = originalWaveform;
+        osc3.mix = originalSubOscMix;
 
         // Get filter ADSR envelope value
         float filterEnvValue = filterADSR.getNextSample();
@@ -153,14 +274,45 @@ void AcidVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer,
         ++startSample;
 
         // Advance oscillators (no portamento - instant pitch changes)
-        currentAngle += angleDelta;
-        subAngle += angleDelta * 0.5; // Sub is one octave down
-        angleDelta = targetAngleDelta; // Instant pitch change (no slide)
+        // Apply per-oscillator drift modulation to angle increment
+        osc1.angle += osc1.angleDelta * driftPitchRatio1;
+        osc1.angleDelta = osc1.targetAngleDelta; // Instant pitch change (no slide)
+        if (osc1.angle > juce::MathConstants<double>::twoPi)
+            osc1.angle -= juce::MathConstants<double>::twoPi;
 
-        if (currentAngle > juce::MathConstants<double>::twoPi)
-            currentAngle -= juce::MathConstants<double>::twoPi;
-        if (subAngle > juce::MathConstants<double>::twoPi)
-            subAngle -= juce::MathConstants<double>::twoPi;
+        osc2.angle += osc2.angleDelta * driftPitchRatio2;
+        osc2.angleDelta = osc2.targetAngleDelta;
+        if (osc2.angle > juce::MathConstants<double>::twoPi)
+            osc2.angle -= juce::MathConstants<double>::twoPi;
+
+        osc3.angle += osc3.angleDelta * driftPitchRatio3;
+        osc3.angleDelta = osc3.targetAngleDelta;
+        if (osc3.angle > juce::MathConstants<double>::twoPi)
+            osc3.angle -= juce::MathConstants<double>::twoPi;
+
+        // Advance unison voice angles with frequency detuning
+        if (unisonAmount > 0.01f)
+        {
+            for (int v = 0; v < maxUnisonVoices; ++v)
+            {
+                // Calculate detune ratio for this voice (±10 cents max)
+                float detuneCents = unisonDetuneAmounts[v] * unisonAmount * 10.0f;
+                double detunePitchRatio = std::pow(2.0, detuneCents / 1200.0);
+
+                // Advance each unison voice with its own detuned frequency
+                unisonAngles1[v] += osc1.angleDelta * driftPitchRatio1 * detunePitchRatio;
+                if (unisonAngles1[v] > juce::MathConstants<double>::twoPi)
+                    unisonAngles1[v] -= juce::MathConstants<double>::twoPi;
+
+                unisonAngles2[v] += osc2.angleDelta * driftPitchRatio2 * detunePitchRatio;
+                if (unisonAngles2[v] > juce::MathConstants<double>::twoPi)
+                    unisonAngles2[v] -= juce::MathConstants<double>::twoPi;
+
+                unisonAngles3[v] += osc3.angleDelta * driftPitchRatio3 * detunePitchRatio;
+                if (unisonAngles3[v] > juce::MathConstants<double>::twoPi)
+                    unisonAngles3[v] -= juce::MathConstants<double>::twoPi;
+            }
+        }
 
         // Advance all 10 LFO phases
         advanceLFO(cutoffLFO);
@@ -183,6 +335,7 @@ void AcidVoice::setCurrentPlaybackSampleRate(double newRate)
         sampleRate = newRate;
         ampADSR.setSampleRate(newRate);
         filterADSR.setSampleRate(newRate);
+        noiseADSR.setSampleRate(newRate);
         updateAngleDelta();
     }
 }
@@ -207,14 +360,61 @@ void AcidVoice::setAccent(float accent)
     accentAmount = juce::jlimit(0.0f, 1.0f, accent);
 }
 
-void AcidVoice::setWaveform(float morph)
+void AcidVoice::setOscillator1(float wave, int coarse, float fine, float mix)
 {
-    waveformMorph = juce::jlimit(0.0f, 1.0f, morph);
+    osc1.wave = juce::jlimit(0.0f, 1.0f, wave);
+    osc1.coarseTune = juce::jlimit(-24, 24, coarse);
+    osc1.fineTune = juce::jlimit(-100.0f, 100.0f, fine);
+    osc1.mix = juce::jlimit(0.0f, 1.0f, mix);
+    updateAngleDelta(); // Recalculate frequencies
 }
 
-void AcidVoice::setSubOscMix(float mix)
+void AcidVoice::setOscillator2(float wave, int coarse, float fine, float mix)
 {
-    subOscMix = juce::jlimit(0.0f, 1.0f, mix);
+    osc2.wave = juce::jlimit(0.0f, 1.0f, wave);
+    osc2.coarseTune = juce::jlimit(-24, 24, coarse);
+    osc2.fineTune = juce::jlimit(-100.0f, 100.0f, fine);
+    osc2.mix = juce::jlimit(0.0f, 1.0f, mix);
+    updateAngleDelta(); // Recalculate frequencies
+}
+
+void AcidVoice::setOscillator3(float wave, int coarse, float fine, float mix)
+{
+    osc3.wave = juce::jlimit(0.0f, 1.0f, wave);
+    osc3.coarseTune = juce::jlimit(-24, 24, coarse);
+    osc3.fineTune = juce::jlimit(-100.0f, 100.0f, fine);
+    osc3.mix = juce::jlimit(0.0f, 1.0f, mix);
+    updateAngleDelta(); // Recalculate frequencies
+}
+
+void AcidVoice::setNoiseMix(float mix)
+{
+    noiseMix = juce::jlimit(0.0f, 1.0f, mix);
+}
+
+void AcidVoice::setNoiseType(float type)
+{
+    noiseType = juce::jlimit(0.0f, 1.0f, type);
+}
+
+void AcidVoice::setNoiseDecay(float decay)
+{
+    noiseDecay = juce::jlimit(0.0f, 2.0f, decay);
+    // Update noise ADSR decay time
+    // Right (2.0) = sustained, Left (0.0) = shortest decay (0.01s)
+    if (noiseDecay > 1.99f)
+    {
+        // No decay - sustained noise (dial to the right)
+        noiseADSRParams.decay = 0.0f;
+        noiseADSRParams.sustain = 1.0f; // Full sustain
+    }
+    else
+    {
+        // Percussive decay envelope with minimum 0.01s
+        noiseADSRParams.decay = std::max(0.01f, noiseDecay);
+        noiseADSRParams.sustain = 0.0f; // No sustain
+    }
+    noiseADSR.setParameters(noiseADSRParams);
 }
 
 void AcidVoice::setDrive(float drive)
@@ -225,6 +425,12 @@ void AcidVoice::setDrive(float drive)
 void AcidVoice::setVolume(float volume)
 {
     volumeLevel = juce::jlimit(0.0f, 1.0f, volume);
+}
+
+void AcidVoice::setGlobalOctave(int octave)
+{
+    globalOctaveShift = juce::jlimit(-2, 2, octave);
+    updateAngleDelta(); // Recalculate frequency with new octave shift
 }
 
 void AcidVoice::setBPM(double bpm)
@@ -251,6 +457,22 @@ void AcidVoice::setFilterFeedback(float feedback)
 void AcidVoice::setSaturationType(int type)
 {
     saturationType = juce::jlimit(0, 4, type); // 0=Clean, 1=Warm, 2=Tube, 3=Hard, 4=Acid
+}
+
+// Analog character setters
+void AcidVoice::setDrift(float amount)
+{
+    driftAmount = juce::jlimit(0.0f, 1.0f, amount);
+}
+
+void AcidVoice::setPhaseRandom(float amount)
+{
+    phaseRandomAmount = juce::jlimit(0.0f, 1.0f, amount);
+}
+
+void AcidVoice::setUnison(float amount)
+{
+    unisonAmount = juce::jlimit(0.0f, 1.0f, amount);
 }
 
 // ADSR setters
@@ -353,23 +575,92 @@ void AcidVoice::setDelayMixLFO(int rate, int waveform, float depth)
     updateLFOFrequency(delayMixLFO);
 }
 
-double AcidVoice::generateOscillator()
+double AcidVoice::generateSingleOscillator(Oscillator& osc)
 {
-    // Generate both waveforms
-    double sawtoothSample = (currentAngle / juce::MathConstants<double>::pi) - 1.0;
-    double squareSample = currentAngle < juce::MathConstants<double>::pi ? 1.0 : -1.0;
+    // Generate three waveforms: sine, sawtooth, square
+    double sineSample = std::sin(osc.angle);
+    double sawtoothSample = (osc.angle / juce::MathConstants<double>::pi) - 1.0;
+    double squareSample = osc.angle < juce::MathConstants<double>::pi ? 1.0 : -1.0;
 
-    // Morph between them based on waveformMorph (0.0 = saw, 1.0 = square)
-    double sample = sawtoothSample * (1.0 - waveformMorph) + squareSample * waveformMorph;
+    // Morph between waveforms based on wave parameter (0=sine, 0.5=saw, 1=square)
+    double sample;
+    if (osc.wave < 0.5f)
+    {
+        // Morph from sine (0) to sawtooth (0.5)
+        float blend = osc.wave * 2.0f; // Map 0-0.5 to 0-1
+        sample = sineSample * (1.0 - blend) + sawtoothSample * blend;
+    }
+    else
+    {
+        // Morph from sawtooth (0.5) to square (1.0)
+        float blend = (osc.wave - 0.5f) * 2.0f; // Map 0.5-1.0 to 0-1
+        sample = sawtoothSample * (1.0 - blend) + squareSample * blend;
+    }
 
     return sample;
 }
 
-double AcidVoice::generateSubOscillator()
+double AcidVoice::generateOscillator()
 {
-    // Sub-oscillator is always a sine wave for maximum low-end
-    // One octave below the main oscillator
-    return std::sin(subAngle);
+    double osc1Sample = 0.0;
+    double osc2Sample = 0.0;
+    double osc3Sample = 0.0;
+
+    // Unison: Always render 3 voices, dial controls detune amount only
+    if (unisonAmount > 0.01f)
+    {
+        // Always use 3 voices with level compensation
+        float levelCompensation = 1.0f / std::sqrt(3.0f);
+
+        // Oscillator 1 unison (3 voices)
+        for (int v = 0; v < 3; ++v)
+        {
+            double originalAngle = osc1.angle;
+            osc1.angle = unisonAngles1[v];
+
+            double sample = generateSingleOscillator(osc1);
+            osc1Sample += sample * levelCompensation;
+
+            osc1.angle = originalAngle;
+        }
+        osc1Sample *= osc1.mix;
+
+        // Oscillator 2 unison (3 voices)
+        for (int v = 0; v < 3; ++v)
+        {
+            double originalAngle = osc2.angle;
+            osc2.angle = unisonAngles2[v];
+
+            double sample = generateSingleOscillator(osc2);
+            osc2Sample += sample * levelCompensation;
+
+            osc2.angle = originalAngle;
+        }
+        osc2Sample *= osc2.mix;
+
+        // Oscillator 3 unison (3 voices)
+        for (int v = 0; v < 3; ++v)
+        {
+            double originalAngle = osc3.angle;
+            osc3.angle = unisonAngles3[v];
+
+            double sample = generateSingleOscillator(osc3);
+            osc3Sample += sample * levelCompensation;
+
+            osc3.angle = originalAngle;
+        }
+        osc3Sample *= osc3.mix;
+    }
+    else
+    {
+        // Normal mode: single voice per oscillator
+        osc1Sample = generateSingleOscillator(osc1) * osc1.mix;
+        osc2Sample = generateSingleOscillator(osc2) * osc2.mix;
+        osc3Sample = generateSingleOscillator(osc3) * osc3.mix;
+    }
+
+    // Mix the oscillators (noise is now generated in renderNextBlock with envelope)
+    return osc1Sample + osc2Sample + osc3Sample;
 }
 
 void AcidVoice::applySaturation(double& sample)
@@ -504,8 +795,25 @@ void AcidVoice::processFilter(double& sample, double cutoffLFOValue, double reso
 
 void AcidVoice::updateAngleDelta()
 {
-    double cyclesPerSecond = juce::MidiMessage::getMidiNoteInHertz(currentMidiNote);
-    targetAngleDelta = cyclesPerSecond * juce::MathConstants<double>::twoPi / sampleRate;
+    // Base frequency from MIDI note with global octave shift
+    double baseFreq = juce::MidiMessage::getMidiNoteInHertz(currentMidiNote);
+    baseFreq *= std::pow(2.0, globalOctaveShift);
+
+    // Calculate frequency for each oscillator with coarse and fine tuning
+    // Coarse: semitones (12 semitones = 1 octave)
+    // Fine: cents (100 cents = 1 semitone)
+
+    // Oscillator 1
+    double osc1Freq = baseFreq * std::pow(2.0, osc1.coarseTune / 12.0) * std::pow(2.0, osc1.fineTune / 1200.0);
+    osc1.targetAngleDelta = osc1Freq * juce::MathConstants<double>::twoPi / sampleRate;
+
+    // Oscillator 2
+    double osc2Freq = baseFreq * std::pow(2.0, osc2.coarseTune / 12.0) * std::pow(2.0, osc2.fineTune / 1200.0);
+    osc2.targetAngleDelta = osc2Freq * juce::MathConstants<double>::twoPi / sampleRate;
+
+    // Oscillator 3
+    double osc3Freq = baseFreq * std::pow(2.0, osc3.coarseTune / 12.0) * std::pow(2.0, osc3.fineTune / 1200.0);
+    osc3.targetAngleDelta = osc3Freq * juce::MathConstants<double>::twoPi / sampleRate;
 }
 
 void AcidVoice::updateLFOFrequency(LFO& lfo)

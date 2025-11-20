@@ -11,14 +11,14 @@
 class SequencerTab : public juce::Component
 {
 public:
-    SequencerTab(AcidSynthAudioProcessor& p);
+    SequencerTab(SnorkelSynthAudioProcessor& p);
     ~SequencerTab() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    AcidSynthAudioProcessor& audioProcessor;
+    SnorkelSynthAudioProcessor& audioProcessor;
 
     // Arpeggiator controls
     juce::ToggleButton arpOnOffToggle;

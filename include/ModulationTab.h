@@ -11,14 +11,14 @@
 class ModulationTab : public juce::Component
 {
 public:
-    ModulationTab(AcidSynthAudioProcessor& p);
+    ModulationTab(SnorkelSynthAudioProcessor& p);
     ~ModulationTab() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    AcidSynthAudioProcessor& audioProcessor;
+    SnorkelSynthAudioProcessor& audioProcessor;
 
     // Helper structure for LFO controls (each parameter gets one)
     struct LFOControls

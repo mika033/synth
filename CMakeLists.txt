@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0175 NEW)
 
 #===============================================================================
 # PLUGIN CONFIGURATION - Edit these to customize your plugin
 #===============================================================================
 
 # Plugin Identity
-set(PLUGIN_NAME "AcidSynth")              # Internal project name (no spaces)
+set(PLUGIN_NAME "SnorkelSynth")            # Internal project name (no spaces)
 set(PLUGIN_VERSION "1.0.0")                # Plugin version
-set(PLUGIN_DISPLAY_NAME "Acid Synth")     # Name shown in DAW
-set(COMPANY_NAME "AcidLab")                # Your company/developer name
-set(PLUGIN_MANUFACTURER_CODE "Acdl")       # 4-char manufacturer ID (must be unique!)
-set(PLUGIN_CODE "Acd1")                    # 4-char plugin ID (must be unique!)
+set(PLUGIN_DISPLAY_NAME "Snorkel Synth")   # Name shown in DAW
+set(COMPANY_NAME "SnorkelLab")             # Your company/developer name
+set(PLUGIN_MANUFACTURER_CODE "Snkl")       # 4-char manufacturer ID (must be unique!)
+set(PLUGIN_CODE "Snk1")                    # 4-char plugin ID (must be unique!)
 
 # Build Configuration
 set(PLUGIN_FORMATS "VST3" "Standalone")    # Available: VST3, AU, AAX, Standalone
@@ -54,6 +55,7 @@ juce_add_plugin(${PLUGIN_NAME}
     PLUGIN_CODE ${PLUGIN_CODE}
     FORMATS ${PLUGIN_FORMATS}
     PRODUCT_NAME ${PLUGIN_DISPLAY_NAME}
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/icon.png"
 )
 
 # Source files
@@ -61,9 +63,12 @@ target_sources(${PLUGIN_NAME} PRIVATE
     source/PluginProcessor.cpp
     source/PluginEditor.cpp
     source/AcidVoice.cpp
-    source/SynthTab.cpp
+    source/OscTab.cpp
+    source/FilterTab.cpp
     source/SequencerTab.cpp
     source/ModulationTab.cpp
+    source/MelodySequencerTab.cpp
+    source/ProgressionTab.cpp
 )
 
 # Header files

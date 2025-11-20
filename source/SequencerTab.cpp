@@ -2,24 +2,26 @@
 #include "SequencerTab.h"
 
 //==============================================================================
-SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
+SequencerTab::SequencerTab(SnorkelSynthAudioProcessor& p)
     : audioProcessor(p)
 {
-    // Title label
-    titleLabel.setText("ARPEGGIATOR", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font(20.0f, juce::Font::bold));
-    titleLabel.setJustificationType(juce::Justification::centred);
-    titleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    addAndMakeVisible(titleLabel);
-
     // Arpeggiator On/Off toggle
-    arpOnOffToggle.setButtonText("Enable");
+    arpOnOffToggle.setButtonText("Enabled");
     addAndMakeVisible(arpOnOffToggle);
-    arpOnOffLabel.setText("Arpeggiator", juce::dontSendNotification);
-    arpOnOffLabel.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(arpOnOffLabel);
     arpOnOffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "arponoff", arpOnOffToggle);
+
+    // When arp is enabled, disable sequencer
+    arpOnOffToggle.onClick = [this]()
+    {
+        if (arpOnOffToggle.getToggleState())
+        {
+            // Disable sequencer when arp is enabled
+            auto* seqParam = audioProcessor.getValueTreeState().getParameter("seqenabled");
+            if (seqParam != nullptr)
+                seqParam->setValueNotifyingHost(0.0f);
+        }
+    };
 
     // Arpeggiator Mode selector (IDs must start at 1, not 0 - JUCE requirement)
     arpModeSelector.addItem("Up", 1);
@@ -36,12 +38,19 @@ SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
 
     // Arpeggiator Rate selector (IDs must start at 1, not 0 - JUCE requirement)
     arpRateSelector.addItem("1/32", 1);
-    arpRateSelector.addItem("1/16", 2);
-    arpRateSelector.addItem("1/16T", 3);
-    arpRateSelector.addItem("1/8", 4);
-    arpRateSelector.addItem("1/8T", 5);
-    arpRateSelector.addItem("1/4", 6);
-    arpRateSelector.addItem("1/4T", 7);
+    arpRateSelector.addItem("1/32.", 2);
+    arpRateSelector.addItem("1/16", 3);
+    arpRateSelector.addItem("1/16.", 4);
+    arpRateSelector.addItem("1/16T", 5);
+    arpRateSelector.addItem("1/8", 6);
+    arpRateSelector.addItem("1/8.", 7);
+    arpRateSelector.addItem("1/8T", 8);
+    arpRateSelector.addItem("1/4", 9);
+    arpRateSelector.addItem("1/4.", 10);
+    arpRateSelector.addItem("1/4T", 11);
+    arpRateSelector.addItem("1/2", 12);
+    arpRateSelector.addItem("1/2.", 13);
+    arpRateSelector.addItem("1/1", 14);
     addAndMakeVisible(arpRateSelector);
     arpRateLabel.setText("Rate", juce::dontSendNotification);
     arpRateLabel.setJustificationType(juce::Justification::centredLeft);
@@ -107,29 +116,25 @@ void SequencerTab::paint(juce::Graphics& g)
 
 void SequencerTab::resized()
 {
-    const int knobSize = 80;
+    const int knobSize = 60;
     const int labelHeight = 20;
     const int controlY = 150;
-    const int spacing = 150;
+    const int spacing = 120;
     const int startX = 80;
 
-    // Title
-    titleLabel.setBounds(0, 20, getWidth(), 30);
-
     // Row 1: On/Off toggle
-    arpOnOffLabel.setBounds(startX, 80, 120, labelHeight);
-    arpOnOffToggle.setBounds(startX + 120, 80, 80, 30);
+    arpOnOffToggle.setBounds(startX, 20, 80, 30);
 
     // Row 2: Mode selector
-    arpModeLabel.setBounds(startX, 120, 120, labelHeight);
-    arpModeSelector.setBounds(startX + 120, 120, 120, 25);
+    arpModeLabel.setBounds(startX, 80, 120, labelHeight);
+    arpModeSelector.setBounds(startX + 120, 80, 120, 25);
 
     // Row 3: Rate selector
-    arpRateLabel.setBounds(startX, 160, 120, labelHeight);
-    arpRateSelector.setBounds(startX + 120, 160, 120, 25);
+    arpRateLabel.setBounds(startX, 120, 120, labelHeight);
+    arpRateSelector.setBounds(startX + 120, 120, 120, 25);
 
     // Row 4: Octaves, Gate, Octave Shift, and Swing knobs
-    int knobsY = 220;
+    int knobsY = 180;
     arpOctavesLabel.setBounds(startX, knobsY - labelHeight, knobSize, labelHeight);
     arpOctavesSlider.setBounds(startX, knobsY, knobSize, knobSize);
 
