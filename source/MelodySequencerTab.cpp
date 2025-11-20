@@ -162,6 +162,10 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
         {
             auto& button = stepButtons[step][degree];
 
+            // Set step and degree for this button
+            button.step = step;
+            button.degree = degree;
+
             // Button text will be set to octave value (updated in updateOctaveDisplay)
             button.setButtonText("");
 
@@ -174,10 +178,19 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
             button.setColour(juce::TextButton::textColourOffId, juce::Colours::grey);
             button.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
 
-            // Add click handler
+            // Add click handler for normal clicks
             button.onClick = [this, step, degree]()
             {
                 onStepButtonClicked(step, degree);
+            };
+
+            // Add octave adjust handler for clicks on already-active buttons
+            button.onOctaveAdjust = [this](int s, bool isIncrease)
+            {
+                if (isIncrease)
+                    onOctaveUpClicked(s);
+                else
+                    onOctaveDownClicked(s);
             };
 
             addAndMakeVisible(button);

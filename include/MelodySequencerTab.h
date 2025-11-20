@@ -38,6 +38,50 @@ public:
     }
 };
 
+// Custom button class for step grid that handles octave adjustment on active steps
+class StepButton : public juce::TextButton
+{
+public:
+    std::function<void(int, int, bool)> onStepClicked; // step, degree, wasAlreadyActive
+    std::function<void(int, bool)> onOctaveAdjust; // step, isIncrease (true=up, false=down)
+    int step = 0;
+    int degree = 0;
+
+    void mouseDown(const juce::MouseEvent& event) override
+    {
+        bool wasActive = getToggleState();
+
+        if (wasActive)
+        {
+            // Button is already active - check which half was clicked
+            int clickY = event.getMouseDownY();
+            int buttonHeight = getHeight();
+            bool clickedUpperHalf = (clickY < buttonHeight / 2);
+
+            // Call octave adjust handler
+            if (onOctaveAdjust)
+                onOctaveAdjust(step, clickedUpperHalf);
+
+            // Don't change toggle state
+            return;
+        }
+        else
+        {
+            // Button is not active - proceed with normal toggle
+            juce::TextButton::mouseDown(event);
+        }
+    }
+
+    void mouseUp(const juce::MouseEvent& event) override
+    {
+        // Only call mouseUp if button wasn't already active
+        if (!getToggleState() || !contains(event.getPosition()))
+        {
+            juce::TextButton::mouseUp(event);
+        }
+    }
+};
+
 //==============================================================================
 /**
  * Melody Sequencer Tab - Contains 16-step melodic sequencer
@@ -81,7 +125,7 @@ private:
     // 16 steps x 8 buttons (scale degrees)
     static constexpr int NUM_STEPS = 16;
     static constexpr int NUM_SCALE_DEGREES = 8;
-    juce::TextButton stepButtons[NUM_STEPS][NUM_SCALE_DEGREES];
+    StepButton stepButtons[NUM_STEPS][NUM_SCALE_DEGREES];
 
     // Per-step octave controls (16 steps) - two buttons per step
     juce::TextButton octaveUpButtons[NUM_STEPS];
