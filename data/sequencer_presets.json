@@ -1,59 +1,172 @@
 {
   "presets": [
     {
-      "name": "Start",
+      "name": "INIT - Start",
+      "description": "Default pattern with a simple melodic phrase",
       "pattern": [0, 0, 7, 0, -1, 0, -1, 0, 0, 7, 0, -1, 2, 6, 4, -1],
-      "octave":  [-1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
+      "octave": [-1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
     },
     {
-      "name": "Ascending Scale",
-      "pattern": [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Descending Scale",
-      "pattern": [7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Octave Jump",
-      "pattern": [0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7],
-      "octave": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1]
-    },
-    {
-      "name": "Arpeggio Pattern",
-      "pattern": [0, 2, 4, 6, 0, 2, 4, 6, 0, 2, 4, 6, 0, 2, 4, 6],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Bassline Groove",
-      "pattern": [0, -1, 0, 2, 0, -1, 4, -1, 0, -1, 2, -1, 0, 4, 0, -1],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Melody Line",
-      "pattern": [0, 2, 4, 2, 5, 4, 2, 0, 7, 5, 4, 5, 2, 4, 0, -1],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Techno Pattern",
-      "pattern": [0, 0, 4, 4, 0, 0, 5, 5, 0, 0, 4, 4, 2, 2, 0, -1],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Trance Lead",
-      "pattern": [0, 2, 4, 5, 7, 5, 4, 2, 4, 5, 7, 5, 4, 2, 0, -1],
-      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    },
-    {
-      "name": "Empty",
+      "name": "INIT - Empty",
+      "description": "Blank pattern for creating sequences from scratch",
       "pattern": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
       "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     {
-      "name": "Arpeggiated",
+      "name": "ACID - Classic 303",
+      "description": "Authentic TB-303 acid bassline with characteristic slides and rests",
+      "pattern": [0, -1, 0, 2, 0, -1, 4, -1, 0, 2, 0, -1, 0, 4, 7, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ACID - Squelchy",
+      "description": "High-resonance acid pattern with octave jumps and rests",
+      "pattern": [0, -1, 7, -1, 0, -1, 5, -1, 0, 7, -1, 5, 0, -1, 4, -1],
+      "octave": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ACID - Aggressive",
+      "description": "Fast-moving aggressive acid line with rapid note changes",
+      "pattern": [0, 3, 0, 5, 0, 4, 0, 7, 0, 3, 0, 2, 0, 5, 0, 4],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ACID - Bubbling",
+      "description": "Bubbly acid pattern with small intervals and many rests",
+      "pattern": [0, -1, 2, -1, 0, 2, -1, 4, -1, 2, 0, -1, 2, -1, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "BASS - House Groove",
+      "description": "Classic house music bassline with syncopated rhythm",
+      "pattern": [0, -1, 0, 2, 0, -1, 4, -1, 0, -1, 2, -1, 0, 4, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "BASS - Techno Pulse",
+      "description": "Driving techno bassline with repetitive pulse",
+      "pattern": [0, 0, 4, 4, 0, 0, 5, 5, 0, 0, 4, 4, 2, 2, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "BASS - Funk Groove",
+      "description": "Syncopated funk bassline with rhythmic punches",
+      "pattern": [0, -1, 2, 0, -1, 4, 0, -1, 0, 2, -1, 4, 2, -1, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "BASS - Deep Sub",
+      "description": "Deep sub bass with octave drops for maximum low end",
+      "pattern": [0, 0, -1, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0, -1, 0, -1],
+      "octave": [-1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0]
+    },
+    {
+      "name": "BASS - Rolling",
+      "description": "Smooth rolling bassline with continuous movement",
+      "pattern": [0, 2, 4, 5, 4, 2, 0, 4, 0, 2, 4, 5, 4, 2, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "LEAD - Trance",
+      "description": "Uplifting trance lead melody with emotional progression",
+      "pattern": [0, 2, 4, 5, 7, 5, 4, 2, 4, 5, 7, 5, 4, 2, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "LEAD - Melodic",
+      "description": "Complex melodic sequence with octave variations",
+      "pattern": [0, 2, 4, 2, 5, 4, 2, 0, 7, 5, 4, 5, 2, 4, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "LEAD - Euphoric",
+      "description": "Happy uplifting lead with positive energy",
+      "pattern": [0, 4, 2, 5, 4, 7, 5, 4, 2, 4, 0, 2, 4, 5, 7, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "LEAD - Stabs",
+      "description": "Short rhythmic lead stabs for accent and energy",
+      "pattern": [0, -1, -1, 4, -1, -1, 0, -1, 5, -1, -1, 4, -1, -1, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ARPEGGIO - Major Triad",
+      "description": "Classic major chord arpeggio pattern",
+      "pattern": [0, 2, 4, 0, 2, 4, 0, 2, 4, 0, 2, 4, 0, 2, 4, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ARPEGGIO - Seventh",
+      "description": "Extended arpeggio with seventh interval for jazzy feel",
+      "pattern": [0, 2, 4, 6, 0, 2, 4, 6, 0, 2, 4, 6, 0, 2, 4, 6],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "ARPEGGIO - Octave Jump",
+      "description": "Arpeggio spanning multiple octaves for wide range",
+      "pattern": [0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7, 0, 7],
+      "octave": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1]
+    },
+    {
+      "name": "ARPEGGIO - Fast Roll",
+      "description": "Rapid arpeggiated pattern with continuous motion",
       "pattern": [0, -1, 2, -1, 4, -1, 0, -1, 2, -1, 4, -1, 0, 4, 2, -1],
       "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "RHYTHM - Syncopated",
+      "description": "Off-beat rhythmic pattern for groove and movement",
+      "pattern": [-1, 0, -1, 2, -1, 0, -1, 4, -1, 0, -1, 2, -1, 4, -1, 0],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "RHYTHM - Driving",
+      "description": "Constant driving rhythm with minimal rests",
+      "pattern": [0, 0, 2, 0, 0, 4, 0, 2, 0, 0, 2, 0, 0, 4, 2, 0],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "RHYTHM - Broken Beat",
+      "description": "Irregular broken beat pattern for complex rhythm",
+      "pattern": [0, -1, 2, 0, -1, -1, 4, -1, 0, 2, -1, 0, -1, 4, -1, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "MELODY - Ascending",
+      "description": "Smooth ascending melodic scale",
+      "pattern": [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "MELODY - Descending",
+      "description": "Smooth descending melodic scale",
+      "pattern": [7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2, 1, 0],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "MELODY - Wave",
+      "description": "Wavelike melodic motion up and down",
+      "pattern": [0, 2, 4, 5, 7, 5, 4, 2, 0, -1, 2, 4, 5, 4, 2, 0],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "MINIMAL - Sparse",
+      "description": "Minimal pattern with very few notes for space",
+      "pattern": [0, -1, -1, -1, 4, -1, -1, -1, 0, -1, -1, -1, 2, -1, -1, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "MINIMAL - Pulse",
+      "description": "Minimalist pulse on root note with subtle variation",
+      "pattern": [0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, 2, 0, -1],
+      "octave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    {
+      "name": "RANDOM - Chaos",
+      "description": "Seemingly random notes for experimental textures",
+      "pattern": [0, 5, 2, 7, 1, 4, 6, 3, 5, 0, 4, 2, 6, 1, 7, -1],
+      "octave": [0, 1, 0, -1, 0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0]
     }
   ]
 }
