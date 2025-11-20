@@ -119,56 +119,16 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
         }
     };
 
-    // Configure root note selector (IDs must start at 1, not 0 - JUCE requirement)
-    rootNoteSelector.addItem("C", 1);
-    rootNoteSelector.addItem("C#", 2);
-    rootNoteSelector.addItem("D", 3);
-    rootNoteSelector.addItem("D#", 4);
-    rootNoteSelector.addItem("E", 5);
-    rootNoteSelector.addItem("F", 6);
-    rootNoteSelector.addItem("F#", 7);
-    rootNoteSelector.addItem("G", 8);
-    rootNoteSelector.addItem("G#", 9);
-    rootNoteSelector.addItem("A", 10);
-    rootNoteSelector.addItem("A#", 11);
-    rootNoteSelector.addItem("B", 12);
-    rootNoteSelector.setSelectedId(1); // Default to C
-    addAndMakeVisible(rootNoteSelector);
-
-    rootNoteLabel.setText("Root", juce::dontSendNotification);
-    rootNoteLabel.setJustificationType(juce::Justification::centredRight);
-    addAndMakeVisible(rootNoteLabel);
-
-    // Configure scale selector (IDs must start at 1, not 0 - JUCE requirement)
-    scaleSelector.addItem("Major", 1);
-    scaleSelector.addItem("Minor", 2);
-    scaleSelector.addItem("Dorian", 3);
-    scaleSelector.addItem("Phrygian", 4);
-    scaleSelector.addItem("Lydian", 5);
-    scaleSelector.addItem("Mixolydian", 6);
-    scaleSelector.addItem("Aeolian", 7);
-    scaleSelector.addItem("Locrian", 8);
-    scaleSelector.addItem("Harmonic Minor", 9);
-    scaleSelector.addItem("Melodic Minor", 10);
-    scaleSelector.addItem("Pentatonic Major", 11);
-    scaleSelector.addItem("Pentatonic Minor", 12);
-    scaleSelector.addItem("Blues", 13);
-    scaleSelector.setSelectedId(2); // Default to Minor
-    addAndMakeVisible(scaleSelector);
-
-    scaleLabel.setText("Scale", juce::dontSendNotification);
-    scaleLabel.setJustificationType(juce::Justification::centredRight);
-    addAndMakeVisible(scaleLabel);
-
-    // Configure Steps slider
-    stepsSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    stepsSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    // Configure Steps slider (same style as Progression)
+    stepsSlider.setSliderStyle(juce::Slider::IncDecButtons);
+    stepsSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 40, 20);
     stepsSlider.setRange(1, 16, 1);
     stepsSlider.setValue(16);
+    stepsSlider.setIncDecButtonsMode(juce::Slider::incDecButtonsDraggable_Vertical);
     addAndMakeVisible(stepsSlider);
 
     stepsLabel.setText("Steps", juce::dontSendNotification);
-    stepsLabel.setJustificationType(juce::Justification::centred);
+    stepsLabel.setJustificationType(juce::Justification::centredRight);
     addAndMakeVisible(stepsLabel);
 
     // Configure Rate selector
@@ -259,10 +219,6 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     // Attach to parameters
     enableAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "seqenabled", enableToggle);
-    scaleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.getValueTreeState(), "seqscale", scaleSelector);
-    rootNoteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.getValueTreeState(), "seqroot", rootNoteSelector);
     stepsAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqsteps", stepsSlider);
     rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
@@ -326,18 +282,6 @@ void MelodySequencerTab::resized()
     enableToggle.setBounds(x, topRowY, 60, elementHeight);
     x += 60 + gap;
 
-    // Root note
-    rootNoteLabel.setBounds(x, topRowY, 35, elementHeight);
-    x += 35 + gap;
-    rootNoteSelector.setBounds(x, topRowY, 65, elementHeight);
-    x += 65 + gap;
-
-    // Scale
-    scaleLabel.setBounds(x, topRowY, 35, elementHeight);
-    x += 35 + gap;
-    scaleSelector.setBounds(x, topRowY, 95, elementHeight);
-    x += 95 + gap;
-
     // Algorithm
     algoLabel.setBounds(x, topRowY, 30, elementHeight);
     x += 30 + gap;
@@ -350,14 +294,15 @@ void MelodySequencerTab::resized()
     mutateButton.setBounds(x, topRowY, 65, elementHeight);
     x += 65 + gap + 10; // Extra spacing before steps/rate
 
-    // Steps slider (show value below knob)
-    stepsSlider.setBounds(x, topRowY - 10, 50, 50); // Slightly taller for text box
-    stepsLabel.setBounds(x, topRowY - 30, 50, elementHeight);
-    x += 50 + gap + 5;
+    // Steps slider (same style as Progression - text box with +/- buttons)
+    stepsLabel.setBounds(x, topRowY, 35, elementHeight);
+    x += 40;
+    stepsSlider.setBounds(x, topRowY, 60, elementHeight);
+    x += 60 + gap + 5;
 
     // Rate selector
     rateLabel.setBounds(x, topRowY, 30, elementHeight);
-    x += 30 + gap;
+    x += 35;
     rateSelector.setBounds(x, topRowY, 60, elementHeight);
 
     // Preset selector and save button at the far right

@@ -51,12 +51,20 @@ private:
     juce::Slider masterVolumeSlider;
     juce::Label masterVolumeLabel;
 
+    // Sequencer Root and Scale controls
+    juce::ComboBox rootNoteSelector;
+    juce::Label rootNoteLabel;
+    juce::ComboBox scaleSelector;
+    juce::Label scaleLabel;
+
     // Message display label
     juce::Label messageLabel;
 
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bpmAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> masterVolumeAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rootNoteAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> scaleAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SnorkelSynthAudioProcessorEditor)
 };

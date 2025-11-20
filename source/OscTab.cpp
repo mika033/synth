@@ -409,10 +409,10 @@ void OscTab::resized()
     const int labelHeight = 20;
     const int columnSpacing = 130;
 
-    // Preset controls at the top
-    savePresetButton.setBounds(getWidth() - 330, 15, 45, 25);
-    presetLabel.setBounds(getWidth() - 280, 15, 100, 20);
-    presetSelector.setBounds(getWidth() - 170, 15, 130, 25);
+    // Preset controls at the top (Label -> Selector -> Save button)
+    presetLabel.setBounds(getWidth() - 330, 15, 100, 20);
+    presetSelector.setBounds(getWidth() - 220, 15, 130, 25);
+    savePresetButton.setBounds(getWidth() - 85, 15, 50, 25);
 
     // Calculate widths: 4 dials worth of space
     const int oscSectionWidth = 20 + (columnSpacing * 4); // Start margin + 4 columns = 540px
