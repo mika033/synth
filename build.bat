@@ -107,6 +107,21 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+REM Check if Snorkel Synth is running and wait for user to close it
+:check_running
+tasklist /FI "IMAGENAME eq Snorkel Synth.exe" 2>NUL | find /I /N "Snorkel Synth.exe">NUL
+if "%ERRORLEVEL%"=="0" (
+    echo.
+    echo ========================================
+    echo WARNING: Snorkel Synth is currently running
+    echo ========================================
+    echo Please close the Snorkel Synth application to continue
+    echo Waiting for you to close it...
+    echo.
+    timeout /t 2 /nobreak >nul
+    goto check_running
+)
+
 REM Build the project
 echo.
 echo Building Acid Synth VST (Release)
@@ -137,9 +152,9 @@ echo ========================================
 echo.
 
 REM Start standalone executable if it exists
-if exist "AcidSynth_artefacts\Release\Standalone\Acid Synth.exe" (
+if exist "SnorkelSynth_artefacts\Release\Standalone\Snorkel Synth.exe" (
     echo Starting Acid Synth standalone...
-    start "" "AcidSynth_artefacts\Release\Standalone\Acid Synth.exe"
+    start "" "SnorkelSynth_artefacts\Release\Standalone\Snorkel Synth.exe"
 ) else (
     echo Note: Standalone executable not found at expected location
 )

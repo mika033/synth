@@ -2,22 +2,12 @@
 #include "SequencerTab.h"
 
 //==============================================================================
-SequencerTab::SequencerTab(AcidSynthAudioProcessor& p)
+SequencerTab::SequencerTab(SnorkelSynthAudioProcessor& p)
     : audioProcessor(p)
 {
-    // Title label
-    titleLabel.setText("ARPEGGIATOR", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font(20.0f, juce::Font::bold));
-    titleLabel.setJustificationType(juce::Justification::centred);
-    titleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    addAndMakeVisible(titleLabel);
-
     // Arpeggiator On/Off toggle
-    arpOnOffToggle.setButtonText("Enable");
+    arpOnOffToggle.setButtonText("Enabled");
     addAndMakeVisible(arpOnOffToggle);
-    arpOnOffLabel.setText("Arpeggiator", juce::dontSendNotification);
-    arpOnOffLabel.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(arpOnOffLabel);
     arpOnOffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "arponoff", arpOnOffToggle);
 
@@ -132,23 +122,19 @@ void SequencerTab::resized()
     const int spacing = 120;
     const int startX = 80;
 
-    // Title
-    titleLabel.setBounds(0, 20, getWidth(), 30);
-
     // Row 1: On/Off toggle
-    arpOnOffLabel.setBounds(startX, 80, 120, labelHeight);
-    arpOnOffToggle.setBounds(startX + 120, 80, 80, 30);
+    arpOnOffToggle.setBounds(startX, 20, 80, 30);
 
     // Row 2: Mode selector
-    arpModeLabel.setBounds(startX, 120, 120, labelHeight);
-    arpModeSelector.setBounds(startX + 120, 120, 120, 25);
+    arpModeLabel.setBounds(startX, 80, 120, labelHeight);
+    arpModeSelector.setBounds(startX + 120, 80, 120, 25);
 
     // Row 3: Rate selector
-    arpRateLabel.setBounds(startX, 160, 120, labelHeight);
-    arpRateSelector.setBounds(startX + 120, 160, 120, 25);
+    arpRateLabel.setBounds(startX, 120, 120, labelHeight);
+    arpRateSelector.setBounds(startX + 120, 120, 120, 25);
 
     // Row 4: Octaves, Gate, Octave Shift, and Swing knobs
-    int knobsY = 220;
+    int knobsY = 180;
     arpOctavesLabel.setBounds(startX, knobsY - labelHeight, knobSize, labelHeight);
     arpOctavesSlider.setBounds(startX, knobsY, knobSize, knobSize);
 

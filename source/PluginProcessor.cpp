@@ -6,9 +6,9 @@
 //==============================================================================
 
 // Plugin Identity
-static constexpr const char* kPluginName = "Acid Synth";
+static constexpr const char* kPluginName = "Snorkel Synth";
 static constexpr const char* kPluginVersion = "1.0.0";
-static constexpr const char* kManufacturerName = "AcidLab";
+static constexpr const char* kManufacturerName = "SnorkelLab";
 
 // Audio Configuration
 static constexpr int kNumVoices = 8;  // Number of simultaneous notes (polyphony)
@@ -25,7 +25,7 @@ namespace Defaults
     static constexpr float kSubOsc = 0.5f;
     static constexpr float kDrive = 0.0f;
     static constexpr float kVolume = 0.7f;
-    static constexpr int   kDelayTime = 3;  // 1/8 note (index 3)
+    static constexpr int   kDelayTime = 1;  // 1/8 note (index 1)
     static constexpr float kDelayFeedback = 0.3f;
     static constexpr float kDelayMix = 0.0f; // Off by default
 
@@ -34,110 +34,6 @@ namespace Defaults
     static constexpr int   kLFOWaveform = 0; // Default: Sine wave
     static constexpr float kLFODepth = 0.0f; // Default: Off
 }
-
-//==============================================================================
-// Factory Presets
-static const Preset kPresets[] = {
-    // Classic 303 Bass (Fat & Punchy) - No LFOs for traditional sound
-    { "Classic 303 Bass",
-      750.0f, 0.8f, 0.6f, 0.2f, 0.7f, 0.0f, 0.5f, 0.3f, 0.7f,
-      6, 0.3f, 0.0f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Squelchy Lead (Maximum Expression) - Cutoff LFO for movement
-    { "Squelchy Lead",
-      400.0f, 0.9f, 0.9f, 0.75f, 0.85f, 1.0f, 0.25f, 0.6f, 0.6f,
-      4, 0.4f, 0.2f,
-      {1, 0, 0.7f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Deep Rumble (Sub-Heavy) - Volume LFO for subtle pulse
-    { "Deep Rumble",
-      300.0f, 0.6f, 0.4f, 0.6f, 0.4f, 0.0f, 0.8f, 0.2f, 0.5f,
-      9, 0.2f, 0.0f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {2, 0, 0.3f}, {6, 0, 0.0f}
-    },
-
-    // Aggressive Distorted Lead - Resonance LFO for aggression
-    { "Aggressive Lead",
-      1150.0f, 0.9f, 0.8f, 0.35f, 0.9f, 1.0f, 0.1f, 0.85f, 0.6f,
-      7, 0.5f, 0.3f,
-      {6, 0, 0.0f}, {1, 0, 0.6f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Pulsing Bass - Cutoff LFO at 1/8 rate
-    { "Pulsing Bass",
-      600.0f, 0.75f, 0.7f, 0.4f, 0.6f, 0.0f, 0.6f, 0.2f, 0.65f,
-      6, 0.3f, 0.1f,
-      {1, 0, 0.8f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Dub Delay Bass - No LFOs (relies on delay effect)
-    { "Dub Delay Bass",
-      500.0f, 0.7f, 0.5f, 0.35f, 0.5f, 0.0f, 0.7f, 0.1f, 0.6f,
-      7, 0.6f, 0.4f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Wobble Bass - Resonance LFO at faster rate
-    { "Wobble Bass",
-      800.0f, 0.85f, 0.8f, 0.3f, 0.7f, 0.0f, 0.4f, 0.3f, 0.7f,
-      3, 0.2f, 0.0f,
-      {6, 0, 0.0f}, {1, 0, 0.75f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Soft Pad - Volume LFO for subtle modulation
-    { "Soft Pad",
-      1200.0f, 0.5f, 0.3f, 0.8f, 0.2f, 1.0f, 0.3f, 0.0f, 0.5f,
-      10, 0.7f, 0.5f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {2, 0, 0.4f}, {6, 0, 0.0f}
-    },
-
-    // ===== TRADITIONAL SYNTH PRESETS =====
-
-    // Smooth Lead - Melodic lead with morphed waveform, moderate filter, no LFOs
-    { "Smooth Lead",
-      1800.0f, 0.4f, 0.5f, 0.4f, 0.3f, 0.5f, 0.2f, 0.2f, 0.65f,
-      6, 0.2f, 0.1f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Warm Bass - Fat traditional bass with sub-oscillator, low resonance
-    { "Warm Bass",
-      600.0f, 0.3f, 0.4f, 0.35f, 0.4f, 0.2f, 0.7f, 0.15f, 0.7f,
-      6, 0.25f, 0.0f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Evolving Pad - Morphing waveform with gentle LFO for evolving texture
-    { "Evolving Pad",
-      2000.0f, 0.35f, 0.3f, 0.7f, 0.2f, 0.6f, 0.25f, 0.05f, 0.55f,
-      10, 0.4f, 0.35f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {5, 0, 0.25f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    },
-
-    // Init (default clean sound) - All LFOs disabled - MOVED TO BOTTOM
-    { "Init",
-      1000.0f, 0.7f, 0.5f, 0.3f, 0.5f, 0.0f, 0.5f, 0.0f, 0.7f,
-      6, 0.3f, 0.0f,
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f},
-      {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}, {6, 0, 0.0f}
-    }
-};
-
-static constexpr int kNumPresets = sizeof(kPresets) / sizeof(Preset);
 
 //==============================================================================
 // LFO Rate and Waveform Options
@@ -152,7 +48,7 @@ static const juce::StringArray getLFOWaveformOptions()
 }
 
 //==============================================================================
-AcidSynthAudioProcessor::AcidSynthAudioProcessor()
+SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
     : AudioProcessor(BusesProperties()
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
       parameters(*this, nullptr, "PARAMETERS",
@@ -220,15 +116,81 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         juce::NormalisableRange<float>(0.0f, 5.0f, 0.001f, 0.5f),
                         0.1f), // Default: 100ms
 
+                    // Oscillator 1
                     std::make_unique<juce::AudioParameterFloat>(
-                        WAVEFORM_ID, "Waveform",
+                        OSC1_WAVE_ID, "Osc 1 Wave",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kWaveform),
+                        0.5f), // Default: Sawtooth (middle)
+
+                    std::make_unique<juce::AudioParameterInt>(
+                        OSC1_COARSE_ID, "Osc 1 Coarse",
+                        -24, 24, 0), // Range: -24 to +24 semitones, default: 0
 
                     std::make_unique<juce::AudioParameterFloat>(
-                        SUB_OSC_ID, "Sub Osc",
+                        OSC1_FINE_ID, "Osc 1 Fine",
+                        juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
+                        0.0f), // Range: -100 to +100 cents, default: 0
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC1_MIX_ID, "Osc 1 Mix",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        Defaults::kSubOsc),
+                        0.7f), // Default: 0.7
+
+                    // Oscillator 2
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC2_WAVE_ID, "Osc 2 Wave",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.5f), // Default: Sawtooth (middle)
+
+                    std::make_unique<juce::AudioParameterInt>(
+                        OSC2_COARSE_ID, "Osc 2 Coarse",
+                        -24, 24, 0), // Range: -24 to +24 semitones, default: 0
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC2_FINE_ID, "Osc 2 Fine",
+                        juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
+                        0.0f), // Range: -100 to +100 cents, default: 0
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC2_MIX_ID, "Osc 2 Mix",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (off for old presets)
+
+                    // Oscillator 3 (sub osc by default)
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC3_WAVE_ID, "Osc 3 Wave",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: Sine (left)
+
+                    std::make_unique<juce::AudioParameterInt>(
+                        OSC3_COARSE_ID, "Osc 3 Coarse",
+                        -24, 24, -12), // Range: -24 to +24 semitones, default: -12 (one octave down)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC3_FINE_ID, "Osc 3 Fine",
+                        juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
+                        0.0f), // Range: -100 to +100 cents, default: 0
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        OSC3_MIX_ID, "Osc 3 Mix",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.5f), // Default: 0.5 (matches old subosc default)
+
+                    // Noise oscillator
+                    std::make_unique<juce::AudioParameterFloat>(
+                        NOISE_TYPE_ID, "Noise Type",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (white noise)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        NOISE_DECAY_ID, "Noise Decay",
+                        juce::NormalisableRange<float>(0.0f, 2.0f, 0.01f),
+                        2.0f), // Default: 2.0 (right = no decay, sustained noise)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        NOISE_MIX_ID, "Noise Mix",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (off)
 
                     std::make_unique<juce::AudioParameterFloat>(
                         DRIVE_ID, "Drive",
@@ -239,6 +201,26 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         VOLUME_ID, "Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
                         Defaults::kVolume),
+
+                    std::make_unique<juce::AudioParameterInt>(
+                        GLOBAL_OCTAVE_ID, "Global Octave",
+                        -2, 2, 0), // Range: -2 to +2, default: 0
+
+                    // Analog character parameters
+                    std::make_unique<juce::AudioParameterFloat>(
+                        DRIFT_ID, "Drift",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (off)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        PHASE_RANDOM_ID, "Phase Random",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (off)
+
+                    std::make_unique<juce::AudioParameterFloat>(
+                        UNISON_ID, "Unison",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
+                        0.0f), // Default: 0 (off)
 
                     // Filter & Saturation Enhancement Parameters
                     std::make_unique<juce::AudioParameterFloat>(
@@ -413,7 +395,7 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
 
                     // Sequencer parameters
                     std::make_unique<juce::AudioParameterBool>(
-                        SEQ_ENABLED_ID, "Seq Enabled", false), // Default: disabled
+                        SEQ_ENABLED_ID, "Seq Enabled", true), // Default: enabled
                     std::make_unique<juce::AudioParameterChoice>(
                         SEQ_ROOT_ID, "Seq Root",
                         juce::StringArray{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}, 0), // Default to C
@@ -421,11 +403,47 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         SEQ_SCALE_ID, "Seq Scale",
                         juce::StringArray{"Major", "Minor", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian", "Harmonic Minor", "Melodic Minor", "Pentatonic Major", "Pentatonic Minor", "Blues"}, 1), // Default to Minor
 
+                    // Sequencer per-step octave (16 steps, range -2 to +2, default 0)
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE1_ID, "Seq Octave 1", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE2_ID, "Seq Octave 2", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE3_ID, "Seq Octave 3", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE4_ID, "Seq Octave 4", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE5_ID, "Seq Octave 5", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE6_ID, "Seq Octave 6", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE7_ID, "Seq Octave 7", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE8_ID, "Seq Octave 8", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE9_ID, "Seq Octave 9", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE10_ID, "Seq Octave 10", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE11_ID, "Seq Octave 11", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE12_ID, "Seq Octave 12", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE13_ID, "Seq Octave 13", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE14_ID, "Seq Octave 14", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE15_ID, "Seq Octave 15", -2, 2, 0),
+                    std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE16_ID, "Seq Octave 16", -2, 2, 0),
+
+                    // Sequencer per-step cutoff modulation (16 steps, range -1.0 to +1.0, default 0.0)
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF1_ID, "Seq Cutoff 1", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF2_ID, "Seq Cutoff 2", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF3_ID, "Seq Cutoff 3", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF4_ID, "Seq Cutoff 4", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF5_ID, "Seq Cutoff 5", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF6_ID, "Seq Cutoff 6", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF7_ID, "Seq Cutoff 7", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF8_ID, "Seq Cutoff 8", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF9_ID, "Seq Cutoff 9", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF10_ID, "Seq Cutoff 10", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF11_ID, "Seq Cutoff 11", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF12_ID, "Seq Cutoff 12", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF13_ID, "Seq Cutoff 13", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF14_ID, "Seq Cutoff 14", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF15_ID, "Seq Cutoff 15", -1.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF16_ID, "Seq Cutoff 16", -1.0f, 1.0f, 0.0f),
+
                     // Progression parameters
                     std::make_unique<juce::AudioParameterBool>(
                         PROG_ENABLED_ID, "Progression Enabled", true), // Default: enabled
                     std::make_unique<juce::AudioParameterInt>(
-                        PROG_STEPS_ID, "Progression Steps", 1, 8, 8), // Default: 8 steps
+                        PROG_STEPS_ID, "Progression Steps", 1, 16, 4), // Default: 4 steps, max: 16
                     std::make_unique<juce::AudioParameterChoice>(
                         PROG_LENGTH_ID, "Progression Length",
                         juce::StringArray{"1/2", "1", "2", "3", "4"}, 1), // Default: 1 bar
@@ -445,6 +463,22 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
                         PROG_STEP7_ID, "Progression Step 7", 1, 8, 1),
                     std::make_unique<juce::AudioParameterInt>(
                         PROG_STEP8_ID, "Progression Step 8", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP9_ID, "Progression Step 9", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP10_ID, "Progression Step 10", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP11_ID, "Progression Step 11", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP12_ID, "Progression Step 12", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP13_ID, "Progression Step 13", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP14_ID, "Progression Step 14", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP15_ID, "Progression Step 15", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>(
+                        PROG_STEP16_ID, "Progression Step 16", 1, 8, 1),
 
                     // Global parameters
                     std::make_unique<juce::AudioParameterFloat>(
@@ -470,70 +504,74 @@ AcidSynthAudioProcessor::AcidSynthAudioProcessor()
     for (int i = 0; i < NUM_SEQ_STEPS; ++i)
         sequencerPattern[i] = defaultPattern[i];
 
-    // Load Init preset by default (index 11)
-    loadPreset(11);
+    // Load presets from JSON files
+    loadPresetsFromJSON();
+
+    // Load the first synth preset by default
+    if (getSynthPresetNames().size() > 0)
+        loadPresetFromJSON(0);
 }
 
-AcidSynthAudioProcessor::~AcidSynthAudioProcessor()
+SnorkelSynthAudioProcessor::~SnorkelSynthAudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String AcidSynthAudioProcessor::getName() const
+const juce::String SnorkelSynthAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool AcidSynthAudioProcessor::acceptsMidi() const
+bool SnorkelSynthAudioProcessor::acceptsMidi() const
 {
     return true;
 }
 
-bool AcidSynthAudioProcessor::producesMidi() const
+bool SnorkelSynthAudioProcessor::producesMidi() const
 {
     return false;
 }
 
-bool AcidSynthAudioProcessor::isMidiEffect() const
+bool SnorkelSynthAudioProcessor::isMidiEffect() const
 {
     return false;
 }
 
-double AcidSynthAudioProcessor::getTailLengthSeconds() const
+double SnorkelSynthAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int AcidSynthAudioProcessor::getNumPrograms()
+int SnorkelSynthAudioProcessor::getNumPrograms()
 {
-    return kNumPresets;
+    return getSynthPresetNames().size();
 }
 
-int AcidSynthAudioProcessor::getCurrentProgram()
+int SnorkelSynthAudioProcessor::getCurrentProgram()
 {
     return 0; // Could track current preset if needed
 }
 
-void AcidSynthAudioProcessor::setCurrentProgram(int index)
+void SnorkelSynthAudioProcessor::setCurrentProgram(int index)
 {
-    if (index >= 0 && index < kNumPresets)
-        loadPreset(index);
+    loadPresetFromJSON(index);
 }
 
-const juce::String AcidSynthAudioProcessor::getProgramName(int index)
+const juce::String SnorkelSynthAudioProcessor::getProgramName(int index)
 {
-    if (index >= 0 && index < kNumPresets)
-        return kPresets[index].name;
+    juce::StringArray names = getSynthPresetNames();
+    if (index >= 0 && index < names.size())
+        return names[index];
     return {};
 }
 
-void AcidSynthAudioProcessor::changeProgramName(int index, const juce::String& newName)
+void SnorkelSynthAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
     // Factory presets cannot be renamed
 }
 
 //==============================================================================
-void AcidSynthAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void SnorkelSynthAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     synth.setCurrentPlaybackSampleRate(sampleRate);
     currentSampleRate = sampleRate;
@@ -551,11 +589,11 @@ void AcidSynthAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlo
     delayBuffer.resize(samplesPerBlock * 2, 0.0f);
 }
 
-void AcidSynthAudioProcessor::releaseResources()
+void SnorkelSynthAudioProcessor::releaseResources()
 {
 }
 
-bool AcidSynthAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+bool SnorkelSynthAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
         && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
@@ -564,7 +602,7 @@ bool AcidSynthAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts)
     return true;
 }
 
-void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
+void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                            juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -598,9 +636,6 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         totalPlaybackTime += buffer.getNumSamples();
     }
 
-    // Update voice parameters
-    updateVoiceParameters();
-
     // Update progression step (must be before arp/sequencer)
     updateProgressionStep(buffer.getNumSamples());
 
@@ -609,6 +644,9 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     // Process sequencer (modifies MIDI messages)
     processSequencer(midiMessages, buffer.getNumSamples());
+
+    // Update voice parameters (after sequencer to get correct currentSeqStep for cutoff modulation)
+    updateVoiceParameters();
 
     // Render synthesizer
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
@@ -685,15 +723,45 @@ void AcidSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     buffer.applyGain(masterVolume);
 }
 
-void AcidSynthAudioProcessor::updateVoiceParameters()
+void SnorkelSynthAudioProcessor::updateVoiceParameters()
 {
     // Main parameters
     float cutoff = parameters.getRawParameterValue(CUTOFF_ID)->load();
+
+    // Apply sequencer per-step cutoff modulation if sequencer is enabled and playing
+    bool seqEnabled = parameters.getRawParameterValue(SEQ_ENABLED_ID)->load() > 0.5f;
+    if (seqEnabled && isPlaybackActive)
+    {
+        float cutoffMod = getCurrentSeqCutoffMod(); // Range: -1.0 to +1.0
+        // Scale modulation: -1 = divide by 16, +1 = multiply by 16 (±4 octaves, logarithmic scaling)
+        float modulationFactor = std::pow(16.0f, cutoffMod);
+        cutoff = juce::jlimit(20.0f, 5000.0f, cutoff * modulationFactor);
+    }
+
     float resonance = parameters.getRawParameterValue(RESONANCE_ID)->load();
     float envMod = parameters.getRawParameterValue(ENV_MOD_ID)->load();
     float accent = parameters.getRawParameterValue(ACCENT_ID)->load();
-    float waveform = parameters.getRawParameterValue(WAVEFORM_ID)->load(); // Now float for morphing
-    float subOsc = parameters.getRawParameterValue(SUB_OSC_ID)->load();
+
+    // Three oscillators
+    float osc1Wave = parameters.getRawParameterValue(OSC1_WAVE_ID)->load();
+    int osc1Coarse = static_cast<int>(parameters.getRawParameterValue(OSC1_COARSE_ID)->load());
+    float osc1Fine = parameters.getRawParameterValue(OSC1_FINE_ID)->load();
+    float osc1Mix = parameters.getRawParameterValue(OSC1_MIX_ID)->load();
+
+    float osc2Wave = parameters.getRawParameterValue(OSC2_WAVE_ID)->load();
+    int osc2Coarse = static_cast<int>(parameters.getRawParameterValue(OSC2_COARSE_ID)->load());
+    float osc2Fine = parameters.getRawParameterValue(OSC2_FINE_ID)->load();
+    float osc2Mix = parameters.getRawParameterValue(OSC2_MIX_ID)->load();
+
+    float osc3Wave = parameters.getRawParameterValue(OSC3_WAVE_ID)->load();
+    int osc3Coarse = static_cast<int>(parameters.getRawParameterValue(OSC3_COARSE_ID)->load());
+    float osc3Fine = parameters.getRawParameterValue(OSC3_FINE_ID)->load();
+    float osc3Mix = parameters.getRawParameterValue(OSC3_MIX_ID)->load();
+
+    float noiseMix = parameters.getRawParameterValue(NOISE_MIX_ID)->load();
+    float noiseType = parameters.getRawParameterValue(NOISE_TYPE_ID)->load();
+    float noiseDecay = parameters.getRawParameterValue(NOISE_DECAY_ID)->load();
+
     float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
     float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
     float filterFeedback = parameters.getRawParameterValue(FILTER_FEEDBACK_ID)->load();
@@ -752,6 +820,13 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     int delayMixLFOWave = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_WAVE_ID)->load());
     float delayMixLFODepth = parameters.getRawParameterValue(DELAYMIX_LFO_DEPTH_ID)->load();
 
+    int globalOctave = static_cast<int>(parameters.getRawParameterValue(GLOBAL_OCTAVE_ID)->load());
+
+    // Analog character parameters
+    float drift = parameters.getRawParameterValue(DRIFT_ID)->load();
+    float phaseRandom = parameters.getRawParameterValue(PHASE_RANDOM_ID)->load();
+    float unison = parameters.getRawParameterValue(UNISON_ID)->load();
+
     // Update all voices
     for (int i = 0; i < synth.getNumVoices(); ++i)
     {
@@ -762,13 +837,26 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
             voice->setResonance(resonance);
             voice->setEnvMod(envMod);
             voice->setAccent(accent);
-            voice->setWaveform(waveform);
-            voice->setSubOscMix(subOsc);
+
+            // Set three oscillators
+            voice->setOscillator1(osc1Wave, osc1Coarse, osc1Fine, osc1Mix);
+            voice->setOscillator2(osc2Wave, osc2Coarse, osc2Fine, osc2Mix);
+            voice->setOscillator3(osc3Wave, osc3Coarse, osc3Fine, osc3Mix);
+            voice->setNoiseMix(noiseMix);
+            voice->setNoiseType(noiseType);
+            voice->setNoiseDecay(noiseDecay);
+
             voice->setDrive(drive);
             voice->setVolume(volume);
+            voice->setGlobalOctave(globalOctave);
             voice->setBPM(currentBPM);
             voice->setFilterFeedback(filterFeedback);
             voice->setSaturationType(saturationType);
+
+            // Set analog character parameters
+            voice->setDrift(drift);
+            voice->setPhaseRandom(phaseRandom);
+            voice->setUnison(unison);
 
             // Set ADSR parameters
             voice->setFilterADSR(filterAttack, filterDecay, filterSustain, filterRelease);
@@ -789,90 +877,538 @@ void AcidSynthAudioProcessor::updateVoiceParameters()
     }
 }
 
-void AcidSynthAudioProcessor::loadPreset(int presetIndex)
+void SnorkelSynthAudioProcessor::loadPresetFromJSON(int presetIndex)
 {
-    if (presetIndex < 0 || presetIndex >= kNumPresets)
+    if (!synthPresetsJSON.isObject())
         return;
 
-    const Preset& preset = kPresets[presetIndex];
+    auto* obj = synthPresetsJSON.getDynamicObject();
+    if (obj == nullptr)
+        return;
 
-    // Set all parameters to preset values
+    const juce::Array<juce::var>* presetsArray = obj->getProperty("presets").getArray();
+    if (presetsArray == nullptr || presetIndex < 0 || presetIndex >= presetsArray->size())
+        return;
+
+    auto* presetObj = (*presetsArray)[presetIndex].getDynamicObject();
+    if (presetObj == nullptr)
+        return;
+
+    // Set all parameters from JSON preset
     parameters.getParameter(CUTOFF_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(CUTOFF_ID).convertTo0to1(preset.cutoff));
+        parameters.getParameterRange(CUTOFF_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("cutoff"))));
 
     parameters.getParameter(RESONANCE_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(RESONANCE_ID).convertTo0to1(preset.resonance));
+        parameters.getParameterRange(RESONANCE_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("resonance"))));
 
     parameters.getParameter(ENV_MOD_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(ENV_MOD_ID).convertTo0to1(preset.envMod));
+        parameters.getParameterRange(ENV_MOD_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("envMod"))));
 
     parameters.getParameter(ACCENT_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(ACCENT_ID).convertTo0to1(preset.accent));
+        parameters.getParameterRange(ACCENT_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("accent"))));
 
-    // Set Filter ADSR parameters (use default values for now - will update presets later)
-    parameters.getParameter(FILTER_ATTACK_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(FILTER_ATTACK_ID).convertTo0to1(0.003f));
-    parameters.getParameter(FILTER_DECAY_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(FILTER_DECAY_ID).convertTo0to1(0.3f));
-    parameters.getParameter(FILTER_SUSTAIN_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(FILTER_SUSTAIN_ID).convertTo0to1(0.0f));
-    parameters.getParameter(FILTER_RELEASE_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(FILTER_RELEASE_ID).convertTo0to1(0.1f));
+    // Load oscillator parameters - support both new and old preset formats
+    // New presets have "osc1Wave", "osc1Coarse", etc.
+    // Old presets have "waveform" (maps to osc1Wave) and "subOsc" (maps to osc3Mix)
 
-    // Set Amplitude ADSR parameters (use default values for now - will update presets later)
-    parameters.getParameter(AMP_ATTACK_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(AMP_ATTACK_ID).convertTo0to1(0.003f));
-    parameters.getParameter(AMP_DECAY_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(AMP_DECAY_ID).convertTo0to1(0.3f));
-    parameters.getParameter(AMP_SUSTAIN_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(AMP_SUSTAIN_ID).convertTo0to1(0.0f));
-    parameters.getParameter(AMP_RELEASE_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(AMP_RELEASE_ID).convertTo0to1(0.1f));
+    // Oscillator 1
+    float osc1Wave = presetObj->hasProperty("osc1Wave") ?
+        static_cast<float>(presetObj->getProperty("osc1Wave")) :
+        (presetObj->hasProperty("waveform") ?
+            static_cast<float>(presetObj->getProperty("waveform")) : 0.5f);
+    parameters.getParameter(OSC1_WAVE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC1_WAVE_ID).convertTo0to1(osc1Wave));
 
-    parameters.getParameter(WAVEFORM_ID)->setValueNotifyingHost(preset.waveform);
+    int osc1Coarse = presetObj->hasProperty("osc1Coarse") ?
+        static_cast<int>(presetObj->getProperty("osc1Coarse")) : 0;
+    parameters.getParameter(OSC1_COARSE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC1_COARSE_ID).convertTo0to1(osc1Coarse));
 
-    parameters.getParameter(SUB_OSC_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(SUB_OSC_ID).convertTo0to1(preset.subOsc));
+    float osc1Fine = presetObj->hasProperty("osc1Fine") ?
+        static_cast<float>(presetObj->getProperty("osc1Fine")) : 0.0f;
+    parameters.getParameter(OSC1_FINE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC1_FINE_ID).convertTo0to1(osc1Fine));
+
+    float osc1Mix = presetObj->hasProperty("osc1Mix") ?
+        static_cast<float>(presetObj->getProperty("osc1Mix")) : 0.7f;
+    parameters.getParameter(OSC1_MIX_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC1_MIX_ID).convertTo0to1(osc1Mix));
+
+    // Oscillator 2
+    float osc2Wave = presetObj->hasProperty("osc2Wave") ?
+        static_cast<float>(presetObj->getProperty("osc2Wave")) : 0.5f;
+    parameters.getParameter(OSC2_WAVE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC2_WAVE_ID).convertTo0to1(osc2Wave));
+
+    int osc2Coarse = presetObj->hasProperty("osc2Coarse") ?
+        static_cast<int>(presetObj->getProperty("osc2Coarse")) : 0;
+    parameters.getParameter(OSC2_COARSE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC2_COARSE_ID).convertTo0to1(osc2Coarse));
+
+    float osc2Fine = presetObj->hasProperty("osc2Fine") ?
+        static_cast<float>(presetObj->getProperty("osc2Fine")) : 0.0f;
+    parameters.getParameter(OSC2_FINE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC2_FINE_ID).convertTo0to1(osc2Fine));
+
+    float osc2Mix = presetObj->hasProperty("osc2Mix") ?
+        static_cast<float>(presetObj->getProperty("osc2Mix")) : 0.0f;
+    parameters.getParameter(OSC2_MIX_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC2_MIX_ID).convertTo0to1(osc2Mix));
+
+    // Oscillator 3
+    float osc3Wave = presetObj->hasProperty("osc3Wave") ?
+        static_cast<float>(presetObj->getProperty("osc3Wave")) : 0.0f;
+    parameters.getParameter(OSC3_WAVE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC3_WAVE_ID).convertTo0to1(osc3Wave));
+
+    int osc3Coarse = presetObj->hasProperty("osc3Coarse") ?
+        static_cast<int>(presetObj->getProperty("osc3Coarse")) : -12;
+    parameters.getParameter(OSC3_COARSE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC3_COARSE_ID).convertTo0to1(osc3Coarse));
+
+    float osc3Fine = presetObj->hasProperty("osc3Fine") ?
+        static_cast<float>(presetObj->getProperty("osc3Fine")) : 0.0f;
+    parameters.getParameter(OSC3_FINE_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC3_FINE_ID).convertTo0to1(osc3Fine));
+
+    float osc3Mix = presetObj->hasProperty("osc3Mix") ?
+        static_cast<float>(presetObj->getProperty("osc3Mix")) :
+        (presetObj->hasProperty("subOsc") ?
+            static_cast<float>(presetObj->getProperty("subOsc")) : 0.5f);
+    parameters.getParameter(OSC3_MIX_ID)->setValueNotifyingHost(
+        parameters.getParameterRange(OSC3_MIX_ID).convertTo0to1(osc3Mix));
 
     parameters.getParameter(DRIVE_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(DRIVE_ID).convertTo0to1(preset.drive));
+        parameters.getParameterRange(DRIVE_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("drive"))));
 
     parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(VOLUME_ID).convertTo0to1(preset.volume));
+        parameters.getParameterRange(VOLUME_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("volume"))));
 
-    // NOTE: LFO settings are NOT loaded from presets - they are left untouched
-    // This allows users to set up their LFO configurations independently of presets
-
+    // Delay Time is a Choice parameter - need to normalize index (0-11) to 0-1 range
+    int delayTimeIndex = static_cast<int>(presetObj->getProperty("delayTime"));
     parameters.getParameter(DELAY_TIME_ID)->setValueNotifyingHost(
-        static_cast<float>(preset.delayTime));
+        parameters.getParameterRange(DELAY_TIME_ID).convertTo0to1(static_cast<float>(delayTimeIndex)));
 
     parameters.getParameter(DELAY_FEEDBACK_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(DELAY_FEEDBACK_ID).convertTo0to1(preset.delayFeedback));
+        parameters.getParameterRange(DELAY_FEEDBACK_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("delayFeedback"))));
 
     parameters.getParameter(DELAY_MIX_ID)->setValueNotifyingHost(
-        parameters.getParameterRange(DELAY_MIX_ID).convertTo0to1(preset.delayMix));
+        parameters.getParameterRange(DELAY_MIX_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("delayMix"))));
 }
 
 //==============================================================================
-bool AcidSynthAudioProcessor::hasEditor() const
+// JSON Preset Management
+
+juce::File SnorkelSynthAudioProcessor::getDataDirectory() const
+{
+    // Get the plugin binary location and look for data folder relative to it
+    juce::File pluginDir = juce::File::getSpecialLocation(juce::File::currentApplicationFile).getParentDirectory();
+    juce::File dataDir = pluginDir.getChildFile("data");
+
+    // If not found, try looking in the parent directory (for development builds)
+    if (!dataDir.exists())
+        dataDir = pluginDir.getParentDirectory().getChildFile("data");
+
+    // If still not found, try current working directory as fallback
+    if (!dataDir.exists())
+        dataDir = juce::File::getCurrentWorkingDirectory().getChildFile("data");
+
+    return dataDir;
+}
+
+juce::String SnorkelSynthAudioProcessor::formatJSON(const juce::var& json, int indentLevel) const
+{
+    juce::String indent = juce::String::repeatedString(" ", indentLevel * 2);
+    juce::String nextIndent = juce::String::repeatedString(" ", (indentLevel + 1) * 2);
+
+    if (json.isObject())
+    {
+        auto* obj = json.getDynamicObject();
+        if (obj == nullptr)
+            return "{}";
+
+        juce::String result = "{\n";
+        auto& properties = obj->getProperties();
+        int count = 0;
+        int total = properties.size();
+
+        for (auto& prop : properties)
+        {
+            result += nextIndent + "\"" + prop.name.toString() + "\": ";
+            result += formatJSON(prop.value, indentLevel + 1);
+            if (++count < total)
+                result += ",";
+            result += "\n";
+        }
+
+        result += indent + "}";
+        return result;
+    }
+    else if (json.isArray())
+    {
+        auto* arr = json.getArray();
+        if (arr == nullptr || arr->isEmpty())
+            return "[]";
+
+        // Check if array contains simple values (numbers) - keep on one line
+        bool simpleArray = true;
+        for (auto& item : *arr)
+        {
+            if (item.isObject() || item.isArray())
+            {
+                simpleArray = false;
+                break;
+            }
+        }
+
+        if (simpleArray)
+        {
+            juce::String result = "[";
+            for (int i = 0; i < arr->size(); ++i)
+            {
+                result += formatJSON((*arr)[i], indentLevel);
+                if (i < arr->size() - 1)
+                    result += ", ";
+            }
+            result += "]";
+            return result;
+        }
+        else
+        {
+            juce::String result = "[\n";
+            for (int i = 0; i < arr->size(); ++i)
+            {
+                result += nextIndent + formatJSON((*arr)[i], indentLevel + 1);
+                if (i < arr->size() - 1)
+                    result += ",";
+                result += "\n";
+            }
+            result += indent + "]";
+            return result;
+        }
+    }
+    else if (json.isString())
+    {
+        return "\"" + json.toString() + "\"";
+    }
+    else
+    {
+        return json.toString();
+    }
+}
+
+void SnorkelSynthAudioProcessor::loadPresetsFromJSON()
+{
+    juce::File dataDir = getDataDirectory();
+
+    // Log loading attempt
+    juce::File logFile = dataDir.getChildFile("preset_load_log.txt");
+    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
+    logMessage += "Loading presets from: " + dataDir.getFullPathName() + "\n";
+
+    // Load synth presets - always load if file exists, don't skip on empty
+    juce::File synthPresetFile = dataDir.getChildFile("synth_presets.json");
+    logMessage += "Synth preset file exists: " + juce::String(synthPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+    logMessage += "Synth preset file path: " + synthPresetFile.getFullPathName() + "\n";
+
+    if (synthPresetFile.existsAsFile())
+    {
+        juce::String jsonText = synthPresetFile.loadFileAsString();
+        logMessage += "Synth JSON length: " + juce::String(jsonText.length()) + "\n";
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            synthPresetsJSON = result;
+            auto* obj = synthPresetsJSON.getDynamicObject();
+            if (obj != nullptr)
+            {
+                auto* arr = obj->getProperty("presets").getArray();
+                logMessage += "Synth presets loaded: " + juce::String(arr != nullptr ? arr->size() : 0) + "\n";
+            }
+        }
+        else
+        {
+            logMessage += "Synth JSON parse failed\n";
+        }
+    }
+
+    // If no valid JSON loaded, create empty structure
+    if (!synthPresetsJSON.isObject())
+    {
+        synthPresetsJSON = juce::var(new juce::DynamicObject());
+        synthPresetsJSON.getDynamicObject()->setProperty("presets", juce::Array<juce::var>());
+        logMessage += "Created empty synth preset structure\n";
+    }
+
+    // Load sequencer presets - always load if file exists
+    juce::File seqPresetFile = dataDir.getChildFile("sequencer_presets.json");
+    logMessage += "Sequencer preset file exists: " + juce::String(seqPresetFile.existsAsFile() ? "yes" : "no") + "\n";
+    logMessage += "Sequencer preset file path: " + seqPresetFile.getFullPathName() + "\n";
+
+    if (seqPresetFile.existsAsFile())
+    {
+        juce::String jsonText = seqPresetFile.loadFileAsString();
+        logMessage += "Sequencer JSON length: " + juce::String(jsonText.length()) + "\n";
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            sequencerPresetsJSON = result;
+            auto* obj = sequencerPresetsJSON.getDynamicObject();
+            if (obj != nullptr)
+            {
+                auto* arr = obj->getProperty("presets").getArray();
+                logMessage += "Sequencer presets loaded: " + juce::String(arr != nullptr ? arr->size() : 0) + "\n";
+            }
+        }
+        else
+        {
+            logMessage += "Sequencer JSON parse failed\n";
+        }
+    }
+
+    // If no valid JSON loaded, create empty structure
+    if (!sequencerPresetsJSON.isObject())
+    {
+        sequencerPresetsJSON = juce::var(new juce::DynamicObject());
+        sequencerPresetsJSON.getDynamicObject()->setProperty("presets", juce::Array<juce::var>());
+        logMessage += "Created empty sequencer preset structure\n";
+    }
+
+    // Load randomization config
+    juce::File randomConfigFile = dataDir.getChildFile("randomization_config.json");
+    logMessage += "Randomization config file exists: " + juce::String(randomConfigFile.existsAsFile() ? "yes" : "no") + "\n";
+
+    if (randomConfigFile.existsAsFile())
+    {
+        juce::String jsonText = randomConfigFile.loadFileAsString();
+        auto result = juce::JSON::parse(jsonText);
+        if (result.isObject())
+        {
+            randomizationConfigJSON = result;
+            logMessage += "Randomization config loaded\n";
+        }
+    }
+
+    logMessage += "\n";
+    logFile.appendText(logMessage);
+}
+
+void SnorkelSynthAudioProcessor::saveSynthPresetToJSON(const juce::String& presetName)
+{
+    // Create preset object as var (so var owns it from the start)
+    juce::var preset = new juce::DynamicObject();
+    auto* presetObj = preset.getDynamicObject();
+    presetObj->setProperty("name", presetName);
+    presetObj->setProperty("cutoff", parameters.getRawParameterValue(CUTOFF_ID)->load());
+    presetObj->setProperty("resonance", parameters.getRawParameterValue(RESONANCE_ID)->load());
+    presetObj->setProperty("envMod", parameters.getRawParameterValue(ENV_MOD_ID)->load());
+    presetObj->setProperty("accent", parameters.getRawParameterValue(ACCENT_ID)->load());
+
+    // Save new oscillator parameters (12 parameters for 3 oscillators)
+    presetObj->setProperty("osc1Wave", parameters.getRawParameterValue(OSC1_WAVE_ID)->load());
+    presetObj->setProperty("osc1Coarse", static_cast<int>(parameters.getRawParameterValue(OSC1_COARSE_ID)->load()));
+    presetObj->setProperty("osc1Fine", parameters.getRawParameterValue(OSC1_FINE_ID)->load());
+    presetObj->setProperty("osc1Mix", parameters.getRawParameterValue(OSC1_MIX_ID)->load());
+
+    presetObj->setProperty("osc2Wave", parameters.getRawParameterValue(OSC2_WAVE_ID)->load());
+    presetObj->setProperty("osc2Coarse", static_cast<int>(parameters.getRawParameterValue(OSC2_COARSE_ID)->load()));
+    presetObj->setProperty("osc2Fine", parameters.getRawParameterValue(OSC2_FINE_ID)->load());
+    presetObj->setProperty("osc2Mix", parameters.getRawParameterValue(OSC2_MIX_ID)->load());
+
+    presetObj->setProperty("osc3Wave", parameters.getRawParameterValue(OSC3_WAVE_ID)->load());
+    presetObj->setProperty("osc3Coarse", static_cast<int>(parameters.getRawParameterValue(OSC3_COARSE_ID)->load()));
+    presetObj->setProperty("osc3Fine", parameters.getRawParameterValue(OSC3_FINE_ID)->load());
+    presetObj->setProperty("osc3Mix", parameters.getRawParameterValue(OSC3_MIX_ID)->load());
+
+    presetObj->setProperty("drive", parameters.getRawParameterValue(DRIVE_ID)->load());
+    presetObj->setProperty("volume", parameters.getRawParameterValue(VOLUME_ID)->load());
+    presetObj->setProperty("delayTime", static_cast<int>(parameters.getRawParameterValue(DELAY_TIME_ID)->load()));
+    presetObj->setProperty("delayFeedback", parameters.getRawParameterValue(DELAY_FEEDBACK_ID)->load());
+    presetObj->setProperty("delayMix", parameters.getRawParameterValue(DELAY_MIX_ID)->load());
+
+    // Rebuild the entire JSON structure to avoid reference issues
+    juce::var newRoot = new juce::DynamicObject();
+    juce::Array<juce::var> presetsArray;
+
+    // Copy existing presets
+    auto* obj = synthPresetsJSON.getDynamicObject();
+    if (obj != nullptr)
+    {
+        juce::var presetsVar = obj->getProperty("presets");
+        if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
+        {
+            presetsArray = *presetsVar.getArray();
+        }
+    }
+
+    // Add new preset (var already owns the DynamicObject)
+    presetsArray.add(preset);
+
+    // Build new structure
+    newRoot.getDynamicObject()->setProperty("presets", presetsArray);
+    synthPresetsJSON = newRoot;
+
+    // Format and write to file
+    juce::String jsonOutput = formatJSON(synthPresetsJSON);
+
+    // Always write if we have valid JSON structure
+    juce::File dataDir = getDataDirectory();
+    dataDir.createDirectory(); // Ensure data directory exists
+    juce::File synthPresetFile = dataDir.getChildFile("synth_presets.json");
+
+    // Write debug log
+    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
+    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
+    logMessage += "Saving synth preset: " + presetName + "\n";
+    logMessage += "File path: " + synthPresetFile.getFullPathName() + "\n";
+    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
+    logMessage += "Contains name: " + juce::String(jsonOutput.contains("\"name\"") ? "yes" : "no") + "\n";
+    logMessage += "Contains cutoff: " + juce::String(jsonOutput.contains("\"cutoff\"") ? "yes" : "no") + "\n";
+    logMessage += "Presets count: " + juce::String(presetsArray.size()) + "\n\n";
+    logFile.appendText(logMessage);
+
+    synthPresetFile.replaceWithText(jsonOutput);
+}
+
+void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& presetName)
+{
+    // Create preset object as var (so var owns it from the start)
+    juce::var preset = new juce::DynamicObject();
+    auto* presetObj = preset.getDynamicObject();
+    presetObj->setProperty("name", presetName);
+
+    juce::Array<juce::var> pattern;
+    for (int i = 0; i < 16; ++i)
+        pattern.add(sequencerPattern[i]);
+
+    presetObj->setProperty("pattern", pattern);
+
+    // Save octave values for each step
+    const char* octaveParamIds[] = {
+        SEQ_OCTAVE1_ID, SEQ_OCTAVE2_ID, SEQ_OCTAVE3_ID, SEQ_OCTAVE4_ID,
+        SEQ_OCTAVE5_ID, SEQ_OCTAVE6_ID, SEQ_OCTAVE7_ID, SEQ_OCTAVE8_ID,
+        SEQ_OCTAVE9_ID, SEQ_OCTAVE10_ID, SEQ_OCTAVE11_ID, SEQ_OCTAVE12_ID,
+        SEQ_OCTAVE13_ID, SEQ_OCTAVE14_ID, SEQ_OCTAVE15_ID, SEQ_OCTAVE16_ID
+    };
+
+    juce::Array<juce::var> octaves;
+    for (int i = 0; i < 16; ++i)
+        octaves.add(static_cast<int>(parameters.getRawParameterValue(octaveParamIds[i])->load()));
+
+    presetObj->setProperty("octave", octaves);
+
+    // Rebuild the entire JSON structure to avoid reference issues
+    juce::var newRoot = new juce::DynamicObject();
+    juce::Array<juce::var> presetsArray;
+
+    // Copy existing presets
+    auto* obj = sequencerPresetsJSON.getDynamicObject();
+    if (obj != nullptr)
+    {
+        juce::var presetsVar = obj->getProperty("presets");
+        if (presetsVar.isArray() && presetsVar.getArray() != nullptr)
+        {
+            presetsArray = *presetsVar.getArray();
+        }
+    }
+
+    // Add new preset (var already owns the DynamicObject)
+    presetsArray.add(preset);
+
+    // Build new structure
+    newRoot.getDynamicObject()->setProperty("presets", presetsArray);
+    sequencerPresetsJSON = newRoot;
+
+    // Format and write to file
+    juce::String jsonOutput = formatJSON(sequencerPresetsJSON);
+
+    // Always write if we have valid JSON structure
+    juce::File dataDir = getDataDirectory();
+    dataDir.createDirectory(); // Ensure data directory exists
+    juce::File seqPresetFile = dataDir.getChildFile("sequencer_presets.json");
+
+    // Write debug log
+    juce::File logFile = dataDir.getChildFile("preset_save_log.txt");
+    juce::String logMessage = juce::Time::getCurrentTime().toString(true, true) + "\n";
+    logMessage += "Saving sequencer preset: " + presetName + "\n";
+    logMessage += "File path: " + seqPresetFile.getFullPathName() + "\n";
+    logMessage += "JSON output length: " + juce::String(jsonOutput.length()) + "\n";
+    logMessage += "Contains pattern: " + juce::String(jsonOutput.contains("\"pattern\"") ? "yes" : "no") + "\n";
+    logMessage += "Contains octave: " + juce::String(jsonOutput.contains("\"octave\"") ? "yes" : "no") + "\n";
+    logMessage += "Presets count: " + juce::String(presetsArray.size()) + "\n\n";
+    logFile.appendText(logMessage);
+
+    seqPresetFile.replaceWithText(jsonOutput);
+}
+
+juce::StringArray SnorkelSynthAudioProcessor::getSynthPresetNames() const
+{
+    juce::StringArray names;
+
+    if (synthPresetsJSON.isObject())
+    {
+        auto* obj = synthPresetsJSON.getDynamicObject();
+        if (obj != nullptr)
+        {
+            const juce::Array<juce::var>* presetsArray = obj->getProperty("presets").getArray();
+            if (presetsArray != nullptr)
+            {
+                for (const auto& presetVar : *presetsArray)
+                {
+                    if (auto* presetObj = presetVar.getDynamicObject())
+                        names.add(presetObj->getProperty("name").toString());
+                }
+            }
+        }
+    }
+
+    return names;
+}
+
+juce::StringArray SnorkelSynthAudioProcessor::getSequencerPresetNames() const
+{
+    juce::StringArray names;
+
+    if (sequencerPresetsJSON.isObject())
+    {
+        auto* obj = sequencerPresetsJSON.getDynamicObject();
+        if (obj != nullptr)
+        {
+            const juce::Array<juce::var>* presetsArray = obj->getProperty("presets").getArray();
+            if (presetsArray != nullptr)
+            {
+                for (const auto& presetVar : *presetsArray)
+                {
+                    if (auto* presetObj = presetVar.getDynamicObject())
+                        names.add(presetObj->getProperty("name").toString());
+                }
+            }
+        }
+    }
+
+    return names;
+}
+
+//==============================================================================
+bool SnorkelSynthAudioProcessor::hasEditor() const
 {
     return true;
 }
 
-juce::AudioProcessorEditor* AcidSynthAudioProcessor::createEditor()
+juce::AudioProcessorEditor* SnorkelSynthAudioProcessor::createEditor()
 {
-    return new AcidSynthAudioProcessorEditor(*this);
+    return new SnorkelSynthAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void AcidSynthAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
+void SnorkelSynthAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
     copyXmlToBinary(*xml, destData);
 }
 
-void AcidSynthAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+void SnorkelSynthAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     // Disabled: Always start with fresh Init preset, don't restore previous state
     // This ensures the plugin/standalone always starts with known default values
@@ -886,7 +1422,7 @@ void AcidSynthAudioProcessor::setStateInformation(const void* data, int sizeInBy
 //==============================================================================
 // Arpeggiator Implementation
 
-void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples)
+void SnorkelSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages, int numSamples)
 {
     bool arpEnabled = parameters.getRawParameterValue(ARP_ONOFF_ID)->load() > 0.5f;
 
@@ -1072,7 +1608,7 @@ void AcidSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessages,
     midiMessages.swapWith(processedMidi);
 }
 
-double AcidSynthAudioProcessor::getArpStepLengthInSamples() const
+double SnorkelSynthAudioProcessor::getArpStepLengthInSamples() const
 {
     int rateIndex = static_cast<int>(parameters.getRawParameterValue(ARP_RATE_ID)->load());
 
@@ -1103,7 +1639,7 @@ double AcidSynthAudioProcessor::getArpStepLengthInSamples() const
     return currentSampleRate / stepFrequency;
 }
 
-int AcidSynthAudioProcessor::getNextArpNote()
+int SnorkelSynthAudioProcessor::getNextArpNote()
 {
     if (heldNotes.empty())
         return -1;
@@ -1160,7 +1696,7 @@ int AcidSynthAudioProcessor::getNextArpNote()
 //==============================================================================
 // Sequencer Implementation
 
-void AcidSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages, int numSamples)
+void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages, int numSamples)
 {
     bool seqEnabled = parameters.getRawParameterValue(SEQ_ENABLED_ID)->load() > 0.5f;
 
@@ -1231,7 +1767,7 @@ void AcidSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages, i
         lastSeqNoteOffTime -= numSamples;
 }
 
-double AcidSynthAudioProcessor::getSeqStepLengthInSamples() const
+double SnorkelSynthAudioProcessor::getSeqStepLengthInSamples() const
 {
     // Use same timing as arpeggiator 1/16 notes
     double beatsPerSecond = currentBPM / 60.0;
@@ -1241,7 +1777,7 @@ double AcidSynthAudioProcessor::getSeqStepLengthInSamples() const
     return currentSampleRate / stepFrequency;
 }
 
-int AcidSynthAudioProcessor::getSequencerNote(int step)
+int SnorkelSynthAudioProcessor::getSequencerNote(int step)
 {
     if (step < 0 || step >= NUM_SEQ_STEPS)
         return -1;
@@ -1257,10 +1793,41 @@ int AcidSynthAudioProcessor::getSequencerNote(int step)
     int rootNote = static_cast<int>(parameters.getRawParameterValue(SEQ_ROOT_ID)->load());
     int scaleType = static_cast<int>(parameters.getRawParameterValue(SEQ_SCALE_ID)->load());
 
-    return scaleDegreesToMidiNote(scaleDegree, rootNote, scaleType);
+    int midiNote = scaleDegreesToMidiNote(scaleDegree, rootNote, scaleType);
+
+    // Apply per-step octave shift
+    const char* octaveParamIds[] = {
+        SEQ_OCTAVE1_ID, SEQ_OCTAVE2_ID, SEQ_OCTAVE3_ID, SEQ_OCTAVE4_ID,
+        SEQ_OCTAVE5_ID, SEQ_OCTAVE6_ID, SEQ_OCTAVE7_ID, SEQ_OCTAVE8_ID,
+        SEQ_OCTAVE9_ID, SEQ_OCTAVE10_ID, SEQ_OCTAVE11_ID, SEQ_OCTAVE12_ID,
+        SEQ_OCTAVE13_ID, SEQ_OCTAVE14_ID, SEQ_OCTAVE15_ID, SEQ_OCTAVE16_ID
+    };
+
+    if (step >= 0 && step < 16)
+    {
+        int octaveShift = static_cast<int>(parameters.getRawParameterValue(octaveParamIds[step])->load());
+        midiNote += octaveShift * 12; // Shift by octaves (12 semitones per octave)
+    }
+
+    return midiNote;
 }
 
-int AcidSynthAudioProcessor::scaleDegreesToMidiNote(int scaleDegree, int rootNote, int scaleType)
+float SnorkelSynthAudioProcessor::getCurrentSeqCutoffMod() const
+{
+    if (currentSeqStep < 0 || currentSeqStep >= NUM_SEQ_STEPS)
+        return 0.0f;
+
+    const char* cutoffParamIds[] = {
+        SEQ_CUTOFF1_ID, SEQ_CUTOFF2_ID, SEQ_CUTOFF3_ID, SEQ_CUTOFF4_ID,
+        SEQ_CUTOFF5_ID, SEQ_CUTOFF6_ID, SEQ_CUTOFF7_ID, SEQ_CUTOFF8_ID,
+        SEQ_CUTOFF9_ID, SEQ_CUTOFF10_ID, SEQ_CUTOFF11_ID, SEQ_CUTOFF12_ID,
+        SEQ_CUTOFF13_ID, SEQ_CUTOFF14_ID, SEQ_CUTOFF15_ID, SEQ_CUTOFF16_ID
+    };
+
+    return parameters.getRawParameterValue(cutoffParamIds[currentSeqStep])->load();
+}
+
+int SnorkelSynthAudioProcessor::scaleDegreesToMidiNote(int scaleDegree, int rootNote, int scaleType)
 {
     // Base octave (C3 = MIDI 60)
     const int baseOctave = 60;
@@ -1294,7 +1861,7 @@ int AcidSynthAudioProcessor::scaleDegreesToMidiNote(int scaleDegree, int rootNot
 //==============================================================================
 // Delay Mix LFO Implementation
 
-void AcidSynthAudioProcessor::updateDelayMixLFO()
+void SnorkelSynthAudioProcessor::updateDelayMixLFO()
 {
     // Read current LFO settings from parameters
     delayMixLFO.rate = static_cast<int>(parameters.getRawParameterValue(DELAYMIX_LFO_RATE_ID)->load());
@@ -1309,7 +1876,7 @@ void AcidSynthAudioProcessor::updateDelayMixLFO()
     delayMixLFO.frequency = beatsPerSecond * rateMultipliers[rateIndex];
 }
 
-double AcidSynthAudioProcessor::getDelayMixLFOValue()
+double SnorkelSynthAudioProcessor::getDelayMixLFOValue()
 {
     // Generate LFO value based on waveform type
     double value = 0.0;
@@ -1343,7 +1910,7 @@ double AcidSynthAudioProcessor::getDelayMixLFOValue()
     return value; // Returns -1 to +1
 }
 
-void AcidSynthAudioProcessor::advanceDelayMixLFO()
+void SnorkelSynthAudioProcessor::advanceDelayMixLFO()
 {
     delayMixLFO.phase += delayMixLFO.frequency * juce::MathConstants<double>::twoPi / currentSampleRate;
     if (delayMixLFO.phase >= juce::MathConstants<double>::twoPi)
@@ -1353,7 +1920,7 @@ void AcidSynthAudioProcessor::advanceDelayMixLFO()
 //==============================================================================
 // Progression Implementation
 
-void AcidSynthAudioProcessor::updateProgressionStep(int numSamples)
+void SnorkelSynthAudioProcessor::updateProgressionStep(int numSamples)
 {
     bool progEnabled = parameters.getRawParameterValue(PROG_ENABLED_ID)->load() > 0.5f;
 
@@ -1415,17 +1982,19 @@ void AcidSynthAudioProcessor::updateProgressionStep(int numSamples)
     }
 }
 
-int AcidSynthAudioProcessor::getCurrentProgressionOffset() const
+int SnorkelSynthAudioProcessor::getCurrentProgressionOffset() const
 {
     bool progEnabled = parameters.getRawParameterValue(PROG_ENABLED_ID)->load() > 0.5f;
 
     if (!progEnabled)
         return 0;
 
-    // Get the progression value for the current step (1-8)
+    // Get the progression value for the current step (1-16)
     const char* progStepIds[] = {
         PROG_STEP1_ID, PROG_STEP2_ID, PROG_STEP3_ID, PROG_STEP4_ID,
-        PROG_STEP5_ID, PROG_STEP6_ID, PROG_STEP7_ID, PROG_STEP8_ID
+        PROG_STEP5_ID, PROG_STEP6_ID, PROG_STEP7_ID, PROG_STEP8_ID,
+        PROG_STEP9_ID, PROG_STEP10_ID, PROG_STEP11_ID, PROG_STEP12_ID,
+        PROG_STEP13_ID, PROG_STEP14_ID, PROG_STEP15_ID, PROG_STEP16_ID
     };
 
     int stepValue = static_cast<int>(parameters.getRawParameterValue(progStepIds[currentProgressionStep])->load());
@@ -1436,12 +2005,31 @@ int AcidSynthAudioProcessor::getCurrentProgressionOffset() const
 
 //==============================================================================
 // Internal playback control (for standalone mode)
-void AcidSynthAudioProcessor::startPlayback()
+void SnorkelSynthAudioProcessor::startPlayback()
 {
     isPlaybackActive = true;
+    totalPlaybackTime = 0.0;
+
+    // Reset arpeggiator state to start from step 1
+    currentArpNote = 0;
+    arpStepTime = 0.0;
+    arpStepCounter = 0;
+    lastNoteOffTime = 0.0;
+    lastProgressionStepForArp = -1; // Force chord generation on first step
+
+    // Reset sequencer state to start from step 1
+    currentSeqStep = 0;
+    seqStepTime = 0.0;
+    lastSeqNoteOffTime = 0.0;
+
+    // Reset progression state to start from step 1
+    progressionBarTime = 0.0;
+    currentProgressionStep = 0;
+    progressionWasEnabled = true; // Prevent the reset logic in updateProgressionStep
+    progressionSyncedToBar = true; // Don't wait for bar sync, start immediately
 }
 
-void AcidSynthAudioProcessor::stopPlayback()
+void SnorkelSynthAudioProcessor::stopPlayback()
 {
     isPlaybackActive = false;
     totalPlaybackTime = 0.0; // Reset playback timer
@@ -1478,9 +2066,18 @@ void AcidSynthAudioProcessor::stopPlayback()
     progressionSyncedToBar = false;
 }
 
+void SnorkelSynthAudioProcessor::showEditorMessage(const juce::String& message)
+{
+    if (currentEditor != nullptr)
+    {
+        // Call showMessage on the editor - defined in PluginEditor.h
+        currentEditor->showMessage(message);
+    }
+}
+
 //==============================================================================
 // This creates new instances of the plugin
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AcidSynthAudioProcessor();
+    return new SnorkelSynthAudioProcessor();
 }

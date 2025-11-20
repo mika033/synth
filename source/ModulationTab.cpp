@@ -2,7 +2,7 @@
 #include "ModulationTab.h"
 
 //==============================================================================
-ModulationTab::ModulationTab(AcidSynthAudioProcessor& p)
+ModulationTab::ModulationTab(SnorkelSynthAudioProcessor& p)
     : audioProcessor(p)
 {
     // Setup labels for each row
@@ -123,14 +123,6 @@ void ModulationTab::paint(juce::Graphics& g)
         int y = 10 + i * 55;
         g.drawLine(10.0f, static_cast<float>(y), static_cast<float>(getWidth() - 10), static_cast<float>(y), 1.0f);
     }
-
-    // Draw column headers
-    g.setColour(juce::Colours::lightgrey);
-    g.setFont(12.0f);
-    g.drawText("Parameter", 20, 0, 100, 15, juce::Justification::left);
-    g.drawText("Rate", 200, 0, 80, 15, juce::Justification::centred);
-    g.drawText("Wave", 320, 0, 80, 15, juce::Justification::centred);
-    g.drawText("Depth", 440, 0, 50, 15, juce::Justification::centred);
 }
 
 void ModulationTab::resized()

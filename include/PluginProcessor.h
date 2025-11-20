@@ -6,16 +6,19 @@
 #include <juce_dsp/juce_dsp.h>
 #include "AcidVoice.h"
 
+// Forward declaration
+class SnorkelSynthAudioProcessorEditor;
+
 //==============================================================================
 /**
- * Main audio processor for Acid Synth VST plugin
+ * Main audio processor for Snorkel Synth VST plugin
  */
-class AcidSynthAudioProcessor : public juce::AudioProcessor
+class SnorkelSynthAudioProcessor : public juce::AudioProcessor
 {
 public:
     //==============================================================================
-    AcidSynthAudioProcessor();
-    ~AcidSynthAudioProcessor() override;
+    SnorkelSynthAudioProcessor();
+    ~SnorkelSynthAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
@@ -53,25 +56,70 @@ public:
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
 
     //==============================================================================
+    // JSON Preset Management
+    void loadPresetsFromJSON();
+    void saveSynthPresetToJSON(const juce::String& presetName);
+    void saveSequencerPresetToJSON(const juce::String& presetName);
+    juce::StringArray getSynthPresetNames() const;
+    juce::StringArray getSequencerPresetNames() const;
+
+    // Public access to JSON data for UI components
+    juce::var synthPresetsJSON;
+    juce::var sequencerPresetsJSON;
+    juce::var randomizationConfigJSON;
+
+    //==============================================================================
     // Playback control (starts/stops arp and sequencer)
     void startPlayback();
     void stopPlayback();
     bool isPlaying() const { return isPlaybackActive; }
 
+    //==============================================================================
+    // Editor messaging
+    void setEditor(SnorkelSynthAudioProcessorEditor* editor) { currentEditor = editor; }
+    void showEditorMessage(const juce::String& message);
+
 private:
     //==============================================================================
     juce::Synthesiser synth;
     juce::AudioProcessorValueTreeState parameters;
+    SnorkelSynthAudioProcessorEditor* currentEditor = nullptr;
 
     // Main Parameter IDs
     static constexpr const char* CUTOFF_ID = "cutoff";
     static constexpr const char* RESONANCE_ID = "resonance";
     static constexpr const char* ENV_MOD_ID = "envmod";
     static constexpr const char* ACCENT_ID = "accent";
-    static constexpr const char* WAVEFORM_ID = "waveform";
-    static constexpr const char* SUB_OSC_ID = "subosc";
+
+    // Three parallel oscillators
+    static constexpr const char* OSC1_WAVE_ID = "osc1wave";
+    static constexpr const char* OSC1_COARSE_ID = "osc1coarse";
+    static constexpr const char* OSC1_FINE_ID = "osc1fine";
+    static constexpr const char* OSC1_MIX_ID = "osc1mix";
+
+    static constexpr const char* OSC2_WAVE_ID = "osc2wave";
+    static constexpr const char* OSC2_COARSE_ID = "osc2coarse";
+    static constexpr const char* OSC2_FINE_ID = "osc2fine";
+    static constexpr const char* OSC2_MIX_ID = "osc2mix";
+
+    static constexpr const char* OSC3_WAVE_ID = "osc3wave";
+    static constexpr const char* OSC3_COARSE_ID = "osc3coarse";
+    static constexpr const char* OSC3_FINE_ID = "osc3fine";
+    static constexpr const char* OSC3_MIX_ID = "osc3mix";
+
+    static constexpr const char* NOISE_TYPE_ID = "noisetype";
+    static constexpr const char* NOISE_DECAY_ID = "noisedecay";
+    static constexpr const char* NOISE_MIX_ID = "noisemix";
+
     static constexpr const char* DRIVE_ID = "drive";
     static constexpr const char* VOLUME_ID = "volume";
+    static constexpr const char* GLOBAL_OCTAVE_ID = "globaloctave";
+
+    // Analog character parameters
+    static constexpr const char* DRIFT_ID = "drift";
+    static constexpr const char* PHASE_RANDOM_ID = "phaserandom";
+    static constexpr const char* UNISON_ID = "unison";
+
     static constexpr const char* DELAY_TIME_ID = "delaytime";
     static constexpr const char* DELAY_FEEDBACK_ID = "delayfeedback";
     static constexpr const char* DELAY_MIX_ID = "delaymix";
@@ -147,6 +195,42 @@ private:
     static constexpr const char* SEQ_ROOT_ID = "seqroot";
     static constexpr const char* SEQ_SCALE_ID = "seqscale";
 
+    // Sequencer per-step octave (16 steps)
+    static constexpr const char* SEQ_OCTAVE1_ID = "seqoctave1";
+    static constexpr const char* SEQ_OCTAVE2_ID = "seqoctave2";
+    static constexpr const char* SEQ_OCTAVE3_ID = "seqoctave3";
+    static constexpr const char* SEQ_OCTAVE4_ID = "seqoctave4";
+    static constexpr const char* SEQ_OCTAVE5_ID = "seqoctave5";
+    static constexpr const char* SEQ_OCTAVE6_ID = "seqoctave6";
+    static constexpr const char* SEQ_OCTAVE7_ID = "seqoctave7";
+    static constexpr const char* SEQ_OCTAVE8_ID = "seqoctave8";
+    static constexpr const char* SEQ_OCTAVE9_ID = "seqoctave9";
+    static constexpr const char* SEQ_OCTAVE10_ID = "seqoctave10";
+    static constexpr const char* SEQ_OCTAVE11_ID = "seqoctave11";
+    static constexpr const char* SEQ_OCTAVE12_ID = "seqoctave12";
+    static constexpr const char* SEQ_OCTAVE13_ID = "seqoctave13";
+    static constexpr const char* SEQ_OCTAVE14_ID = "seqoctave14";
+    static constexpr const char* SEQ_OCTAVE15_ID = "seqoctave15";
+    static constexpr const char* SEQ_OCTAVE16_ID = "seqoctave16";
+
+    // Sequencer per-step cutoff modulation (16 steps)
+    static constexpr const char* SEQ_CUTOFF1_ID = "seqcutoff1";
+    static constexpr const char* SEQ_CUTOFF2_ID = "seqcutoff2";
+    static constexpr const char* SEQ_CUTOFF3_ID = "seqcutoff3";
+    static constexpr const char* SEQ_CUTOFF4_ID = "seqcutoff4";
+    static constexpr const char* SEQ_CUTOFF5_ID = "seqcutoff5";
+    static constexpr const char* SEQ_CUTOFF6_ID = "seqcutoff6";
+    static constexpr const char* SEQ_CUTOFF7_ID = "seqcutoff7";
+    static constexpr const char* SEQ_CUTOFF8_ID = "seqcutoff8";
+    static constexpr const char* SEQ_CUTOFF9_ID = "seqcutoff9";
+    static constexpr const char* SEQ_CUTOFF10_ID = "seqcutoff10";
+    static constexpr const char* SEQ_CUTOFF11_ID = "seqcutoff11";
+    static constexpr const char* SEQ_CUTOFF12_ID = "seqcutoff12";
+    static constexpr const char* SEQ_CUTOFF13_ID = "seqcutoff13";
+    static constexpr const char* SEQ_CUTOFF14_ID = "seqcutoff14";
+    static constexpr const char* SEQ_CUTOFF15_ID = "seqcutoff15";
+    static constexpr const char* SEQ_CUTOFF16_ID = "seqcutoff16";
+
     // Progression Parameter IDs
     static constexpr const char* PROG_ENABLED_ID = "progenabled";
     static constexpr const char* PROG_STEPS_ID = "progsteps";
@@ -159,6 +243,14 @@ private:
     static constexpr const char* PROG_STEP6_ID = "progstep6";
     static constexpr const char* PROG_STEP7_ID = "progstep7";
     static constexpr const char* PROG_STEP8_ID = "progstep8";
+    static constexpr const char* PROG_STEP9_ID = "progstep9";
+    static constexpr const char* PROG_STEP10_ID = "progstep10";
+    static constexpr const char* PROG_STEP11_ID = "progstep11";
+    static constexpr const char* PROG_STEP12_ID = "progstep12";
+    static constexpr const char* PROG_STEP13_ID = "progstep13";
+    static constexpr const char* PROG_STEP14_ID = "progstep14";
+    static constexpr const char* PROG_STEP15_ID = "progstep15";
+    static constexpr const char* PROG_STEP16_ID = "progstep16";
 
     // Global Parameters
     static constexpr const char* GLOBAL_BPM_ID = "globalbpm";
@@ -170,9 +262,10 @@ public:
     static constexpr int NUM_SCALE_DEGREES = 8;
     int sequencerPattern[NUM_SEQ_STEPS]; // Stores scale degree for each step (-1 = no note)
     int currentSeqStep = 0;
+    float getCurrentSeqCutoffMod() const; // Get cutoff modulation for current sequencer step
 
     // Progression state (public for UI access)
-    static constexpr int NUM_PROGRESSION_STEPS = 8;
+    static constexpr int NUM_PROGRESSION_STEPS = 16;
     int currentProgressionStep = 0;
 
 private:
@@ -180,7 +273,9 @@ private:
     void updateVoiceParameters();
 
     // Preset management
-    void loadPreset(int presetIndex);
+    void loadPresetFromJSON(int presetIndex);
+    juce::File getDataDirectory() const;
+    juce::String formatJSON(const juce::var& json, int indentLevel = 0) const;
 
     // Delay effect
     juce::dsp::DelayLine<float> delayLine { 192000 }; // Max 4 seconds at 48kHz
@@ -243,7 +338,7 @@ private:
     void advanceDelayMixLFO();
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AcidSynthAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SnorkelSynthAudioProcessor)
 };
 
 // LFO settings structure
@@ -252,38 +347,4 @@ struct LFOSettings
     int rate;      // Index into rate options
     int waveform;  // 0=Sine, 1=Triangle, 2=SawUp, 3=SawDown, 4=Square, 5=Random
     float depth;   // 0.0-1.0
-};
-
-// Preset structure
-struct Preset
-{
-    juce::String name;
-
-    // Main parameters
-    float cutoff;
-    float resonance;
-    float envMod;
-    float decay;
-    float accent;
-    float waveform;  // 0.0=saw, 1.0=square, morph in between
-    float subOsc;
-    float drive;
-    float volume;
-
-    // Delay parameters
-    int delayTime;
-    float delayFeedback;
-    float delayMix;
-
-    // Dedicated LFOs (10 total)
-    LFOSettings cutoffLFO;
-    LFOSettings resonanceLFO;
-    LFOSettings envModLFO;
-    LFOSettings decayLFO;
-    LFOSettings accentLFO;
-    LFOSettings waveformLFO;
-    LFOSettings subOscLFO;
-    LFOSettings driveLFO;
-    LFOSettings volumeLFO;
-    LFOSettings delayMixLFO;
 };

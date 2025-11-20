@@ -11,14 +11,14 @@
 class SynthTab : public juce::Component
 {
 public:
-    SynthTab(AcidSynthAudioProcessor& p);
+    SynthTab(SnorkelSynthAudioProcessor& p);
     ~SynthTab() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    AcidSynthAudioProcessor& audioProcessor;
+    SnorkelSynthAudioProcessor& audioProcessor;
 
     // Main parameter sliders
     juce::Slider cutoffSlider;
@@ -30,12 +30,14 @@ private:
     juce::Slider subOscSlider;
     juce::Slider driveSlider;
     juce::Slider volumeSlider;
+    juce::Slider globalOctaveSlider;
     juce::Slider filterFeedbackSlider;
     juce::ComboBox saturationTypeSelector;
     juce::Slider delayFeedbackSlider;
     juce::Slider delayMixSlider;
     juce::ComboBox delayTimeSelector;
     juce::ComboBox presetSelector;
+    juce::TextButton savePresetButton;
 
     // Filter ADSR sliders
     juce::Slider filterAttackSlider;
@@ -59,6 +61,7 @@ private:
     juce::Label subOscLabel;
     juce::Label driveLabel;
     juce::Label volumeLabel;
+    juce::Label globalOctaveLabel;
     juce::Label filterFeedbackLabel;
     juce::Label saturationTypeLabel;
     juce::Label delayTimeLabel;
@@ -88,6 +91,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOscAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> globalOctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterFeedbackAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> saturationTypeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayFeedbackAttachment;

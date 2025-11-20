@@ -2,23 +2,17 @@
 #include "SynthTab.h"
 
 //==============================================================================
-SynthTab::SynthTab(AcidSynthAudioProcessor& p)
+SynthTab::SynthTab(SnorkelSynthAudioProcessor& p)
     : audioProcessor(p)
 {
-    // Configure preset selector (IDs must start at 1, not 0 - JUCE requirement)
-    presetSelector.addItem("Classic 303 Bass", 1);
-    presetSelector.addItem("Squelchy Lead", 2);
-    presetSelector.addItem("Deep Rumble", 3);
-    presetSelector.addItem("Aggressive Lead", 4);
-    presetSelector.addItem("Pulsing Bass", 5);
-    presetSelector.addItem("Dub Delay Bass", 6);
-    presetSelector.addItem("Wobble Bass", 7);
-    presetSelector.addItem("Soft Pad", 8);
-    presetSelector.addItem("Smooth Lead", 9);
-    presetSelector.addItem("Warm Bass", 10);
-    presetSelector.addItem("Evolving Pad", 11);
-    presetSelector.addItem("Init", 12);
-    presetSelector.setSelectedId(12); // Select Init preset by default
+    // Configure preset selector - load from JSON
+    juce::StringArray presetNames = audioProcessor.getSynthPresetNames();
+    for (int i = 0; i < presetNames.size(); ++i)
+        presetSelector.addItem(presetNames[i], i + 1);
+
+    if (presetNames.size() > 0)
+        presetSelector.setSelectedId(1); // Select first preset by default
+
     presetSelector.onChange = [this]
     {
         int selectedIndex = presetSelector.getSelectedItemIndex();
@@ -29,6 +23,40 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     presetLabel.setText("Preset", juce::dontSendNotification);
     presetLabel.setJustificationType(juce::Justification::centredRight);
     addAndMakeVisible(presetLabel);
+
+    // Configure save preset button
+    savePresetButton.setButtonText("Save");
+    savePresetButton.onClick = [this]
+    {
+        auto* w = new juce::AlertWindow("Save Preset", "Enter a name for the preset:", juce::MessageBoxIconType::NoIcon);
+        w->addTextEditor("presetName", "", "Preset Name:");
+        w->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey));
+        w->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+
+        w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int result)
+        {
+            if (result == 1)
+            {
+                juce::String presetName = w->getTextEditorContents("presetName");
+                if (presetName.isNotEmpty())
+                {
+                    // Save the preset
+                    audioProcessor.saveSynthPresetToJSON(presetName);
+
+                    // Refresh preset selector
+                    presetSelector.clear();
+                    juce::StringArray presetNames = audioProcessor.getSynthPresetNames();
+                    for (int i = 0; i < presetNames.size(); ++i)
+                        presetSelector.addItem(presetNames[i], i + 1);
+
+                    // Select the newly saved preset
+                    presetSelector.setSelectedId(presetNames.size());
+                }
+            }
+            delete w;
+        }), true);
+    };
+    // addAndMakeVisible(savePresetButton); // Disabled for now
 
     // Configure cutoff slider
     cutoffSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
@@ -111,6 +139,16 @@ SynthTab::SynthTab(AcidSynthAudioProcessor& p)
     addAndMakeVisible(volumeLabel);
     volumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "volume", volumeSlider);
+
+    // Configure global octave slider
+    globalOctaveSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    globalOctaveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(globalOctaveSlider);
+    globalOctaveLabel.setText("Octave", juce::dontSendNotification);
+    globalOctaveLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(globalOctaveLabel);
+    globalOctaveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "globaloctave", globalOctaveSlider);
 
     // Configure Delay Time selector (IDs must start at 1, not 0 - JUCE requirement)
     delayTimeSelector.addItem("1/16", 1);
@@ -292,9 +330,10 @@ void SynthTab::resized()
     // Column position calculator
     auto getColumnX = [&](int col) { return startX + col * columnSpacing; };
 
-    // Preset selector at the top
-    presetLabel.setBounds(getWidth() - 220, 15, 60, 20);
-    presetSelector.setBounds(getWidth() - 150, 15, 130, 25);
+    // Preset selector and save button at the top
+    presetLabel.setBounds(getWidth() - 280, 15, 60, 20);
+    presetSelector.setBounds(getWidth() - 210, 15, 130, 25);
+    savePresetButton.setBounds(getWidth() - 70, 15, 50, 25);
 
     // BOX 1: OSCILLATOR & AMP ENVELOPE
     // Row 1: Waveform, SubOsc, Drive, Volume (columns 0-3)
@@ -310,6 +349,11 @@ void SynthTab::resized()
 
     volumeLabel.setBounds(getColumnX(3), box1Row1Y + knobSize, knobSize, labelHeight);
     volumeSlider.setBounds(getColumnX(3), box1Row1Y, knobSize, knobSize);
+
+    // Skip column 4 (empty space)
+
+    globalOctaveLabel.setBounds(getColumnX(5), box1Row1Y + knobSize, knobSize, labelHeight);
+    globalOctaveSlider.setBounds(getColumnX(5), box1Row1Y, knobSize, knobSize);
 
     // Row 2: Attack, Decay, Sustain, Release (Amp ADSR - columns 0-3)
     int box1Row2Y = box1Row1Y + 90;
