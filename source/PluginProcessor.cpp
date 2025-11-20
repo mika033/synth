@@ -978,11 +978,115 @@ void SnorkelSynthAudioProcessor::loadPresetFromJSON(int presetIndex)
     parameters.getParameter(OSC3_MIX_ID)->setValueNotifyingHost(
         parameters.getParameterRange(OSC3_MIX_ID).convertTo0to1(osc3Mix));
 
+    // Noise oscillator
+    if (presetObj->hasProperty("noiseType"))
+    {
+        float noiseType = static_cast<float>(presetObj->getProperty("noiseType"));
+        parameters.getParameter(NOISE_TYPE_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(NOISE_TYPE_ID).convertTo0to1(noiseType));
+    }
+
+    if (presetObj->hasProperty("noiseDecay"))
+    {
+        float noiseDecay = static_cast<float>(presetObj->getProperty("noiseDecay"));
+        parameters.getParameter(NOISE_DECAY_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(NOISE_DECAY_ID).convertTo0to1(noiseDecay));
+    }
+
+    if (presetObj->hasProperty("noiseMix"))
+    {
+        float noiseMix = static_cast<float>(presetObj->getProperty("noiseMix"));
+        parameters.getParameter(NOISE_MIX_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(NOISE_MIX_ID).convertTo0to1(noiseMix));
+    }
+
     parameters.getParameter(DRIVE_ID)->setValueNotifyingHost(
         parameters.getParameterRange(DRIVE_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("drive"))));
 
     parameters.getParameter(VOLUME_ID)->setValueNotifyingHost(
         parameters.getParameterRange(VOLUME_ID).convertTo0to1(static_cast<float>(presetObj->getProperty("volume"))));
+
+    // Global octave
+    if (presetObj->hasProperty("globalOctave"))
+    {
+        int globalOctave = static_cast<int>(presetObj->getProperty("globalOctave"));
+        parameters.getParameter(GLOBAL_OCTAVE_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(GLOBAL_OCTAVE_ID).convertTo0to1(static_cast<float>(globalOctave)));
+    }
+
+    // Amplitude ADSR
+    if (presetObj->hasProperty("ampAttack"))
+    {
+        float ampAttack = static_cast<float>(presetObj->getProperty("ampAttack"));
+        parameters.getParameter(AMP_ATTACK_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(AMP_ATTACK_ID).convertTo0to1(ampAttack));
+    }
+
+    if (presetObj->hasProperty("ampDecay"))
+    {
+        float ampDecay = static_cast<float>(presetObj->getProperty("ampDecay"));
+        parameters.getParameter(AMP_DECAY_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(AMP_DECAY_ID).convertTo0to1(ampDecay));
+    }
+
+    if (presetObj->hasProperty("ampSustain"))
+    {
+        float ampSustain = static_cast<float>(presetObj->getProperty("ampSustain"));
+        parameters.getParameter(AMP_SUSTAIN_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(AMP_SUSTAIN_ID).convertTo0to1(ampSustain));
+    }
+
+    if (presetObj->hasProperty("ampRelease"))
+    {
+        float ampRelease = static_cast<float>(presetObj->getProperty("ampRelease"));
+        parameters.getParameter(AMP_RELEASE_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(AMP_RELEASE_ID).convertTo0to1(ampRelease));
+    }
+
+    // Filter feedback
+    if (presetObj->hasProperty("filterFeedback"))
+    {
+        float filterFeedback = static_cast<float>(presetObj->getProperty("filterFeedback"));
+        parameters.getParameter(FILTER_FEEDBACK_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(FILTER_FEEDBACK_ID).convertTo0to1(filterFeedback));
+    }
+
+    // Saturation type (Choice parameter)
+    if (presetObj->hasProperty("saturationType"))
+    {
+        int saturationType = static_cast<int>(presetObj->getProperty("saturationType"));
+        parameters.getParameter(SATURATION_TYPE_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(SATURATION_TYPE_ID).convertTo0to1(static_cast<float>(saturationType)));
+    }
+
+    // Filter ADSR
+    if (presetObj->hasProperty("filterAttack"))
+    {
+        float filterAttack = static_cast<float>(presetObj->getProperty("filterAttack"));
+        parameters.getParameter(FILTER_ATTACK_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(FILTER_ATTACK_ID).convertTo0to1(filterAttack));
+    }
+
+    if (presetObj->hasProperty("filterDecay"))
+    {
+        float filterDecay = static_cast<float>(presetObj->getProperty("filterDecay"));
+        parameters.getParameter(FILTER_DECAY_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(FILTER_DECAY_ID).convertTo0to1(filterDecay));
+    }
+
+    if (presetObj->hasProperty("filterSustain"))
+    {
+        float filterSustain = static_cast<float>(presetObj->getProperty("filterSustain"));
+        parameters.getParameter(FILTER_SUSTAIN_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(FILTER_SUSTAIN_ID).convertTo0to1(filterSustain));
+    }
+
+    if (presetObj->hasProperty("filterRelease"))
+    {
+        float filterRelease = static_cast<float>(presetObj->getProperty("filterRelease"));
+        parameters.getParameter(FILTER_RELEASE_ID)->setValueNotifyingHost(
+            parameters.getParameterRange(FILTER_RELEASE_ID).convertTo0to1(filterRelease));
+    }
 
     // Delay Time is a Choice parameter - need to normalize index (0-11) to 0-1 range
     int delayTimeIndex = static_cast<int>(presetObj->getProperty("delayTime"));
