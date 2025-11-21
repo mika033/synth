@@ -47,11 +47,13 @@ private:
     // Play/Stop button for standalone mode
     juce::TextButton playStopButton;
 
-    // BPM and Master Volume controls
+    // BPM, Master Volume, and Swing controls
     juce::Slider bpmSlider;
     juce::Label bpmLabel;
     juce::Slider masterVolumeSlider;
-    juce::Label masterVolumeLabel;
+    juce::Slider swingSlider;
+    juce::Label swingLabel;
+    juce::Label masterVolumeLabel; // kept but unused
 
     // Sequencer Root and Scale controls
     juce::ComboBox rootNoteSelector;
@@ -65,6 +67,7 @@ private:
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bpmAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> masterVolumeAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> swingAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rootNoteAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> scaleAttachment;
 

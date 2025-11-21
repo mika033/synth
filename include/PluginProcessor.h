@@ -198,6 +198,7 @@ private:
     static constexpr const char* SEQ_SCALE_ID = "seqscale";
     static constexpr const char* SEQ_STEPS_ID = "seqsteps";
     static constexpr const char* SEQ_RATE_ID = "seqrate";
+    static constexpr const char* SEQ_GATE_ID = "seqgate";
 
     // Sequencer per-step octave (16 steps)
     static constexpr const char* SEQ_OCTAVE1_ID = "seqoctave1";
@@ -283,8 +284,15 @@ public:
     // Drum machine state (public for UI access)
     static constexpr int NUM_DRUM_STEPS = 16;
     static constexpr int NUM_DRUM_LANES = 4; // Kick, Snare, CHat, OHat
-    int drumPattern[NUM_DRUM_LANES][NUM_DRUM_STEPS] = {{0}}; // 0 = off, 1 = on
+    static constexpr int NUM_DRUM_PATTERNS = 8;
+    int drumPatterns[NUM_DRUM_PATTERNS][NUM_DRUM_LANES][NUM_DRUM_STEPS] = {{{0}}}; // 8 patterns
+    int currentDrumPatternIndex = 0;
+    int pendingDrumPatternIndex = -1; // -1 = no pending change
     int currentDrumStep = 0;
+    void selectDrumPattern(int index); // Queue pattern change for next bar
+
+    // Drum chain state (public for UI)
+    int currentDrumChainStep = 0;
     float sidechainEnvelope = 0.0f; // Current sidechain ducking amount (0-1)
     float getSidechainEnvelope() const { return sidechainEnvelope; }
 
@@ -362,7 +370,9 @@ private:
 
     // Drum machine state and helpers
     double drumStepTime = 0.0;
+    double drumChainBarTime = 0.0;
     void processDrums(int numSamples);
+    void updateDrumChain(int numSamples);
 
     // Delay Mix LFO helper functions
     void updateDelayMixLFO();

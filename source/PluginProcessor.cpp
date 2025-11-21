@@ -24,7 +24,7 @@ namespace Defaults
     static constexpr float kWaveform = 0.0f;  // 0.0=saw, 1.0=square, morph in between
     static constexpr float kSubOsc = 0.5f;
     static constexpr float kDrive = 0.0f;
-    static constexpr float kVolume = 0.7f;
+    static constexpr float kVolume = 0.5f;
     static constexpr int   kDelayTime = 1;  // 1/8 note (index 1)
     static constexpr float kDelayFeedback = 0.3f;
     static constexpr float kDelayMix = 0.0f; // Off by default
@@ -408,6 +408,9 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterChoice>(
                         SEQ_RATE_ID, "Seq Rate",
                         juce::StringArray{"1/32", "1/32.", "1/16", "1/16.", "1/16T", "1/8", "1/8.", "1/8T", "1/4", "1/4.", "1/4T", "1/2", "1/2.", "1/1"}, 2), // Default to 1/16
+                    std::make_unique<juce::AudioParameterFloat>(
+                        SEQ_GATE_ID, "Seq Gate",
+                        juce::NormalisableRange<float>(0.1f, 1.0f, 0.01f), 0.8f), // Default 80%
 
                     // Sequencer per-step octave (16 steps, range -2 to +2, default 0)
                     std::make_unique<juce::AudioParameterInt>(SEQ_OCTAVE1_ID, "Seq Octave 1", -2, 2, 0),
@@ -501,7 +504,7 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         MASTER_VOLUME_ID, "Master Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.7f), // Default 70%
+                        0.5f), // Default 50% (12 o'clock)
 
                     // Drum machine parameters
                     std::make_unique<juce::AudioParameterBool>("drumenable", "Drum Enable", true),
@@ -514,11 +517,23 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>("drumohatvol", "Open Hat Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
                     std::make_unique<juce::AudioParameterFloat>("drummastervol", "Drum Master Volume",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                        juce::NormalisableRange<float>(0.0f, 2.0f, 0.01f), 1.0f),
                     std::make_unique<juce::AudioParameterFloat>("drumsidechainmag", "Sidechain Magnitude",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f),
                     std::make_unique<juce::AudioParameterFloat>("drumsidechainlen", "Sidechain Length",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f)
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f),
+
+                    // Drum chain parameters
+                    std::make_unique<juce::AudioParameterBool>("drumchainenabled", "Drum Chain Enabled", false),
+                    std::make_unique<juce::AudioParameterInt>("drumchainsteps", "Drum Chain Steps", 1, 8, 4),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep1", "Drum Chain Step 1", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep2", "Drum Chain Step 2", 1, 8, 2),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep3", "Drum Chain Step 3", 1, 8, 3),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep4", "Drum Chain Step 4", 1, 8, 4),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep5", "Drum Chain Step 5", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep6", "Drum Chain Step 6", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep7", "Drum Chain Step 7", 1, 8, 1),
+                    std::make_unique<juce::AudioParameterInt>("drumchainstep8", "Drum Chain Step 8", 1, 8, 1)
                 })
 {
     // Add voices to the synthesizer
@@ -543,11 +558,14 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
     loadPresetsFromJSON();
     loadDrumSamples();
 
-    // Initialize default drum pattern (4 kicks)
-    drumPattern[0][0] = 1;  // Kick on 1
-    drumPattern[0][4] = 1;  // Kick on 5
-    drumPattern[0][8] = 1;  // Kick on 9
-    drumPattern[0][12] = 1; // Kick on 13
+    // Initialize default drum patterns (four-to-the-floor kick in patterns 1-4)
+    for (int p = 0; p < 4; ++p)
+    {
+        drumPatterns[p][0][0] = 1;  // Kick on 1
+        drumPatterns[p][0][4] = 1;  // Kick on 5
+        drumPatterns[p][0][8] = 1;  // Kick on 9
+        drumPatterns[p][0][12] = 1; // Kick on 13
+    }
 
     // Load the first synth preset by default
     if (getSynthPresetNames().size() > 0)
@@ -734,45 +752,7 @@ void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         }
     }
 
-    // Mix drum samples into output
-    bool drumEnabled = parameters.getRawParameterValue("drumenable")->load() > 0.5f;
-    if (drumEnabled)
-    {
-        float drumMasterVol = parameters.getRawParameterValue("drummastervol")->load();
-        const char* laneVolIds[NUM_DRUM_LANES] = { "drumkickvol", "drumsnarevol", "drumchatvol", "drumohatvol" };
-
-        for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
-        {
-            if (drumSamplePlaying[lane] && drumSamples[lane].getNumSamples() > 0)
-            {
-                float laneVol = parameters.getRawParameterValue(laneVolIds[lane])->load();
-                float vol = drumMasterVol * laneVol;
-
-                int samplesRemaining = drumSamples[lane].getNumSamples() - drumSamplePositions[lane];
-                int samplesToAdd = juce::jmin(buffer.getNumSamples(), samplesRemaining);
-
-                for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
-                {
-                    int sampleChannel = juce::jmin(channel, drumSamples[lane].getNumChannels() - 1);
-                    const float* sampleData = drumSamples[lane].getReadPointer(sampleChannel, drumSamplePositions[lane]);
-                    float* outputData = buffer.getWritePointer(channel);
-
-                    for (int i = 0; i < samplesToAdd; ++i)
-                    {
-                        outputData[i] += sampleData[i] * vol;
-                    }
-                }
-
-                drumSamplePositions[lane] += samplesToAdd;
-                if (drumSamplePositions[lane] >= drumSamples[lane].getNumSamples())
-                {
-                    drumSamplePlaying[lane] = false;
-                }
-            }
-        }
-    }
-
-    // Apply delay effect
+    // Apply delay effect (before drums, so drums stay dry)
     float delayMix = parameters.getRawParameterValue(DELAY_MIX_ID)->load();
 
     // Update delay mix LFO settings
@@ -839,6 +819,44 @@ void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         }
     }
 
+    // Mix drum samples into output (after delay, so drums stay dry)
+    bool drumEnabled = parameters.getRawParameterValue("drumenable")->load() > 0.5f;
+    if (drumEnabled)
+    {
+        float drumMasterVol = parameters.getRawParameterValue("drummastervol")->load();
+        const char* laneVolIds[NUM_DRUM_LANES] = { "drumkickvol", "drumsnarevol", "drumchatvol", "drumohatvol" };
+
+        for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
+        {
+            if (drumSamplePlaying[lane] && drumSamples[lane].getNumSamples() > 0)
+            {
+                float laneVol = parameters.getRawParameterValue(laneVolIds[lane])->load();
+                float vol = drumMasterVol * laneVol;
+
+                int samplesRemaining = drumSamples[lane].getNumSamples() - drumSamplePositions[lane];
+                int samplesToAdd = juce::jmin(buffer.getNumSamples(), samplesRemaining);
+
+                for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+                {
+                    int sampleChannel = juce::jmin(channel, drumSamples[lane].getNumChannels() - 1);
+                    const float* sampleData = drumSamples[lane].getReadPointer(sampleChannel, drumSamplePositions[lane]);
+                    float* outputData = buffer.getWritePointer(channel);
+
+                    for (int i = 0; i < samplesToAdd; ++i)
+                    {
+                        outputData[i] += sampleData[i] * vol;
+                    }
+                }
+
+                drumSamplePositions[lane] += samplesToAdd;
+                if (drumSamplePositions[lane] >= drumSamples[lane].getNumSamples())
+                {
+                    drumSamplePlaying[lane] = false;
+                }
+            }
+        }
+    }
+
     // Apply master volume to final output
     float masterVolume = parameters.getRawParameterValue(MASTER_VOLUME_ID)->load();
     buffer.applyGain(masterVolume);
@@ -872,17 +890,27 @@ void SnorkelSynthAudioProcessor::updateVoiceParameters()
         float modulationFactor = std::pow(16.0f, cutoffMod);
         cutoff = juce::jlimit(20.0f, 5000.0f, cutoff * modulationFactor);
 
-        // Apply volume modulation (add up to +6dB on positive accent)
-        float volMod = accentValue * accentVol * 0.5f; // ±0.5 range
-        volume = juce::jlimit(0.0f, 1.0f, volume + volMod);
+        // Apply volume modulation (multiplicative: factor 0.0 to 2.0)
+        // At dial=1, accent=+1: volume doubles. At dial=1, accent=-1: volume zeroes.
+        float volFactor = 1.0f + (accentValue * accentVol);
+        volume = juce::jlimit(0.0f, 1.0f, volume * volFactor);
 
-        // Apply resonance modulation
-        float resMod = accentValue * accentRes * 0.5f;
-        resonance = juce::jlimit(0.0f, 1.0f, resonance + resMod);
+        // Apply resonance modulation (multiplicative)
+        float resFactor = 1.0f + (accentValue * accentRes);
+        resonance = juce::jlimit(0.0f, 1.0f, resonance * resFactor);
 
-        // Apply drive modulation
-        float driveMod = accentValue * accentDrive * 0.5f;
-        drive = juce::jlimit(0.0f, 1.0f, drive + driveMod);
+        // Apply drive modulation (interpolation toward 0 or max based on fill bar)
+        // Fill bar middle (0): use base drive, bottom (-1): no drive, top (+1): max drive
+        float targetDrive;
+        if (accentValue >= 0.0f) {
+            // Lerp from baseDrive toward 1.0
+            targetDrive = drive + accentValue * (1.0f - drive);
+        } else {
+            // Lerp from baseDrive toward 0.0
+            targetDrive = drive * (1.0f + accentValue);
+        }
+        drive = drive + (targetDrive - drive) * accentDrive;
+        drive = juce::jlimit(0.0f, 1.0f, drive);
 
         // Store decay modulation for envelope application below
         seqAccentDecayMod = accentValue * accentDecay;
@@ -1960,21 +1988,19 @@ void SnorkelSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessag
         int octaveShift = static_cast<int>(parameters.getRawParameterValue(ARP_OCTAVE_SHIFT_ID)->load());
         float swing = parameters.getRawParameterValue(ARP_SWING_ID)->load();
 
-        // Apply swing to step length (alternating between longer and shorter steps)
-        // Even steps (0, 2, 4...) get longer, odd steps (1, 3, 5...) get shorter
+        // Apply swing: delays off-beat notes without changing note length
+        // Even steps (0, 2, 4...) wait longer before next note, odd steps wait shorter
+        // This keeps total pair duration constant while shifting the off-beat
         double swingAmount = (arpStepCounter % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
         double stepLength = baseStepLength * swingAmount;
-        double noteOffTime = stepLength * gateLength;
+        double noteOffTime = baseStepLength * gateLength; // Note length unaffected by swing
 
-        // If arpStepTime was set to trigger immediately, normalize it to stepLength
-        if (arpStepTime > stepLength * 2)
+        // Clamp arpStepTime when BPM increases (prevents rapid note triggers)
+        if (arpStepTime > stepLength)
         {
-            arpStepTime = stepLength;
+            arpStepTime = std::fmod(arpStepTime, stepLength);
         }
-        else
-        {
-            arpStepTime += numSamples;
-        }
+        arpStepTime += numSamples;
 
         // Check if we need to turn off the current note
         if (isNoteCurrentlyOn && lastNoteOffTime <= 0 && lastPlayedNote >= 0)
@@ -2014,6 +2040,10 @@ void SnorkelSynthAudioProcessor::processArpeggiator(juce::MidiBuffer& midiMessag
             }
 
             arpStepTime -= stepLength;
+
+            // Recalculate stepLength for next step (swing depends on step counter)
+            swingAmount = (arpStepCounter % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+            stepLength = baseStepLength * swingAmount;
         }
 
         lastNoteOffTime -= numSamples;
@@ -2131,9 +2161,14 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
         return;
     }
 
-    // Get step length in samples
-    double stepLength = getSeqStepLengthInSamples();
-    float gateLength = 0.8f; // 80% gate like arp
+    // Get step length in samples with swing
+    double baseStepLength = getSeqStepLengthInSamples();
+    float swing = parameters.getRawParameterValue(ARP_SWING_ID)->load();
+    // Swing delays off-beat notes: even steps wait longer, odd steps wait shorter
+    double swingAmount = (currentSeqStep % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+    double stepLength = baseStepLength * swingAmount;
+    float gateLength = parameters.getRawParameterValue(SEQ_GATE_ID)->load();
+    double noteOffLength = baseStepLength * gateLength; // Note length unaffected by swing
 
     juce::MidiBuffer processedMidi;
 
@@ -2151,13 +2186,21 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
         }
     }
 
-    // Advance step time
     seqStepTime += numSamples;
 
-    // Trigger new step
-    while (seqStepTime >= stepLength)
+    // Trigger new step (limit to 1 step per block to prevent machine-gun effect on BPM increase)
+    if (seqStepTime >= stepLength)
     {
         seqStepTime -= stepLength;
+
+        // Turn off any currently playing notes before starting new ones
+        if (isSeqNoteCurrentlyOn && !lastSeqPlayedNotes.empty())
+        {
+            for (int note : lastSeqPlayedNotes)
+                processedMidi.addEvent(juce::MidiMessage::noteOff(1, note, (juce::uint8)64), 0);
+            lastSeqPlayedNotes.clear();
+            isSeqNoteCurrentlyOn = false;
+        }
 
         // Get all notes for current step
         std::vector<int> midiNotes = getSequencerNotes(currentSeqStep);
@@ -2171,21 +2214,26 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
             lastSeqPlayedNotes = midiNotes;
             isSeqNoteCurrentlyOn = true;
 
-            // Schedule note-off
-            lastSeqNoteOffTime = stepLength * gateLength;
+            // Schedule note-off (use unswung length)
+            lastSeqNoteOffTime = noteOffLength;
         }
 
         // Advance to next step (wrap around based on user-defined step count)
         int numSteps = static_cast<int>(parameters.getRawParameterValue(SEQ_STEPS_ID)->load());
         currentSeqStep = (currentSeqStep + 1) % numSteps;
+
+        // Recalculate stepLength for new step (swing depends on step number)
+        swingAmount = (currentSeqStep % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+        stepLength = baseStepLength * swingAmount;
+
+        // Clamp seqStepTime to prevent accumulation on BPM increase
+        if (seqStepTime > stepLength)
+            seqStepTime = stepLength * 0.5;
     }
 
     // Add processed MIDI to output
     for (const auto metadata : processedMidi)
         midiMessages.addEvent(metadata.getMessage(), metadata.samplePosition);
-
-    if (lastSeqNoteOffTime >= 0.0)
-        lastSeqNoteOffTime -= numSamples;
 }
 
 double SnorkelSynthAudioProcessor::getSeqStepLengthInSamples() const
@@ -2247,10 +2295,17 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
         return;
     }
 
-    // Use same step length as sequencer
-    double stepLength = getSeqStepLengthInSamples();
+    // Use same step length as sequencer with swing
+    double baseStepLength = getSeqStepLengthInSamples();
+    float swing = parameters.getRawParameterValue(ARP_SWING_ID)->load();
+    double swingAmount = (currentDrumStep % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+    double stepLength = baseStepLength * swingAmount;
 
-    // Advance step time
+    // Clamp drumStepTime when BPM increases (prevents rapid triggers)
+    if (drumStepTime > stepLength)
+    {
+        drumStepTime = std::fmod(drumStepTime, stepLength);
+    }
     drumStepTime += numSamples;
 
     // Trigger new step
@@ -2261,7 +2316,7 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
         // Check each lane for triggers on this step
         for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
         {
-            if (drumPattern[lane][currentDrumStep] != 0)
+            if (drumPatterns[currentDrumPatternIndex][lane][currentDrumStep] != 0)
             {
                 // Trigger this sample
                 drumSamplePlaying[lane] = true;
@@ -2275,6 +2330,71 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
 
         // Advance to next step (16 steps)
         currentDrumStep = (currentDrumStep + 1) % NUM_DRUM_STEPS;
+
+        // At bar boundary (step 0), handle pattern switching
+        if (currentDrumStep == 0)
+        {
+            bool chainEnabled = parameters.getRawParameterValue("drumchainenabled")->load() > 0.5f;
+
+            if (chainEnabled)
+            {
+                // Advance chain step
+                int chainSteps = static_cast<int>(parameters.getRawParameterValue("drumchainsteps")->load());
+                currentDrumChainStep = (currentDrumChainStep + 1) % chainSteps;
+
+                // Get pattern for this chain step
+                const char* chainStepIds[] = {
+                    "drumchainstep1", "drumchainstep2", "drumchainstep3", "drumchainstep4",
+                    "drumchainstep5", "drumchainstep6", "drumchainstep7", "drumchainstep8"
+                };
+                int patternNum = static_cast<int>(parameters.getRawParameterValue(chainStepIds[currentDrumChainStep])->load());
+                currentDrumPatternIndex = patternNum - 1; // Convert 1-8 to 0-7
+                pendingDrumPatternIndex = -1; // Clear any pending manual selection
+            }
+            else if (pendingDrumPatternIndex >= 0)
+            {
+                // Manual pattern switch
+                currentDrumPatternIndex = pendingDrumPatternIndex;
+                pendingDrumPatternIndex = -1;
+            }
+        }
+
+        // Recalculate stepLength for new step (swing depends on step number)
+        swingAmount = (currentDrumStep % 2 == 0) ? (1.0 + swing * 0.5) : (1.0 - swing * 0.5);
+        stepLength = baseStepLength * swingAmount;
+    }
+}
+
+void SnorkelSynthAudioProcessor::selectDrumPattern(int index)
+{
+    if (index >= 0 && index < NUM_DRUM_PATTERNS)
+    {
+        if (index == currentDrumPatternIndex)
+        {
+            pendingDrumPatternIndex = -1; // Cancel pending if selecting current
+        }
+        else
+        {
+            // Disable chain if enabled (user implicitly chose manual control)
+            if (auto* chainParam = parameters.getParameter("drumchainenabled"))
+                chainParam->setValueNotifyingHost(0.0f);
+
+            // Check if playback is active
+            bool isPlaying = false;
+            if (auto* playHead = getPlayHead())
+            {
+                if (auto pos = playHead->getPosition())
+                    isPlaying = pos->getIsPlaying();
+            }
+
+            if (isPlaying)
+                pendingDrumPatternIndex = index; // Queue for next bar
+            else
+            {
+                currentDrumPatternIndex = index; // Switch immediately
+                pendingDrumPatternIndex = -1;
+            }
+        }
     }
 }
 

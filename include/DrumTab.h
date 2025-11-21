@@ -54,8 +54,28 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sidechainMagnitudeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sidechainLengthAttachment;
 
+    // Pattern selection buttons (1-8)
+    static constexpr int NUM_PATTERNS = 8;
+    juce::TextButton patternButtons[NUM_PATTERNS];
+    void onPatternButtonClicked(int patternIndex);
+    void updatePatternButtonStates();
+
+    // Chain sequencer (1-8 steps, each selects a pattern)
+    static constexpr int NUM_CHAIN_STEPS = 8;
+    juce::ToggleButton chainEnableToggle;
+    juce::Label chainEnableLabel;
+    juce::Slider chainStepsSlider;
+    juce::Label chainStepsLabel;
+    juce::Slider chainStepSliders[NUM_CHAIN_STEPS];
+    juce::Label chainStepLabels[NUM_CHAIN_STEPS];
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> chainEnableAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chainStepsAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chainStepAttachments[NUM_CHAIN_STEPS];
+
     // Current step indicator
     int currentStep = 0;
+    int lastPatternIndex = 0;
+    int lastChainStep = 0;
 
     // Enable attachment
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;

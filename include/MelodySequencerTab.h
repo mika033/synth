@@ -103,10 +103,12 @@ public:
 /**
  * Melody Sequencer Tab - Contains 16-step melodic sequencer
  */
+class SnorkelSynthAudioProcessorEditor; // Forward declaration
+
 class MelodySequencerTab : public juce::Component, private juce::Timer
 {
 public:
-    MelodySequencerTab(SnorkelSynthAudioProcessor& p);
+    MelodySequencerTab(SnorkelSynthAudioProcessor& p, SnorkelSynthAudioProcessorEditor& e);
     ~MelodySequencerTab() override;
 
     void paint(juce::Graphics&) override;
@@ -115,6 +117,7 @@ public:
 
 private:
     SnorkelSynthAudioProcessor& audioProcessor;
+    SnorkelSynthAudioProcessorEditor& editor;
 
     // Enable toggle
     juce::ToggleButton enableToggle;
@@ -133,11 +136,10 @@ private:
     juce::ComboBox algoSelector;
     juce::Label algoLabel;
 
-    // Steps and Rate controls
+    // Steps, Rate, and Gate controls
     juce::Slider stepsSlider;
-    juce::Label stepsLabel;
     juce::ComboBox rateSelector;
-    juce::Label rateLabel;
+    juce::Slider gateSlider;
 
     // 16 steps x 8 buttons (scale degrees)
     static constexpr int NUM_STEPS = 16;
@@ -175,6 +177,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enableAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> stepsAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> rateAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateAttachment;
 
     // Button click handlers
     void onStepButtonClicked(int step, int degree);

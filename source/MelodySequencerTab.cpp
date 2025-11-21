@@ -1,9 +1,10 @@
 #include "PluginProcessor.h"
+#include "PluginEditor.h"
 #include "MelodySequencerTab.h"
 
 //==============================================================================
-MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
-    : audioProcessor(p)
+MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p, SnorkelSynthAudioProcessorEditor& e)
+    : audioProcessor(p), editor(e)
 {
     // Configure preset selector - load from JSON
     juce::StringArray presetNames = audioProcessor.getSequencerPresetNames();
@@ -127,11 +128,8 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     stepsSlider.setRange(1, 16, 1);
     stepsSlider.setValue(16);
     stepsSlider.setIncDecButtonsMode(juce::Slider::incDecButtonsDraggable_Vertical);
+    stepsSlider.onValueChange = [this]() { editor.showMessage("Steps: " + juce::String((int)stepsSlider.getValue())); };
     addAndMakeVisible(stepsSlider);
-
-    stepsLabel.setText("Steps", juce::dontSendNotification);
-    stepsLabel.setJustificationType(juce::Justification::centredRight);
-    addAndMakeVisible(stepsLabel);
 
     // Configure Rate selector
     rateSelector.addItem("1/32", 1);
@@ -149,11 +147,13 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     rateSelector.addItem("1/2.", 13);
     rateSelector.addItem("1/1", 14);
     rateSelector.setSelectedId(3); // Default to 1/16
+    rateSelector.onChange = [this]() { editor.showMessage("Rate: " + rateSelector.getText()); };
     addAndMakeVisible(rateSelector);
 
-    rateLabel.setText("Rate", juce::dontSendNotification);
-    rateLabel.setJustificationType(juce::Justification::centredRight);
-    addAndMakeVisible(rateLabel);
+    // Configure Gate slider
+    gateSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    gateSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    addAndMakeVisible(gateSlider);
 
     // Create 16x8 button grid
     for (int step = 0; step < NUM_STEPS; ++step)
@@ -225,6 +225,11 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
 
         accentAttachments[step] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.getValueTreeState(), accentParamIds[step], accentSliders[step]);
+
+        int stepNum = step + 1;
+        accentSliders[step].onValueChange = [this, stepNum, step]() {
+            editor.showMessage("Step " + juce::String(stepNum) + " Accent: " + juce::String(accentSliders[step].getValue(), 2));
+        };
     }
 
     // Create accent control dials
@@ -240,6 +245,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(accentVolLabel);
     accentVolAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqaccentvol", accentVolSlider);
+    accentVolSlider.onValueChange = [this]() { editor.showMessage("Accent Volume: " + juce::String(accentVolSlider.getValue(), 2)); };
 
     configureRotary(accentCutoffSlider);
     addAndMakeVisible(accentCutoffSlider);
@@ -248,6 +254,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(accentCutoffLabel);
     accentCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqaccentcutoff", accentCutoffSlider);
+    accentCutoffSlider.onValueChange = [this]() { editor.showMessage("Accent Cutoff: " + juce::String(accentCutoffSlider.getValue(), 2)); };
 
     configureRotary(accentResSlider);
     addAndMakeVisible(accentResSlider);
@@ -256,6 +263,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(accentResLabel);
     accentResAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqaccentres", accentResSlider);
+    accentResSlider.onValueChange = [this]() { editor.showMessage("Accent Resonance: " + juce::String(accentResSlider.getValue(), 2)); };
 
     configureRotary(accentDecaySlider);
     addAndMakeVisible(accentDecaySlider);
@@ -264,6 +272,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(accentDecayLabel);
     accentDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqaccentdecay", accentDecaySlider);
+    accentDecaySlider.onValueChange = [this]() { editor.showMessage("Accent Decay: " + juce::String(accentDecaySlider.getValue(), 2)); };
 
     configureRotary(accentDriveSlider);
     addAndMakeVisible(accentDriveSlider);
@@ -272,6 +281,7 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(accentDriveLabel);
     accentDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "seqaccentdrive", accentDriveSlider);
+    accentDriveSlider.onValueChange = [this]() { editor.showMessage("Accent Drive: " + juce::String(accentDriveSlider.getValue(), 2)); };
 
     // Attach to parameters
     enableAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -280,6 +290,9 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
         audioProcessor.getValueTreeState(), "seqsteps", stepsSlider);
     rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "seqrate", rateSelector);
+    gateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqgate", gateSlider);
+    gateSlider.onValueChange = [this]() { editor.showMessage("Gate: " + juce::String((int)(gateSlider.getValue() * 100)) + "%"); };
 
     // Load initial button states from processor
     updateButtonStates();
@@ -355,15 +368,15 @@ void MelodySequencerTab::resized()
     x += 65 + gap + 10; // Extra spacing before steps/rate
 
     // Steps slider (same style as Progression - text box with +/- buttons)
-    stepsLabel.setBounds(x, topRowY, 60, elementHeight);
-    x += 65;
     stepsSlider.setBounds(x, topRowY, 60, 30);  // Height 30 like Progression
-    x += 60 + gap + 5;
+    x += 60 + gap;
 
     // Rate selector
-    rateLabel.setBounds(x, topRowY, 30, elementHeight);
-    x += 35;
-    rateSelector.setBounds(x, topRowY, 60, elementHeight);
+    rateSelector.setBounds(x, topRowY, 65, elementHeight);
+    x += 65 + gap;
+
+    // Gate dial
+    gateSlider.setBounds(x, topRowY - 10, 45, 45);
 
     // Preset selector and save button at the far right
     presetLabel.setBounds(getWidth() - 280, topRowY, 60, elementHeight);

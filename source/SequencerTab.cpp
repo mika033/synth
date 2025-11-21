@@ -87,16 +87,6 @@ SequencerTab::SequencerTab(SnorkelSynthAudioProcessor& p)
     addAndMakeVisible(arpOctaveShiftLabel);
     arpOctaveShiftAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "arpoctaveshift", arpOctaveShiftSlider);
-
-    // Arpeggiator Swing slider
-    arpSwingSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    arpSwingSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    addAndMakeVisible(arpSwingSlider);
-    arpSwingLabel.setText("Swing", juce::dontSendNotification);
-    arpSwingLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(arpSwingLabel);
-    arpSwingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "arpswing", arpSwingSlider);
 }
 
 SequencerTab::~SequencerTab()
@@ -133,7 +123,7 @@ void SequencerTab::resized()
     arpRateLabel.setBounds(startX, 120, 120, labelHeight);
     arpRateSelector.setBounds(startX + 120, 120, 120, 25);
 
-    // Row 4: Octaves, Gate, Octave Shift, and Swing knobs
+    // Row 4: Octaves, Gate, Octave Shift knobs
     int knobsY = 180;
     arpOctavesLabel.setBounds(startX, knobsY - labelHeight, knobSize, labelHeight);
     arpOctavesSlider.setBounds(startX, knobsY, knobSize, knobSize);
@@ -143,7 +133,4 @@ void SequencerTab::resized()
 
     arpOctaveShiftLabel.setBounds(startX + spacing * 2, knobsY - labelHeight, knobSize + 20, labelHeight);
     arpOctaveShiftSlider.setBounds(startX + spacing * 2, knobsY, knobSize, knobSize);
-
-    arpSwingLabel.setBounds(startX + spacing * 3, knobsY - labelHeight, knobSize, labelHeight);
-    arpSwingSlider.setBounds(startX + spacing * 3, knobsY, knobSize, knobSize);
 }

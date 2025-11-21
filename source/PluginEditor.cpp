@@ -17,7 +17,7 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
     filterTab = std::make_unique<FilterTab>(audioProcessor);
     sequencerTab = std::make_unique<SequencerTab>(audioProcessor);
     modulationTab = std::make_unique<ModulationTab>(audioProcessor);
-    melodySequencerTab = std::make_unique<MelodySequencerTab>(audioProcessor);
+    melodySequencerTab = std::make_unique<MelodySequencerTab>(audioProcessor, *this);
     progressionTab = std::make_unique<ProgressionTab>(audioProcessor);
     drumTab = std::make_unique<DrumTab>(audioProcessor);
 
@@ -75,20 +75,26 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
     bpmLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     addAndMakeVisible(bpmLabel);
 
-    // Configure Volume slider (no text box)
-    masterVolumeSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    // Configure Volume dial (no text box, no label)
+    masterVolumeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     masterVolumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     masterVolumeSlider.setRange(0.0, 1.0, 0.01);
     masterVolumeSlider.setValue(0.7);
     addAndMakeVisible(masterVolumeSlider);
 
-    masterVolumeLabel.setText("Volume", juce::dontSendNotification);
-    masterVolumeLabel.setJustificationType(juce::Justification::centredRight);
-    masterVolumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
-    addAndMakeVisible(masterVolumeLabel);
+    // Configure Swing slider
+    swingSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    swingSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    swingSlider.setRange(0.0, 1.0, 0.01);
+    addAndMakeVisible(swingSlider);
+
+    swingLabel.setText("Swing", juce::dontSendNotification);
+    swingLabel.setJustificationType(juce::Justification::centredRight);
+    swingLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    addAndMakeVisible(swingLabel);
 
     // Configure message display label
-    messageLabel.setText("", juce::dontSendNotification);
+    messageLabel.setText("Welcome to Snorkel", juce::dontSendNotification);
     messageLabel.setJustificationType(juce::Justification::centredLeft);
     messageLabel.setColour(juce::Label::textColourId, juce::Colours::lightgreen);
     messageLabel.setFont(juce::Font(14.0f, juce::Font::bold));
@@ -142,6 +148,8 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
         audioProcessor.getValueTreeState(), "globalbpm", bpmSlider);
     masterVolumeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         audioProcessor.getValueTreeState(), "mastervolume", masterVolumeSlider);
+    swingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "arpswing", swingSlider);
     rootNoteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), "seqroot", rootNoteSelector);
     scaleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
@@ -176,7 +184,7 @@ void SnorkelSynthAudioProcessorEditor::paint(juce::Graphics& g)
 
 void SnorkelSynthAudioProcessorEditor::resized()
 {
-    // Top bar layout from left to right: Play/Stop | Volume | Message | BPM
+    // Top bar layout from left to right: Play/Stop | Root | Scale | Swing | Message | BPM | Volume
     const int topY = 15;
     const int topHeight = 30;
     int x = 20;
@@ -194,22 +202,27 @@ void SnorkelSynthAudioProcessorEditor::resized()
     scaleLabel.setBounds(x, topY, 35, topHeight);
     x += 40;
     scaleSelector.setBounds(x, topY, 95, topHeight);
-    x += 95 + 20;
+    x += 95 + 15;
 
-    // Volume control
-    masterVolumeLabel.setBounds(x, topY, 60, topHeight);
-    x += 65;
-    masterVolumeSlider.setBounds(x, topY, 120, topHeight);
-    x += 120 + 20;
+    // Swing control
+    swingLabel.setBounds(x, topY, 40, topHeight);
+    x += 45;
+    swingSlider.setBounds(x, topY, 80, topHeight);
+    x += 80 + 15;
 
-    // Message label (takes remaining space before BPM)
-    int bpmWidth = 105; // BPM label (40) + gap + BPM slider (60)
-    int bpmStartX = getWidth() - bpmWidth - 20;
-    messageLabel.setBounds(x, topY, bpmStartX - x - 20, topHeight);
+    // Right side controls (from right edge): Volume dial | BPM
+    const int volumeDialSize = 45;
+    const int volumeX = getWidth() - volumeDialSize - 10;
+    masterVolumeSlider.setBounds(volumeX, topY - 7, volumeDialSize, volumeDialSize);
 
-    // BPM control at the right
+    // BPM control before volume
+    const int bpmWidth = 105;
+    const int bpmStartX = volumeX - bpmWidth - 15;
     bpmLabel.setBounds(bpmStartX, topY, 40, topHeight);
     bpmSlider.setBounds(bpmStartX + 45, topY, 60, topHeight);
+
+    // Message label (takes remaining space)
+    messageLabel.setBounds(x, topY, bpmStartX - x - 10, topHeight);
 
     // Position the tabbed component below the top bar
     tabbedComponent.setBounds(0, 50, getWidth(), getHeight() - 50);
