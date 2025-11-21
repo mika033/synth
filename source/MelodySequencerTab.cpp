@@ -185,34 +185,29 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
             };
 
             // Add octave adjust handler for clicks on already-active buttons
-            button.onOctaveAdjust = [this](int s, bool isIncrease)
+            button.onOctaveAdjust = [this](int s, int d, bool isIncrease)
             {
                 if (isIncrease)
-                    onOctaveUpClicked(s);
+                    onOctaveUpClicked(s, d);
                 else
-                    onOctaveDownClicked(s);
+                    onOctaveDownClicked(s, d);
+            };
+
+            // Add deactivate handler for middle-third clicks
+            button.onDeactivate = [this, step, degree](int s)
+            {
+                // Deactivate this note (clear the bit)
+                stepButtons[s][degree].setToggleState(false, juce::dontSendNotification);
+                audioProcessor.sequencerPattern[s] &= static_cast<uint8_t>(~(1 << degree));
+                updateOctaveDisplayForStep(s);
             };
 
             addAndMakeVisible(button);
         }
     }
 
-    // Create octave up/down buttons for each step
-    for (int step = 0; step < NUM_STEPS; ++step)
-    {
-        // Octave up button
-        octaveUpButtons[step].setButtonText("+");
-        octaveUpButtons[step].onClick = [this, step]() { onOctaveUpClicked(step); };
-        addAndMakeVisible(octaveUpButtons[step]);
-
-        // Octave down button
-        octaveDownButtons[step].setButtonText("-");
-        octaveDownButtons[step].onClick = [this, step]() { onOctaveDownClicked(step); };
-        addAndMakeVisible(octaveDownButtons[step]);
-    }
-
-    // Create cutoff modulation dials for each step
-    const char* cutoffParamIds[] = {
+    // Create accent modulation fill bars for each step
+    const char* accentParamIds[] = {
         "seqcutoff1", "seqcutoff2", "seqcutoff3", "seqcutoff4",
         "seqcutoff5", "seqcutoff6", "seqcutoff7", "seqcutoff8",
         "seqcutoff9", "seqcutoff10", "seqcutoff11", "seqcutoff12",
@@ -221,16 +216,62 @@ MelodySequencerTab::MelodySequencerTab(SnorkelSynthAudioProcessor& p)
 
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        cutoffSliders[step].setSliderStyle(juce::Slider::LinearBarVertical);
-        cutoffSliders[step].setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-        cutoffSliders[step].setRange(-1.0, 1.0, 0.01);
-        cutoffSliders[step].setValue(0.0);
-        cutoffSliders[step].setLookAndFeel(&fillBarLookAndFeel);
-        addAndMakeVisible(cutoffSliders[step]);
+        accentSliders[step].setSliderStyle(juce::Slider::LinearBarVertical);
+        accentSliders[step].setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+        accentSliders[step].setRange(-1.0, 1.0, 0.01);
+        accentSliders[step].setValue(0.0);
+        accentSliders[step].setLookAndFeel(&fillBarLookAndFeel);
+        addAndMakeVisible(accentSliders[step]);
 
-        cutoffAttachments[step] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.getValueTreeState(), cutoffParamIds[step], cutoffSliders[step]);
+        accentAttachments[step] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.getValueTreeState(), accentParamIds[step], accentSliders[step]);
     }
+
+    // Create accent control dials
+    auto configureRotary = [](juce::Slider& slider) {
+        slider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+        slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    };
+
+    configureRotary(accentVolSlider);
+    addAndMakeVisible(accentVolSlider);
+    accentVolLabel.setText("Volume", juce::dontSendNotification);
+    accentVolLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(accentVolLabel);
+    accentVolAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqaccentvol", accentVolSlider);
+
+    configureRotary(accentCutoffSlider);
+    addAndMakeVisible(accentCutoffSlider);
+    accentCutoffLabel.setText("Cutoff", juce::dontSendNotification);
+    accentCutoffLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(accentCutoffLabel);
+    accentCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqaccentcutoff", accentCutoffSlider);
+
+    configureRotary(accentResSlider);
+    addAndMakeVisible(accentResSlider);
+    accentResLabel.setText("Resonance", juce::dontSendNotification);
+    accentResLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(accentResLabel);
+    accentResAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqaccentres", accentResSlider);
+
+    configureRotary(accentDecaySlider);
+    addAndMakeVisible(accentDecaySlider);
+    accentDecayLabel.setText("Decay", juce::dontSendNotification);
+    accentDecayLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(accentDecayLabel);
+    accentDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqaccentdecay", accentDecaySlider);
+
+    configureRotary(accentDriveSlider);
+    addAndMakeVisible(accentDriveSlider);
+    accentDriveLabel.setText("Drive", juce::dontSendNotification);
+    accentDriveLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(accentDriveLabel);
+    accentDriveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        audioProcessor.getValueTreeState(), "seqaccentdrive", accentDriveSlider);
 
     // Attach to parameters
     enableAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -252,10 +293,10 @@ MelodySequencerTab::~MelodySequencerTab()
 {
     stopTimer();
 
-    // Clean up custom LookAndFeel from all cutoff sliders
+    // Clean up custom LookAndFeel from all accent sliders
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        cutoffSliders[step].setLookAndFeel(nullptr);
+        accentSliders[step].setLookAndFeel(nullptr);
     }
 }
 
@@ -275,13 +316,13 @@ void MelodySequencerTab::paint(juce::Graphics& g)
         g.drawText(degreeLabels[i], 30, y, 30, 40, juce::Justification::centredRight);
     }
 
-    // Highlight current step (extends to cover octave and cutoff rows)
+    // Highlight current step (extends to cover grid and accent row)
     if (currentStep >= 0 && currentStep < NUM_STEPS)
     {
         g.setColour(juce::Colours::orange.withAlpha(0.3f));
         int x = 70 + currentStep * 50;
-        // Extend height to cover: grid (400) + octave row (33) + cutoff fill bar row (55) = 488
-        g.fillRect(x, 80, 40, 488);
+        // Extend height to cover: grid (400) + accent fill bar row (55) = 455
+        g.fillRect(x, 80, 40, 455);
     }
 
     // (Cutoff label removed - now using visual fill bars instead)
@@ -352,57 +393,57 @@ void MelodySequencerTab::resized()
         }
     }
 
-    // Octave up/down button row (below the button grid)
-    const int octaveRowY = startY + (NUM_SCALE_DEGREES * verticalSpacing) + 10;
-    const int octaveButtonSize = 18;
-    const int octaveButtonSpacing = 2;
-
-    for (int step = 0; step < NUM_STEPS; ++step)
-    {
-        int x = startX + step * horizontalSpacing + (buttonWidth - 2 * octaveButtonSize - octaveButtonSpacing) / 2;
-
-        octaveDownButtons[step].setBounds(x, octaveRowY, octaveButtonSize, octaveButtonSize);
-        octaveUpButtons[step].setBounds(x + octaveButtonSize + octaveButtonSpacing, octaveRowY, octaveButtonSize, octaveButtonSize);
-    }
-
-    // Cutoff modulation fill bar row (below octave row)
-    const int cutoffRowY = octaveRowY + octaveButtonSize + 15;
+    // Accent modulation fill bar row (directly below the button grid, same spacing as grid)
+    const int accentRowY = startY + (NUM_SCALE_DEGREES * verticalSpacing);
     const int fillBarWidth = 40;  // Same as step buttons
     const int fillBarHeight = 40; // Same height as step buttons
 
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        cutoffSliders[step].setBounds(
+        accentSliders[step].setBounds(
             startX + step * horizontalSpacing,
-            cutoffRowY,
+            accentRowY,
             fillBarWidth,
             fillBarHeight
         );
     }
+
+    // Accent control dials (below accent row)
+    const int knobSize = 50;
+    const int labelHeight = 20;
+    const int controlRowY = accentRowY + fillBarHeight + 5;
+    const int controlSpacing = 70;
+    const int controlStartX = startX;
+
+    accentVolSlider.setBounds(controlStartX, controlRowY, knobSize, knobSize);
+    accentVolLabel.setBounds(controlStartX, controlRowY + knobSize, knobSize, labelHeight);
+
+    accentCutoffSlider.setBounds(controlStartX + controlSpacing, controlRowY, knobSize, knobSize);
+    accentCutoffLabel.setBounds(controlStartX + controlSpacing, controlRowY + knobSize, knobSize, labelHeight);
+
+    accentResSlider.setBounds(controlStartX + controlSpacing * 2, controlRowY, knobSize, knobSize);
+    accentResLabel.setBounds(controlStartX + controlSpacing * 2, controlRowY + knobSize, knobSize, labelHeight);
+
+    accentDecaySlider.setBounds(controlStartX + controlSpacing * 3, controlRowY, knobSize, knobSize);
+    accentDecayLabel.setBounds(controlStartX + controlSpacing * 3, controlRowY + knobSize, knobSize, labelHeight);
+
+    accentDriveSlider.setBounds(controlStartX + controlSpacing * 4, controlRowY, knobSize, knobSize);
+    accentDriveLabel.setBounds(controlStartX + controlSpacing * 4, controlRowY + knobSize, knobSize, labelHeight);
 }
 
 void MelodySequencerTab::onStepButtonClicked(int step, int degree)
 {
-    // When a button is clicked, turn off all other buttons in the same step
-    for (int d = 0; d < NUM_SCALE_DEGREES; ++d)
-    {
-        if (d != degree)
-        {
-            stepButtons[step][d].setToggleState(false, juce::dontSendNotification);
-        }
-    }
-
-    // Update the sequencer pattern in the processor
+    // Update the sequencer pattern bitmask
     bool isOn = stepButtons[step][degree].getToggleState();
     if (isOn)
     {
-        // Store the scale degree (0-7) for this step
-        audioProcessor.sequencerPattern[step] = degree;
+        // Set the bit for this degree
+        audioProcessor.sequencerPattern[step] |= static_cast<uint8_t>(1 << degree);
     }
     else
     {
-        // Clear this step
-        audioProcessor.sequencerPattern[step] = -1;
+        // Clear the bit for this degree
+        audioProcessor.sequencerPattern[step] &= static_cast<uint8_t>(~(1 << degree));
     }
 
     // Update octave display for this step
@@ -411,13 +452,14 @@ void MelodySequencerTab::onStepButtonClicked(int step, int degree)
 
 void MelodySequencerTab::updateButtonStates()
 {
-    // Update button states from processor
+    // Update button states from processor (bitmask)
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        int degree = audioProcessor.sequencerPattern[step];
+        uint8_t pattern = audioProcessor.sequencerPattern[step];
         for (int d = 0; d < NUM_SCALE_DEGREES; ++d)
         {
-            stepButtons[step][d].setToggleState(d == degree && degree >= 0, juce::dontSendNotification);
+            bool isActive = (pattern & (1 << d)) != 0;
+            stepButtons[step][d].setToggleState(isActive, juce::dontSendNotification);
         }
     }
 
@@ -480,10 +522,14 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (patternArray == nullptr)
         return;
 
-    // Load pattern into processor
+    // Load pattern into processor (convert old single-degree format to bitmask)
     for (int step = 0; step < NUM_STEPS && step < patternArray->size(); ++step)
     {
-        audioProcessor.sequencerPattern[step] = static_cast<int>((*patternArray)[step]);
+        int degree = static_cast<int>((*patternArray)[step]);
+        if (degree >= 0 && degree < 8)
+            audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(1 << degree);
+        else
+            audioProcessor.sequencerPattern[step] = 0;
     }
 
     // Load octave values if present
@@ -521,83 +567,59 @@ void MelodySequencerTab::updateOctaveDisplay()
 
 void MelodySequencerTab::updateOctaveDisplayForStep(int step)
 {
-    const char* octaveParamIds[] = {
-        "seqoctave1", "seqoctave2", "seqoctave3", "seqoctave4",
-        "seqoctave5", "seqoctave6", "seqoctave7", "seqoctave8",
-        "seqoctave9", "seqoctave10", "seqoctave11", "seqoctave12",
-        "seqoctave13", "seqoctave14", "seqoctave15", "seqoctave16"
-    };
-
     if (step < 0 || step >= NUM_STEPS)
         return;
 
-    // Get current octave value for this step
-    int octaveValue = static_cast<int>(audioProcessor.getValueTreeState().getRawParameterValue(octaveParamIds[step])->load());
-
-    // Format octave value for display
-    juce::String octaveText;
-    if (octaveValue > 0)
-        octaveText = "+" + juce::String(octaveValue);
-    else
-        octaveText = juce::String(octaveValue);
-
-    // Update all buttons in this step column
+    // Update all buttons in this step column with their individual octave values
     for (int degree = 0; degree < NUM_SCALE_DEGREES; ++degree)
     {
-        // Only show octave text on selected (green) buttons
         if (stepButtons[step][degree].getToggleState())
+        {
+            // Get per-note octave value
+            int octaveValue = audioProcessor.sequencerOctave[step][degree];
+
+            // Format octave value for display
+            juce::String octaveText;
+            if (octaveValue > 0)
+                octaveText = "+" + juce::String(octaveValue);
+            else if (octaveValue < 0)
+                octaveText = juce::String(octaveValue);
+            else
+                octaveText = ""; // Don't show 0
+
             stepButtons[step][degree].setButtonText(octaveText);
+        }
         else
+        {
             stepButtons[step][degree].setButtonText("");
+        }
     }
 }
 
-void MelodySequencerTab::onOctaveUpClicked(int step)
+void MelodySequencerTab::onOctaveUpClicked(int step, int degree)
 {
-    const char* octaveParamIds[] = {
-        "seqoctave1", "seqoctave2", "seqoctave3", "seqoctave4",
-        "seqoctave5", "seqoctave6", "seqoctave7", "seqoctave8",
-        "seqoctave9", "seqoctave10", "seqoctave11", "seqoctave12",
-        "seqoctave13", "seqoctave14", "seqoctave15", "seqoctave16"
-    };
-
-    if (step < 0 || step >= NUM_STEPS)
+    if (step < 0 || step >= NUM_STEPS || degree < 0 || degree >= NUM_SCALE_DEGREES)
         return;
 
-    auto* param = audioProcessor.getValueTreeState().getParameter(octaveParamIds[step]);
-    if (param != nullptr)
-    {
-        // Get current value and increment (max is +2)
-        int currentValue = static_cast<int>(param->getValue() * 4.0f - 2.0f); // Denormalize from 0-1 to -2 to +2
-        int newValue = juce::jmin(currentValue + 1, 2);
-        param->setValueNotifyingHost((newValue + 2) / 4.0f); // Normalize back to 0-1
+    // Increment per-note octave (max +2)
+    int8_t& octave = audioProcessor.sequencerOctave[step][degree];
+    if (octave < 2)
+        octave++;
 
-        updateOctaveDisplayForStep(step);
-    }
+    updateOctaveDisplayForStep(step);
 }
 
-void MelodySequencerTab::onOctaveDownClicked(int step)
+void MelodySequencerTab::onOctaveDownClicked(int step, int degree)
 {
-    const char* octaveParamIds[] = {
-        "seqoctave1", "seqoctave2", "seqoctave3", "seqoctave4",
-        "seqoctave5", "seqoctave6", "seqoctave7", "seqoctave8",
-        "seqoctave9", "seqoctave10", "seqoctave11", "seqoctave12",
-        "seqoctave13", "seqoctave14", "seqoctave15", "seqoctave16"
-    };
-
-    if (step < 0 || step >= NUM_STEPS)
+    if (step < 0 || step >= NUM_STEPS || degree < 0 || degree >= NUM_SCALE_DEGREES)
         return;
 
-    auto* param = audioProcessor.getValueTreeState().getParameter(octaveParamIds[step]);
-    if (param != nullptr)
-    {
-        // Get current value and decrement (min is -2)
-        int currentValue = static_cast<int>(param->getValue() * 4.0f - 2.0f); // Denormalize from 0-1 to -2 to +2
-        int newValue = juce::jmax(currentValue - 1, -2);
-        param->setValueNotifyingHost((newValue + 2) / 4.0f); // Normalize back to 0-1
+    // Decrement per-note octave (min -2)
+    int8_t& octave = audioProcessor.sequencerOctave[step][degree];
+    if (octave > -2)
+        octave--;
 
-        updateOctaveDisplayForStep(step);
-    }
+    updateOctaveDisplayForStep(step);
 }
 
 void MelodySequencerTab::onRandomClicked()
@@ -633,18 +655,18 @@ void MelodySequencerTab::generateTrueRandom()
     // Clear all steps first
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        audioProcessor.sequencerPattern[step] = -1;
+        audioProcessor.sequencerPattern[step] = 0;
     }
 
     // Randomly decide how many steps to fill (between 4 and 16)
     int numActiveSteps = random.nextInt(juce::Range<int>(4, 17));
 
-    // Generate random pattern
+    // Generate random pattern (single note per step for random)
     for (int i = 0; i < numActiveSteps; ++i)
     {
         int step = random.nextInt(NUM_STEPS);
         int degree = random.nextInt(NUM_SCALE_DEGREES); // Random scale degree 0-7
-        audioProcessor.sequencerPattern[step] = degree;
+        audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(1 << degree);
     }
 }
 
@@ -655,7 +677,7 @@ void MelodySequencerTab::generateWeightedRandom(int specificConfigIndex)
     // Clear all steps first
     for (int step = 0; step < NUM_STEPS; ++step)
     {
-        audioProcessor.sequencerPattern[step] = -1;
+        audioProcessor.sequencerPattern[step] = 0;
     }
 
     // Load weights from JSON config
@@ -762,8 +784,8 @@ void MelodySequencerTab::generateWeightedRandom(int specificConfigIndex)
     bool step0IsRoot = false;
     if (random.nextFloat() < firstStepRootProbability)
     {
-        // Force step 0 to be root
-        audioProcessor.sequencerPattern[0] = 0; // Degree 1 in JSON = 0 internally
+        // Force step 0 to be root (bit 0 = degree 0)
+        audioProcessor.sequencerPattern[0] = 1;
         step0IsRoot = true;
 
         // For root on step 1: octave is always 0 or -1 (50/50)
@@ -809,7 +831,7 @@ void MelodySequencerTab::generateWeightedRandom(int specificConfigIndex)
 
             if (selectedDegree != -1)
             {
-                audioProcessor.sequencerPattern[step] = selectedDegree;
+                audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(1 << selectedDegree);
 
                 // Select octave based on degree
                 int selectedOctave = 0;
@@ -865,23 +887,25 @@ void MelodySequencerTab::onMutateClicked()
         // Change to a random degree (or empty)
         if (random.nextFloat() < 0.2f) // 20% chance to make it empty
         {
-            audioProcessor.sequencerPattern[stepToMutate] = -1;
+            audioProcessor.sequencerPattern[stepToMutate] = 0;
         }
         else
         {
-            audioProcessor.sequencerPattern[stepToMutate] = random.nextInt(NUM_SCALE_DEGREES);
+            int degree = random.nextInt(NUM_SCALE_DEGREES);
+            audioProcessor.sequencerPattern[stepToMutate] = static_cast<uint8_t>(1 << degree);
         }
     }
     else
     {
         // Toggle: if empty make it random, if has value make it empty
-        if (audioProcessor.sequencerPattern[stepToMutate] == -1)
+        if (audioProcessor.sequencerPattern[stepToMutate] == 0)
         {
-            audioProcessor.sequencerPattern[stepToMutate] = random.nextInt(NUM_SCALE_DEGREES);
+            int degree = random.nextInt(NUM_SCALE_DEGREES);
+            audioProcessor.sequencerPattern[stepToMutate] = static_cast<uint8_t>(1 << degree);
         }
         else
         {
-            audioProcessor.sequencerPattern[stepToMutate] = -1;
+            audioProcessor.sequencerPattern[stepToMutate] = 0;
         }
     }
 

@@ -43,9 +43,11 @@ class StepButton : public juce::TextButton
 {
 public:
     std::function<void(int, int, bool)> onStepClicked; // step, degree, wasAlreadyActive
-    std::function<void(int, bool)> onOctaveAdjust; // step, isIncrease (true=up, false=down)
+    std::function<void(int, int, bool)> onOctaveAdjust; // step, degree, isIncrease
     int step = 0;
     int degree = 0;
+
+    std::function<void(int)> onDeactivate; // step
 
     void mouseDown(const juce::MouseEvent& event) override
     {
@@ -53,16 +55,31 @@ public:
 
         if (wasActive)
         {
-            // Button is already active - check which half was clicked
+            // Button is already active - check which third was clicked
             int clickY = event.getMouseDownY();
             int buttonHeight = getHeight();
-            bool clickedUpperHalf = (clickY < buttonHeight / 2);
+            int thirdHeight = buttonHeight / 3;
 
-            // Call octave adjust handler
-            if (onOctaveAdjust)
-                onOctaveAdjust(step, clickedUpperHalf);
+            if (clickY < thirdHeight)
+            {
+                // Upper third: octave +1
+                if (onOctaveAdjust)
+                    onOctaveAdjust(step, degree, true);
+            }
+            else if (clickY < thirdHeight * 2)
+            {
+                // Middle third: deactivate
+                if (onDeactivate)
+                    onDeactivate(step);
+            }
+            else
+            {
+                // Lower third: octave -1
+                if (onOctaveAdjust)
+                    onOctaveAdjust(step, degree, false);
+            }
 
-            // Don't change toggle state
+            // Don't change toggle state via normal click
             return;
         }
         else
@@ -127,13 +144,26 @@ private:
     static constexpr int NUM_SCALE_DEGREES = 8;
     StepButton stepButtons[NUM_STEPS][NUM_SCALE_DEGREES];
 
-    // Per-step octave controls (16 steps) - two buttons per step
-    juce::TextButton octaveUpButtons[NUM_STEPS];
-    juce::TextButton octaveDownButtons[NUM_STEPS];
+    // Per-step accent modulation (16 steps)
+    juce::Slider accentSliders[NUM_STEPS];
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentAttachments[NUM_STEPS];
 
-    // Per-step cutoff modulation dials (16 steps)
-    juce::Slider cutoffSliders[NUM_STEPS];
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachments[NUM_STEPS];
+    // Accent control dials (how accent row affects playback)
+    juce::Slider accentVolSlider;
+    juce::Slider accentCutoffSlider;
+    juce::Slider accentResSlider;
+    juce::Slider accentDecaySlider;
+    juce::Slider accentDriveSlider;
+    juce::Label accentVolLabel;
+    juce::Label accentCutoffLabel;
+    juce::Label accentResLabel;
+    juce::Label accentDecayLabel;
+    juce::Label accentDriveLabel;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentVolAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentCutoffAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentResAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentDecayAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> accentDriveAttachment;
 
     // Current step indicator
     int currentStep = 0;
@@ -151,8 +181,8 @@ private:
     void updateButtonStates();
     void updateOctaveDisplay();
     void updateOctaveDisplayForStep(int step);
-    void onOctaveUpClicked(int step);
-    void onOctaveDownClicked(int step);
+    void onOctaveUpClicked(int step, int degree);
+    void onOctaveDownClicked(int step, int degree);
     void loadPreset(int presetIndex);
     void onRandomClicked();
     void generateTrueRandom();
