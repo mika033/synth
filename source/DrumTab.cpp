@@ -115,13 +115,15 @@ void DrumTab::paint(juce::Graphics& g)
     g.setColour(juce::Colours::white);
     g.setFont(14.0f);
 
-    const int startY = 80;
+    const int startY = 60;
     const int buttonSize = 40;
     const int verticalSpacing = 50;
 
+    // Draw in reverse order: OHat at top, Kick at bottom
     for (int lane = 0; lane < NUM_LANES; ++lane)
     {
-        int y = startY + lane * verticalSpacing;
+        int visualRow = NUM_LANES - 1 - lane; // Reverse: lane 0 (Kick) at bottom
+        int y = startY + visualRow * verticalSpacing;
         g.drawText(laneNames[lane], 10, y, 50, buttonSize, juce::Justification::centredRight);
     }
 
@@ -137,54 +139,61 @@ void DrumTab::paint(juce::Graphics& g)
 
 void DrumTab::resized()
 {
-    auto bounds = getLocalBounds();
-
-    // Top controls
-    const int controlY = 10;
+    // Top controls - just enable toggle
+    const int controlY = 20;
     const int controlHeight = 25;
 
     enableToggle.setBounds(20, controlY, 25, controlHeight);
     enableLabel.setBounds(50, controlY, 60, controlHeight);
 
-    // Global volume
-    globalVolumeSlider.setBounds(150, controlY - 5, 50, 50);
-    globalVolumeLabel.setBounds(150, controlY + 40, 50, 20);
-
-    // Sidechain controls
-    sidechainMagnitudeSlider.setBounds(220, controlY - 5, 50, 50);
-    sidechainMagnitudeLabel.setBounds(220, controlY + 40, 50, 20);
-
-    sidechainLengthSlider.setBounds(280, controlY - 5, 50, 50);
-    sidechainLengthLabel.setBounds(280, controlY + 40, 50, 20);
-
     // Step button grid
     const int startX = 70;
-    const int startY = 80;
+    const int startY = 60;
     const int buttonSize = 40;
     const int horizontalSpacing = 50;
     const int verticalSpacing = 50;
 
     for (int lane = 0; lane < NUM_LANES; ++lane)
     {
+        int visualRow = NUM_LANES - 1 - lane; // Reverse: lane 0 (Kick) at bottom
         for (int step = 0; step < NUM_STEPS; ++step)
         {
             stepButtons[lane][step].setBounds(
                 startX + step * horizontalSpacing,
-                startY + lane * verticalSpacing,
+                startY + visualRow * verticalSpacing,
                 buttonSize,
                 buttonSize
             );
         }
     }
 
-    // Per-lane volume sliders (to the right of grid)
-    const int volumeX = startX + NUM_STEPS * horizontalSpacing + 20;
+    // Control dials below grid (60px like synth tab)
+    const int knobSize = 60;
+    const int labelHeight = 20;
+    const int dialY = startY + NUM_LANES * verticalSpacing + 10;
+    const int dialSpacing = 80;
+
+    // Master volume first
+    globalVolumeSlider.setBounds(startX, dialY, knobSize, knobSize);
+    globalVolumeLabel.setBounds(startX, dialY + knobSize, knobSize, labelHeight);
+
+    // Per-lane volume sliders: Kick, Snare, CHat, OHat
+    const char* laneLabels[NUM_LANES] = { "Kick", "Snare", "CHat", "OHat" };
     for (int lane = 0; lane < NUM_LANES; ++lane)
     {
-        int y = startY + lane * verticalSpacing - 5;
-        laneVolumeSliders[lane].setBounds(volumeX, y, 45, 45);
-        laneVolumeLabels[lane].setBounds(volumeX, y + 40, 45, 15);
+        laneVolumeSliders[lane].setBounds(startX + (lane + 1) * dialSpacing, dialY, knobSize, knobSize);
+        laneVolumeLabels[lane].setBounds(startX + (lane + 1) * dialSpacing, dialY + knobSize, knobSize, labelHeight);
+        laneVolumeLabels[lane].setText(laneLabels[lane], juce::dontSendNotification);
     }
+
+    // Sidechain controls (after gap)
+    const int sidechainX = startX + (NUM_LANES + 1) * dialSpacing + 40;
+
+    sidechainMagnitudeSlider.setBounds(sidechainX, dialY, knobSize, knobSize);
+    sidechainMagnitudeLabel.setBounds(sidechainX, dialY + knobSize, knobSize, labelHeight);
+
+    sidechainLengthSlider.setBounds(sidechainX + dialSpacing, dialY, knobSize, knobSize);
+    sidechainLengthLabel.setBounds(sidechainX + dialSpacing, dialY + knobSize, knobSize, labelHeight);
 }
 
 void DrumTab::timerCallback()

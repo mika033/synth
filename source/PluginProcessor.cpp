@@ -504,7 +504,7 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                         0.7f), // Default 70%
 
                     // Drum machine parameters
-                    std::make_unique<juce::AudioParameterBool>("drumenable", "Drum Enable", false),
+                    std::make_unique<juce::AudioParameterBool>("drumenable", "Drum Enable", true),
                     std::make_unique<juce::AudioParameterFloat>("drumkickvol", "Kick Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
                     std::make_unique<juce::AudioParameterFloat>("drumsnarevol", "Snare Volume",
@@ -516,7 +516,7 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>("drummastervol", "Drum Master Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
                     std::make_unique<juce::AudioParameterFloat>("drumsidechainmag", "Sidechain Magnitude",
-                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f),
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f),
                     std::make_unique<juce::AudioParameterFloat>("drumsidechainlen", "Sidechain Length",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f)
                 })
@@ -541,6 +541,13 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
 
     // Load presets from JSON files
     loadPresetsFromJSON();
+    loadDrumSamples();
+
+    // Initialize default drum pattern (4 kicks)
+    drumPattern[0][0] = 1;  // Kick on 1
+    drumPattern[0][4] = 1;  // Kick on 5
+    drumPattern[0][8] = 1;  // Kick on 9
+    drumPattern[0][12] = 1; // Kick on 13
 
     // Load the first synth preset by default
     if (getSynthPresetNames().size() > 0)
@@ -672,6 +679,11 @@ void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                 currentBPM = *positionInfo->getBpm();
                 bpmFromHost = true;
             }
+            // Enable playback when host transport is playing
+            if (positionInfo->getIsPlaying())
+            {
+                isPlaybackActive = true;
+            }
         }
     }
 
@@ -711,13 +723,51 @@ void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     // Apply sidechain ducking from drum kick
     if (sidechainEnvelope > 0.001f)
     {
-        float duckAmount = 1.0f - sidechainEnvelope; // 0 = full duck, 1 = no duck
+        float duckAmount = std::max(0.0f, 1.0f - sidechainEnvelope); // 0 = full duck, 1 = no duck
         for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
         {
             float* channelData = buffer.getWritePointer(channel);
             for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
             {
                 channelData[sample] *= duckAmount;
+            }
+        }
+    }
+
+    // Mix drum samples into output
+    bool drumEnabled = parameters.getRawParameterValue("drumenable")->load() > 0.5f;
+    if (drumEnabled)
+    {
+        float drumMasterVol = parameters.getRawParameterValue("drummastervol")->load();
+        const char* laneVolIds[NUM_DRUM_LANES] = { "drumkickvol", "drumsnarevol", "drumchatvol", "drumohatvol" };
+
+        for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
+        {
+            if (drumSamplePlaying[lane] && drumSamples[lane].getNumSamples() > 0)
+            {
+                float laneVol = parameters.getRawParameterValue(laneVolIds[lane])->load();
+                float vol = drumMasterVol * laneVol;
+
+                int samplesRemaining = drumSamples[lane].getNumSamples() - drumSamplePositions[lane];
+                int samplesToAdd = juce::jmin(buffer.getNumSamples(), samplesRemaining);
+
+                for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+                {
+                    int sampleChannel = juce::jmin(channel, drumSamples[lane].getNumChannels() - 1);
+                    const float* sampleData = drumSamples[lane].getReadPointer(sampleChannel, drumSamplePositions[lane]);
+                    float* outputData = buffer.getWritePointer(channel);
+
+                    for (int i = 0; i < samplesToAdd; ++i)
+                    {
+                        outputData[i] += sampleData[i] * vol;
+                    }
+                }
+
+                drumSamplePositions[lane] += samplesToAdd;
+                if (drumSamplePositions[lane] >= drumSamples[lane].getNumSamples())
+                {
+                    drumSamplePlaying[lane] = false;
+                }
             }
         }
     }
@@ -2153,8 +2203,9 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
 {
     bool drumEnabled = parameters.getRawParameterValue("drumenable")->load() > 0.5f;
 
-    // Get sidechain parameters
-    float sidechainMag = parameters.getRawParameterValue("drumsidechainmag")->load();
+    // Get sidechain parameters (sqrt curve on magnitude for better response)
+    float sidechainMagRaw = parameters.getRawParameterValue("drumsidechainmag")->load();
+    float sidechainMag = std::sqrt(sidechainMagRaw); // 50% dial → ~71% ducking
     float sidechainLen = parameters.getRawParameterValue("drumsidechainlen")->load();
 
     // Decay the sidechain envelope
@@ -2189,11 +2240,19 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
     {
         drumStepTime -= stepLength;
 
-        // Check if kick is triggered on this step (lane 0 = kick)
-        if (drumPattern[0][currentDrumStep] != 0)
+        // Check each lane for triggers on this step
+        for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
         {
-            // Trigger sidechain envelope
-            sidechainEnvelope = sidechainMag;
+            if (drumPattern[lane][currentDrumStep] != 0)
+            {
+                // Trigger this sample
+                drumSamplePlaying[lane] = true;
+                drumSamplePositions[lane] = 0;
+
+                // Kick triggers sidechain
+                if (lane == 0)
+                    sidechainEnvelope = sidechainMag;
+            }
         }
 
         // Advance to next step (16 steps)
@@ -2201,7 +2260,37 @@ void SnorkelSynthAudioProcessor::processDrums(int numSamples)
     }
 }
 
-int SnorkelSynthAudioProcessor::getSequencerNote(int step)
+void SnorkelSynthAudioProcessor::loadDrumSamples()
+{
+    juce::File dataDir = getDataDirectory();
+    juce::File samplesDir = dataDir.getChildFile("samples");
+
+    // Sample file names for each lane
+    const juce::String sampleNames[NUM_DRUM_LANES] = {
+        "Kick - 9X9.wav",
+        "Snare - Snare Hi.wav",
+        "HatClosed - Closed Hat.wav",
+        "HatOpen - Open Hat.wav"
+    };
+
+    juce::AudioFormatManager formatManager;
+    formatManager.registerBasicFormats();
+
+    for (int lane = 0; lane < NUM_DRUM_LANES; ++lane)
+    {
+        juce::File sampleFile = samplesDir.getChildFile(sampleNames[lane]);
+        if (sampleFile.existsAsFile())
+        {
+            std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(sampleFile));
+            if (reader != nullptr)
+            {
+                drumSamples[lane].setSize((int)reader->numChannels, (int)reader->lengthInSamples);
+                reader->read(&drumSamples[lane], 0, (int)reader->lengthInSamples, 0, true, true);
+            }
+        }
+    }
+}
+
 std::vector<int> SnorkelSynthAudioProcessor::getSequencerNotes(int step)
 {
     std::vector<int> notes;

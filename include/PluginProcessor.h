@@ -288,6 +288,12 @@ public:
     float sidechainEnvelope = 0.0f; // Current sidechain ducking amount (0-1)
     float getSidechainEnvelope() const { return sidechainEnvelope; }
 
+    // Drum sample storage and playback
+    juce::AudioBuffer<float> drumSamples[NUM_DRUM_LANES];
+    int drumSamplePositions[NUM_DRUM_LANES] = {0}; // Playback position for each lane
+    bool drumSamplePlaying[NUM_DRUM_LANES] = {false};
+    void loadDrumSamples();
+
 private:
     // Parameter update
     void updateVoiceParameters();
