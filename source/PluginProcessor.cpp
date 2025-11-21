@@ -445,6 +445,13 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF15_ID, "Seq Cutoff 15", -1.0f, 1.0f, 0.0f),
                     std::make_unique<juce::AudioParameterFloat>(SEQ_CUTOFF16_ID, "Seq Cutoff 16", -1.0f, 1.0f, 0.0f),
 
+                    // Sequencer accent control amounts
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_ACCENT_VOL_ID, "Seq Accent Volume", 0.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_ACCENT_CUTOFF_ID, "Seq Accent Cutoff", 0.0f, 1.0f, 0.5f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_ACCENT_RES_ID, "Seq Accent Resonance", 0.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_ACCENT_DECAY_ID, "Seq Accent Decay", 0.0f, 1.0f, 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>(SEQ_ACCENT_DRIVE_ID, "Seq Accent Drive", 0.0f, 1.0f, 0.0f),
+
                     // Progression parameters
                     std::make_unique<juce::AudioParameterBool>(
                         PROG_ENABLED_ID, "Progression Enabled", true), // Default: enabled
@@ -505,10 +512,15 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
     synth.addSound(new AcidSound());
 
     // Initialize sequencer pattern with a default melody (C major scale pattern)
-    // Pattern: 1-3-5-7-5-3-1-1 (repeated twice)
-    const int defaultPattern[] = {0, 2, 4, 6, 4, 2, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0};
+    // Pattern: 1-3-5-7-5-3-1-1 (repeated twice) - stored as bitmasks (bit N = degree N active)
+    const int defaultDegrees[] = {0, 2, 4, 6, 4, 2, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0};
     for (int i = 0; i < NUM_SEQ_STEPS; ++i)
-        sequencerPattern[i] = defaultPattern[i];
+        sequencerPattern[i] = static_cast<uint8_t>(1 << defaultDegrees[i]);
+
+    // Initialize per-note octave offsets to 0
+    for (int step = 0; step < NUM_SEQ_STEPS; ++step)
+        for (int degree = 0; degree < NUM_SCALE_DEGREES; ++degree)
+            sequencerOctave[step][degree] = 0;
 
     // Load presets from JSON files
     loadPresetsFromJSON();
@@ -753,17 +765,48 @@ void SnorkelSynthAudioProcessor::updateVoiceParameters()
     // Main parameters
     float cutoff = parameters.getRawParameterValue(CUTOFF_ID)->load();
 
-    // Apply sequencer per-step cutoff modulation if sequencer is enabled and playing
+    // Get base resonance first (needed before accent modulation)
+    float resonance = parameters.getRawParameterValue(RESONANCE_ID)->load();
+    float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
+    float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
+
+    // Apply sequencer accent modulation if sequencer is enabled and playing
     bool seqEnabled = parameters.getRawParameterValue(SEQ_ENABLED_ID)->load() > 0.5f;
     if (seqEnabled && isPlaybackActive)
     {
-        float cutoffMod = getCurrentSeqCutoffMod(); // Range: -1.0 to +1.0
-        // Scale modulation: -1 = divide by 16, +1 = multiply by 16 (±4 octaves, logarithmic scaling)
+        float accentValue = getCurrentSeqCutoffMod(); // Range: -1.0 to +1.0
+
+        // Get accent control amounts
+        float accentVol = parameters.getRawParameterValue(SEQ_ACCENT_VOL_ID)->load();
+        float accentCutoff = parameters.getRawParameterValue(SEQ_ACCENT_CUTOFF_ID)->load();
+        float accentRes = parameters.getRawParameterValue(SEQ_ACCENT_RES_ID)->load();
+        float accentDecay = parameters.getRawParameterValue(SEQ_ACCENT_DECAY_ID)->load();
+        float accentDrive = parameters.getRawParameterValue(SEQ_ACCENT_DRIVE_ID)->load();
+
+        // Apply cutoff modulation (logarithmic scaling)
+        float cutoffMod = accentValue * accentCutoff;
         float modulationFactor = std::pow(16.0f, cutoffMod);
         cutoff = juce::jlimit(20.0f, 5000.0f, cutoff * modulationFactor);
-    }
 
-    float resonance = parameters.getRawParameterValue(RESONANCE_ID)->load();
+        // Apply volume modulation (add up to +6dB on positive accent)
+        float volMod = accentValue * accentVol * 0.5f; // ±0.5 range
+        volume = juce::jlimit(0.0f, 1.0f, volume + volMod);
+
+        // Apply resonance modulation
+        float resMod = accentValue * accentRes * 0.5f;
+        resonance = juce::jlimit(0.0f, 1.0f, resonance + resMod);
+
+        // Apply drive modulation
+        float driveMod = accentValue * accentDrive * 0.5f;
+        drive = juce::jlimit(0.0f, 1.0f, drive + driveMod);
+
+        // Store decay modulation for envelope application below
+        seqAccentDecayMod = accentValue * accentDecay;
+    }
+    else
+    {
+        seqAccentDecayMod = 0.0f;
+    }
     float envMod = parameters.getRawParameterValue(ENV_MOD_ID)->load();
     float accent = parameters.getRawParameterValue(ACCENT_ID)->load();
 
@@ -787,8 +830,6 @@ void SnorkelSynthAudioProcessor::updateVoiceParameters()
     float noiseType = parameters.getRawParameterValue(NOISE_TYPE_ID)->load();
     float noiseDecay = parameters.getRawParameterValue(NOISE_DECAY_ID)->load();
 
-    float drive = parameters.getRawParameterValue(DRIVE_ID)->load();
-    float volume = parameters.getRawParameterValue(VOLUME_ID)->load();
     float filterFeedback = parameters.getRawParameterValue(FILTER_FEEDBACK_ID)->load();
     int saturationType = static_cast<int>(parameters.getRawParameterValue(SATURATION_TYPE_ID)->load());
 
@@ -801,6 +842,13 @@ void SnorkelSynthAudioProcessor::updateVoiceParameters()
     // Amplitude ADSR parameters
     float ampAttack = parameters.getRawParameterValue(AMP_ATTACK_ID)->load();
     float ampDecay = parameters.getRawParameterValue(AMP_DECAY_ID)->load();
+    // Apply accent decay modulation (positive accent = shorter decay for punchier sound)
+    if (seqAccentDecayMod != 0.0f)
+    {
+        float decayMod = seqAccentDecayMod * 0.8f; // Max 80% reduction
+        ampDecay = ampDecay * (1.0f - juce::jmax(0.0f, decayMod));
+        ampDecay = juce::jmax(0.01f, ampDecay); // Minimum 10ms
+    }
     float ampSustain = parameters.getRawParameterValue(AMP_SUSTAIN_ID)->load();
     float ampRelease = parameters.getRawParameterValue(AMP_RELEASE_ID)->load();
 
@@ -1971,11 +2019,12 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
         // Reset sequencer state when disabled
         currentSeqStep = 0;
         seqStepTime = 0.0;
-        if (isSeqNoteCurrentlyOn && lastSeqPlayedNote >= 0)
+        if (isSeqNoteCurrentlyOn && !lastSeqPlayedNotes.empty())
         {
-            midiMessages.addEvent(juce::MidiMessage::noteOff(1, lastSeqPlayedNote, (juce::uint8)64), 0);
+            for (int note : lastSeqPlayedNotes)
+                midiMessages.addEvent(juce::MidiMessage::noteOff(1, note, (juce::uint8)64), 0);
+            lastSeqPlayedNotes.clear();
             isSeqNoteCurrentlyOn = false;
-            lastSeqPlayedNote = -1;
         }
         return;
     }
@@ -1986,13 +2035,15 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
 
     juce::MidiBuffer processedMidi;
 
-    // Handle note-off for previous note
+    // Handle note-off for previous notes
     if (isSeqNoteCurrentlyOn && lastSeqNoteOffTime >= 0.0)
     {
         lastSeqNoteOffTime -= numSamples;
-        if (lastSeqNoteOffTime <= 0.0 && lastSeqPlayedNote >= 0)
+        if (lastSeqNoteOffTime <= 0.0 && !lastSeqPlayedNotes.empty())
         {
-            processedMidi.addEvent(juce::MidiMessage::noteOff(1, lastSeqPlayedNote, (juce::uint8)64), 0);
+            for (int note : lastSeqPlayedNotes)
+                processedMidi.addEvent(juce::MidiMessage::noteOff(1, note, (juce::uint8)64), 0);
+            lastSeqPlayedNotes.clear();
             isSeqNoteCurrentlyOn = false;
             lastSeqNoteOffTime = -1.0;
         }
@@ -2006,14 +2057,16 @@ void SnorkelSynthAudioProcessor::processSequencer(juce::MidiBuffer& midiMessages
     {
         seqStepTime -= stepLength;
 
-        // Get note for current step
-        int midiNote = getSequencerNote(currentSeqStep);
+        // Get all notes for current step
+        std::vector<int> midiNotes = getSequencerNotes(currentSeqStep);
 
-        if (midiNote >= 0)
+        if (!midiNotes.empty())
         {
-            // Trigger note-on
-            processedMidi.addEvent(juce::MidiMessage::noteOn(1, midiNote, (juce::uint8)100), 0);
-            lastSeqPlayedNote = midiNote;
+            // Trigger note-on for all notes
+            for (int midiNote : midiNotes)
+                processedMidi.addEvent(juce::MidiMessage::noteOn(1, midiNote, (juce::uint8)100), 0);
+
+            lastSeqPlayedNotes = midiNotes;
             isSeqNoteCurrentlyOn = true;
 
             // Schedule note-off
@@ -2062,39 +2115,35 @@ double SnorkelSynthAudioProcessor::getSeqStepLengthInSamples() const
     return currentSampleRate / stepFrequency;
 }
 
-int SnorkelSynthAudioProcessor::getSequencerNote(int step)
+std::vector<int> SnorkelSynthAudioProcessor::getSequencerNotes(int step)
 {
+    std::vector<int> notes;
+
     if (step < 0 || step >= NUM_SEQ_STEPS)
-        return -1;
+        return notes;
 
-    int scaleDegree = sequencerPattern[step];
-    if (scaleDegree < 0)
-        return -1; // No note at this step
-
-    // Apply progression offset to stay in key
-    int progressionOffset = getCurrentProgressionOffset();
-    scaleDegree = (scaleDegree + progressionOffset) % 8; // Keep within 0-7 range
+    uint8_t pattern = sequencerPattern[step];
+    if (pattern == 0)
+        return notes; // No notes at this step
 
     int rootNote = static_cast<int>(parameters.getRawParameterValue(SEQ_ROOT_ID)->load());
     int scaleType = static_cast<int>(parameters.getRawParameterValue(SEQ_SCALE_ID)->load());
+    int progressionOffset = getCurrentProgressionOffset();
 
-    int midiNote = scaleDegreesToMidiNote(scaleDegree, rootNote, scaleType);
-
-    // Apply per-step octave shift
-    const char* octaveParamIds[] = {
-        SEQ_OCTAVE1_ID, SEQ_OCTAVE2_ID, SEQ_OCTAVE3_ID, SEQ_OCTAVE4_ID,
-        SEQ_OCTAVE5_ID, SEQ_OCTAVE6_ID, SEQ_OCTAVE7_ID, SEQ_OCTAVE8_ID,
-        SEQ_OCTAVE9_ID, SEQ_OCTAVE10_ID, SEQ_OCTAVE11_ID, SEQ_OCTAVE12_ID,
-        SEQ_OCTAVE13_ID, SEQ_OCTAVE14_ID, SEQ_OCTAVE15_ID, SEQ_OCTAVE16_ID
-    };
-
-    if (step >= 0 && step < 16)
+    // Check each bit for active degrees
+    for (int degree = 0; degree < 8; ++degree)
     {
-        int octaveShift = static_cast<int>(parameters.getRawParameterValue(octaveParamIds[step])->load());
-        midiNote += octaveShift * 12; // Shift by octaves (12 semitones per octave)
+        if (pattern & (1 << degree))
+        {
+            int adjustedDegree = (degree + progressionOffset) % 8;
+            int midiNote = scaleDegreesToMidiNote(adjustedDegree, rootNote, scaleType);
+            // Apply per-note octave shift
+            midiNote += sequencerOctave[step][degree] * 12;
+            notes.push_back(midiNote);
+        }
     }
 
-    return midiNote;
+    return notes;
 }
 
 float SnorkelSynthAudioProcessor::getCurrentSeqCutoffMod() const

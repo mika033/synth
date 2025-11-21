@@ -235,6 +235,13 @@ private:
     static constexpr const char* SEQ_CUTOFF15_ID = "seqcutoff15";
     static constexpr const char* SEQ_CUTOFF16_ID = "seqcutoff16";
 
+    // Sequencer accent control amounts
+    static constexpr const char* SEQ_ACCENT_VOL_ID = "seqaccentvol";
+    static constexpr const char* SEQ_ACCENT_CUTOFF_ID = "seqaccentcutoff";
+    static constexpr const char* SEQ_ACCENT_RES_ID = "seqaccentres";
+    static constexpr const char* SEQ_ACCENT_DECAY_ID = "seqaccentdecay";
+    static constexpr const char* SEQ_ACCENT_DRIVE_ID = "seqaccentdrive";
+
     // Progression Parameter IDs
     static constexpr const char* PROG_ENABLED_ID = "progenabled";
     static constexpr const char* PROG_STEPS_ID = "progsteps";
@@ -264,7 +271,8 @@ public:
     // Sequencer state (public for UI access)
     static constexpr int NUM_SEQ_STEPS = 16;
     static constexpr int NUM_SCALE_DEGREES = 8;
-    int sequencerPattern[NUM_SEQ_STEPS]; // Stores scale degree for each step (-1 = no note)
+    uint8_t sequencerPattern[NUM_SEQ_STEPS]; // Bitmask: bit N = degree N is active (0 = no notes)
+    int8_t sequencerOctave[NUM_SEQ_STEPS][NUM_SCALE_DEGREES]; // Per-note octave offset (-2 to +2)
     int currentSeqStep = 0;
     float getCurrentSeqCutoffMod() const; // Get cutoff modulation for current sequencer step
 
@@ -322,12 +330,14 @@ private:
     double lastSeqNoteOffTime = 0.0;
     int lastSeqPlayedNote = -1;
     bool isSeqNoteCurrentlyOn = false;
+    float seqAccentDecayMod = 0.0f; // Current accent decay modulation
 
     // Sequencer helper functions
     void processSequencer(juce::MidiBuffer& midiMessages, int numSamples);
     double getSeqStepLengthInSamples() const;
-    int getSequencerNote(int step);
+    std::vector<int> getSequencerNotes(int step); // Returns all active MIDI notes for a step
     int scaleDegreesToMidiNote(int scaleDegree, int rootNote, int scaleType);
+    std::vector<int> lastSeqPlayedNotes; // Track multiple notes for note-off
 
     // Progression state and helpers
     double progressionBarTime = 0.0;
