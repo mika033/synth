@@ -272,6 +272,14 @@ public:
     static constexpr int NUM_PROGRESSION_STEPS = 16;
     int currentProgressionStep = 0;
 
+    // Drum machine state (public for UI access)
+    static constexpr int NUM_DRUM_STEPS = 16;
+    static constexpr int NUM_DRUM_LANES = 4; // Kick, Snare, CHat, OHat
+    int drumPattern[NUM_DRUM_LANES][NUM_DRUM_STEPS] = {{0}}; // 0 = off, 1 = on
+    int currentDrumStep = 0;
+    float sidechainEnvelope = 0.0f; // Current sidechain ducking amount (0-1)
+    float getSidechainEnvelope() const { return sidechainEnvelope; }
+
 private:
     // Parameter update
     void updateVoiceParameters();
@@ -335,6 +343,10 @@ private:
     bool progressionSyncedToBar = false;
     void updateProgressionStep(int numSamples);
     int getCurrentProgressionOffset() const;
+
+    // Drum machine state and helpers
+    double drumStepTime = 0.0;
+    void processDrums(int numSamples);
 
     // Delay Mix LFO helper functions
     void updateDelayMixLFO();

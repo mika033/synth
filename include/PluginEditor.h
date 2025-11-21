@@ -9,6 +9,7 @@
 #include "ModulationTab.h"
 #include "MelodySequencerTab.h"
 #include "ProgressionTab.h"
+#include "DrumTab.h"
 
 //==============================================================================
 /**
@@ -41,6 +42,7 @@ private:
     std::unique_ptr<ModulationTab> modulationTab;
     std::unique_ptr<MelodySequencerTab> melodySequencerTab;
     std::unique_ptr<ProgressionTab> progressionTab;
+    std::unique_ptr<DrumTab> drumTab;
 
     // Play/Stop button for standalone mode
     juce::TextButton playStopButton;
