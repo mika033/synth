@@ -1654,25 +1654,43 @@ void SnorkelSynthAudioProcessor::saveSequencerPresetToJSON(const juce::String& p
     auto* presetObj = preset.getDynamicObject();
     presetObj->setProperty("name", presetName);
     presetObj->setProperty("description", "User preset");
+    presetObj->setProperty("version", 2); // New format version
 
-    // Save pattern
+    // Save pattern as bitmasks (multiple notes per step)
     juce::Array<juce::var> pattern;
     for (int i = 0; i < 16; ++i)
-        pattern.add(sequencerPattern[i]);
+        pattern.add(static_cast<int>(sequencerPattern[i])); // uint8_t bitmask
     presetObj->setProperty("pattern", pattern);
 
-    // Save octave values for each step
-    const char* octaveParamIds[] = {
-        SEQ_OCTAVE1_ID, SEQ_OCTAVE2_ID, SEQ_OCTAVE3_ID, SEQ_OCTAVE4_ID,
-        SEQ_OCTAVE5_ID, SEQ_OCTAVE6_ID, SEQ_OCTAVE7_ID, SEQ_OCTAVE8_ID,
-        SEQ_OCTAVE9_ID, SEQ_OCTAVE10_ID, SEQ_OCTAVE11_ID, SEQ_OCTAVE12_ID,
-        SEQ_OCTAVE13_ID, SEQ_OCTAVE14_ID, SEQ_OCTAVE15_ID, SEQ_OCTAVE16_ID
-    };
-
+    // Save per-note octave values (2D array: 16 steps x 8 degrees)
     juce::Array<juce::var> octaves;
-    for (int i = 0; i < 16; ++i)
-        octaves.add(static_cast<int>(parameters.getRawParameterValue(octaveParamIds[i])->load()));
+    for (int step = 0; step < 16; ++step)
+    {
+        juce::Array<juce::var> stepOctaves;
+        for (int degree = 0; degree < 8; ++degree)
+            stepOctaves.add(static_cast<int>(sequencerOctave[step][degree]));
+        octaves.add(juce::var(stepOctaves));
+    }
     presetObj->setProperty("octave", octaves);
+
+    // Save accent values per step (seqcutoff1-16)
+    const char* accentParamIds[] = {
+        SEQ_CUTOFF1_ID, SEQ_CUTOFF2_ID, SEQ_CUTOFF3_ID, SEQ_CUTOFF4_ID,
+        SEQ_CUTOFF5_ID, SEQ_CUTOFF6_ID, SEQ_CUTOFF7_ID, SEQ_CUTOFF8_ID,
+        SEQ_CUTOFF9_ID, SEQ_CUTOFF10_ID, SEQ_CUTOFF11_ID, SEQ_CUTOFF12_ID,
+        SEQ_CUTOFF13_ID, SEQ_CUTOFF14_ID, SEQ_CUTOFF15_ID, SEQ_CUTOFF16_ID
+    };
+    juce::Array<juce::var> accents;
+    for (int i = 0; i < 16; ++i)
+        accents.add(parameters.getRawParameterValue(accentParamIds[i])->load());
+    presetObj->setProperty("accents", accents);
+
+    // Save accent dial settings
+    presetObj->setProperty("accentVol", parameters.getRawParameterValue(SEQ_ACCENT_VOL_ID)->load());
+    presetObj->setProperty("accentCutoff", parameters.getRawParameterValue(SEQ_ACCENT_CUTOFF_ID)->load());
+    presetObj->setProperty("accentRes", parameters.getRawParameterValue(SEQ_ACCENT_RES_ID)->load());
+    presetObj->setProperty("accentDecay", parameters.getRawParameterValue(SEQ_ACCENT_DECAY_ID)->load());
+    presetObj->setProperty("accentDrive", parameters.getRawParameterValue(SEQ_ACCENT_DRIVE_ID)->load());
 
     // FIRST: Update the in-memory combined preset list immediately
     if (sequencerPresetsJSON.isObject())

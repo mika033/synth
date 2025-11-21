@@ -522,33 +522,100 @@ void MelodySequencerTab::loadPreset(int presetIndex)
     if (patternArray == nullptr)
         return;
 
-    // Load pattern into processor (convert old single-degree format to bitmask)
-    for (int step = 0; step < NUM_STEPS && step < patternArray->size(); ++step)
-    {
-        int degree = static_cast<int>((*patternArray)[step]);
-        if (degree >= 0 && degree < 8)
-            audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(1 << degree);
-        else
-            audioProcessor.sequencerPattern[step] = 0;
-    }
+    // Check preset version (version 2 = new multi-note format)
+    int version = static_cast<int>(presetObj->getProperty("version"));
 
-    // Load octave values if present
-    const juce::Array<juce::var>* octaveArray = presetObj->getProperty("octave").getArray();
-    if (octaveArray != nullptr)
+    if (version >= 2)
     {
-        const char* octaveParamIds[] = {
-            "seqoctave1", "seqoctave2", "seqoctave3", "seqoctave4",
-            "seqoctave5", "seqoctave6", "seqoctave7", "seqoctave8",
-            "seqoctave9", "seqoctave10", "seqoctave11", "seqoctave12",
-            "seqoctave13", "seqoctave14", "seqoctave15", "seqoctave16"
-        };
-
-        for (int step = 0; step < NUM_STEPS && step < octaveArray->size(); ++step)
+        // New format: pattern is already bitmask, octave is 2D array
+        for (int step = 0; step < NUM_STEPS && step < patternArray->size(); ++step)
         {
-            int octaveValue = static_cast<int>((*octaveArray)[step]);
-            auto* param = audioProcessor.getValueTreeState().getParameter(octaveParamIds[step]);
-            if (param != nullptr)
-                param->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange(octaveParamIds[step]).convertTo0to1(static_cast<float>(octaveValue)));
+            audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(static_cast<int>((*patternArray)[step]));
+        }
+
+        // Load 2D octave array
+        const juce::Array<juce::var>* octaveArray = presetObj->getProperty("octave").getArray();
+        if (octaveArray != nullptr)
+        {
+            for (int step = 0; step < NUM_STEPS && step < octaveArray->size(); ++step)
+            {
+                const juce::Array<juce::var>* stepOctaves = (*octaveArray)[step].getArray();
+                if (stepOctaves != nullptr)
+                {
+                    for (int degree = 0; degree < NUM_SCALE_DEGREES && degree < stepOctaves->size(); ++degree)
+                    {
+                        audioProcessor.sequencerOctave[step][degree] = static_cast<int8_t>(static_cast<int>((*stepOctaves)[degree]));
+                    }
+                }
+            }
+        }
+
+        // Load accent values per step
+        const juce::Array<juce::var>* accentsArray = presetObj->getProperty("accents").getArray();
+        if (accentsArray != nullptr)
+        {
+            const char* accentParamIds[] = {
+                "seqcutoff1", "seqcutoff2", "seqcutoff3", "seqcutoff4",
+                "seqcutoff5", "seqcutoff6", "seqcutoff7", "seqcutoff8",
+                "seqcutoff9", "seqcutoff10", "seqcutoff11", "seqcutoff12",
+                "seqcutoff13", "seqcutoff14", "seqcutoff15", "seqcutoff16"
+            };
+            for (int step = 0; step < NUM_STEPS && step < accentsArray->size(); ++step)
+            {
+                auto* param = audioProcessor.getValueTreeState().getParameter(accentParamIds[step]);
+                if (param != nullptr)
+                {
+                    float val = static_cast<float>((*accentsArray)[step]);
+                    param->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange(accentParamIds[step]).convertTo0to1(val));
+                }
+            }
+        }
+
+        // Load accent dial settings
+        auto* accentVolParam = audioProcessor.getValueTreeState().getParameter("seqaccentvol");
+        auto* accentCutoffParam = audioProcessor.getValueTreeState().getParameter("seqaccentcutoff");
+        auto* accentResParam = audioProcessor.getValueTreeState().getParameter("seqaccentres");
+        auto* accentDecayParam = audioProcessor.getValueTreeState().getParameter("seqaccentdecay");
+        auto* accentDriveParam = audioProcessor.getValueTreeState().getParameter("seqaccentdrive");
+
+        if (accentVolParam && presetObj->hasProperty("accentVol"))
+            accentVolParam->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange("seqaccentvol").convertTo0to1(static_cast<float>(presetObj->getProperty("accentVol"))));
+        if (accentCutoffParam && presetObj->hasProperty("accentCutoff"))
+            accentCutoffParam->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange("seqaccentcutoff").convertTo0to1(static_cast<float>(presetObj->getProperty("accentCutoff"))));
+        if (accentResParam && presetObj->hasProperty("accentRes"))
+            accentResParam->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange("seqaccentres").convertTo0to1(static_cast<float>(presetObj->getProperty("accentRes"))));
+        if (accentDecayParam && presetObj->hasProperty("accentDecay"))
+            accentDecayParam->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange("seqaccentdecay").convertTo0to1(static_cast<float>(presetObj->getProperty("accentDecay"))));
+        if (accentDriveParam && presetObj->hasProperty("accentDrive"))
+            accentDriveParam->setValueNotifyingHost(audioProcessor.getValueTreeState().getParameterRange("seqaccentdrive").convertTo0to1(static_cast<float>(presetObj->getProperty("accentDrive"))));
+    }
+    else
+    {
+        // Old format: pattern is single degree per step, octave is 1D array
+        for (int step = 0; step < NUM_STEPS && step < patternArray->size(); ++step)
+        {
+            int degree = static_cast<int>((*patternArray)[step]);
+            if (degree >= 0 && degree < 8)
+                audioProcessor.sequencerPattern[step] = static_cast<uint8_t>(1 << degree);
+            else
+                audioProcessor.sequencerPattern[step] = 0;
+
+            // Reset octave values to 0 for old format
+            for (int d = 0; d < NUM_SCALE_DEGREES; ++d)
+                audioProcessor.sequencerOctave[step][d] = 0;
+        }
+
+        // Load 1D octave array (apply to all degrees in step)
+        const juce::Array<juce::var>* octaveArray = presetObj->getProperty("octave").getArray();
+        if (octaveArray != nullptr)
+        {
+            for (int step = 0; step < NUM_STEPS && step < octaveArray->size(); ++step)
+            {
+                int octaveValue = static_cast<int>((*octaveArray)[step]);
+                // Apply octave to all degrees in this step
+                for (int d = 0; d < NUM_SCALE_DEGREES; ++d)
+                    audioProcessor.sequencerOctave[step][d] = static_cast<int8_t>(octaveValue);
+            }
         }
     }
 
