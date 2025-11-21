@@ -19,6 +19,7 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
     modulationTab = std::make_unique<ModulationTab>(audioProcessor);
     melodySequencerTab = std::make_unique<MelodySequencerTab>(audioProcessor);
     progressionTab = std::make_unique<ProgressionTab>(audioProcessor);
+    drumTab = std::make_unique<DrumTab>(audioProcessor);
 
     // Add tabs to tabbed component
     tabbedComponent.addTab("Osc", juce::Colour(0xff2a2a2a), oscTab.get(), false);
@@ -27,6 +28,7 @@ SnorkelSynthAudioProcessorEditor::SnorkelSynthAudioProcessorEditor(SnorkelSynthA
     tabbedComponent.addTab("Sequencer", juce::Colour(0xff2a2a2a), melodySequencerTab.get(), false);
     tabbedComponent.addTab("Arpeggiator", juce::Colour(0xff2a2a2a), sequencerTab.get(), false);
     tabbedComponent.addTab("Progression", juce::Colour(0xff2a2a2a), progressionTab.get(), false);
+    tabbedComponent.addTab("Drums", juce::Colour(0xff2a2a2a), drumTab.get(), false);
 
     // Configure tabbed component appearance
     tabbedComponent.setTabBarDepth(35);

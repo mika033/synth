@@ -501,7 +501,24 @@ SnorkelSynthAudioProcessor::SnorkelSynthAudioProcessor()
                     std::make_unique<juce::AudioParameterFloat>(
                         MASTER_VOLUME_ID, "Master Volume",
                         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f),
-                        0.7f) // Default 70%
+                        0.7f), // Default 70%
+
+                    // Drum machine parameters
+                    std::make_unique<juce::AudioParameterBool>("drumenable", "Drum Enable", false),
+                    std::make_unique<juce::AudioParameterFloat>("drumkickvol", "Kick Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                    std::make_unique<juce::AudioParameterFloat>("drumsnarevol", "Snare Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                    std::make_unique<juce::AudioParameterFloat>("drumchatvol", "Closed Hat Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                    std::make_unique<juce::AudioParameterFloat>("drumohatvol", "Open Hat Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                    std::make_unique<juce::AudioParameterFloat>("drummastervol", "Drum Master Volume",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.8f),
+                    std::make_unique<juce::AudioParameterFloat>("drumsidechainmag", "Sidechain Magnitude",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f),
+                    std::make_unique<juce::AudioParameterFloat>("drumsidechainlen", "Sidechain Length",
+                        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f)
                 })
 {
     // Add voices to the synthesizer
@@ -682,11 +699,28 @@ void SnorkelSynthAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     // Process sequencer (modifies MIDI messages)
     processSequencer(midiMessages, buffer.getNumSamples());
 
+    // Process drum machine (step tracking and sidechain envelope)
+    processDrums(buffer.getNumSamples());
+
     // Update voice parameters (after sequencer to get correct currentSeqStep for cutoff modulation)
     updateVoiceParameters();
 
     // Render synthesizer
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
+    // Apply sidechain ducking from drum kick
+    if (sidechainEnvelope > 0.001f)
+    {
+        float duckAmount = 1.0f - sidechainEnvelope; // 0 = full duck, 1 = no duck
+        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            float* channelData = buffer.getWritePointer(channel);
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                channelData[sample] *= duckAmount;
+            }
+        }
+    }
 
     // Apply delay effect
     float delayMix = parameters.getRawParameterValue(DELAY_MIX_ID)->load();
@@ -2115,6 +2149,59 @@ double SnorkelSynthAudioProcessor::getSeqStepLengthInSamples() const
     return currentSampleRate / stepFrequency;
 }
 
+void SnorkelSynthAudioProcessor::processDrums(int numSamples)
+{
+    bool drumEnabled = parameters.getRawParameterValue("drumenable")->load() > 0.5f;
+
+    // Get sidechain parameters
+    float sidechainMag = parameters.getRawParameterValue("drumsidechainmag")->load();
+    float sidechainLen = parameters.getRawParameterValue("drumsidechainlen")->load();
+
+    // Decay the sidechain envelope
+    // Length controls decay time: 0 = instant, 1 = full step length
+    if (sidechainLen > 0.001f)
+    {
+        double stepLength = getSeqStepLengthInSamples();
+        float decayTime = stepLength * sidechainLen * 2.0f; // Up to 2x step length
+        float decayRate = numSamples / decayTime;
+        sidechainEnvelope = std::max(0.0f, sidechainEnvelope - decayRate);
+    }
+    else
+    {
+        sidechainEnvelope = 0.0f;
+    }
+
+    if (!drumEnabled || !isPlaybackActive)
+    {
+        currentDrumStep = 0;
+        drumStepTime = 0.0;
+        return;
+    }
+
+    // Use same step length as sequencer
+    double stepLength = getSeqStepLengthInSamples();
+
+    // Advance step time
+    drumStepTime += numSamples;
+
+    // Trigger new step
+    while (drumStepTime >= stepLength)
+    {
+        drumStepTime -= stepLength;
+
+        // Check if kick is triggered on this step (lane 0 = kick)
+        if (drumPattern[0][currentDrumStep] != 0)
+        {
+            // Trigger sidechain envelope
+            sidechainEnvelope = sidechainMag;
+        }
+
+        // Advance to next step (16 steps)
+        currentDrumStep = (currentDrumStep + 1) % NUM_DRUM_STEPS;
+    }
+}
+
+int SnorkelSynthAudioProcessor::getSequencerNote(int step)
 std::vector<int> SnorkelSynthAudioProcessor::getSequencerNotes(int step)
 {
     std::vector<int> notes;
